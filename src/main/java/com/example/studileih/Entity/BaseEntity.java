@@ -24,12 +24,14 @@ public abstract class BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)  // durch nullable = false wird es zu Pflichtfeld
+  //  @Column(name = "created_at", nullable = false, updatable = false)  // durch nullable = false wird es zu Pflichtfeld
     @CreatedDate
     private Date createdAt;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
+  //  @Column(name = "updated_at", nullable = false) // durch nullable = false wird es zu Pflichtfeld
     @LastModifiedDate
     private Date updatedAt;
 

@@ -38,13 +38,17 @@ public class ProductController {
     private ImageService imageService;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
 
+    /**
+     * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielprodukt in die DB -> Kann später auskommentiert/gelöscht werden
+      */
     @PostConstruct
     public void createBaseDataset() {
         Product monopoly = new Product("Monopoly");
-        monopoly.setCreatedAt(Calendar.getInstance().getTime());
-        monopoly.setUpdatedAt(Calendar.getInstance().getTime());
+        // Ich hab CreatedAt und UpdatedAt jetzt so eingestellt, dass es keine Pflichtfelder mehr sind, das ist einfacher am Anfang. Sollten später wieder zu Pflichtfeldern gemacht werden, dazu muss in BaseEntity das nullable = false wieder hinzugefügt werden
+        // monopoly.setCreatedAt(Calendar.getInstance().getTime());
+        // monopoly.setUpdatedAt(Calendar.getInstance().getTime());
         productService.saveOrUpdateProduct((Product) monopoly);
     }
     /**
@@ -55,63 +59,50 @@ public class ProductController {
         List<Product> allProducts = new ArrayList<>();
         allProducts = productService.listAllProducts();
         System.out.println(allProducts.get(0).toString());
-        return allProducts.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+        return allProducts.stream()                 // List<Product> muss zu List<ProductDto> konvertiert werden. Hier tun wir zuerst die List<Product> in einen Stream umwandeln
+                .map(this::convertToDto)            // Dann jedes Product ausm Stream herausnehmen und zu ProductDto umwandeln
+                .collect(Collectors.toList());      // und dann den neuen Stream als List<ProductDto> einsammeln.
     }
 
+    /**
+     * Converts a Product to a ProductDto. The createdAt and updatedAt Dates are converted to simple Strings, because Date is Java specific and can't be send to Angular.
+     * @param product
+     * @return productDto
+     */
     private ProductDto convertToDto(Product product) {
         ProductDto productDto = modelMapper.map(product, ProductDto.class);
-        productDto.setCreatedAt(product.getCreatedAt(),
-                ZonedDateTime.now(ZoneId.systemDefault()).toString()); //irgendwann mal durch die Zeitzone des Nutzers ersetzen.
-        productDto.setUpdatedAt(product.getUpdatedAt(),
-                ZonedDateTime.now(ZoneId.systemDefault()).toString());
+        // falls ein Product ein CreatedAt oder UpdatedAt Value hat, muss der zu einem String konvertiert werden. Falls nicht darf das Date nicht konvertiert werden, sonst gibts NullPointerExceptions.
+        if (product.getCreatedAt() != null) productDto.setCreatedAt(product.getCreatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString()); //konvertiert Date zu String -> einfachhaltshaber nimmts immer die Zeitzone des Servers (ZoneId.systemdefault), vielleicht irgendwann mal durch die Zeitzone des Nutzers ersetzen.
+        if (product.getUpdatedAt() != null) productDto.setUpdatedAt(product.getUpdatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString());
         return productDto;
     }
 
     /*
-     * method for posting images into database from angular
+     * method for posting images into the image folder (src -> main -> resources -> images) and put the filePath into the database.
      */
-    List<String> files = new ArrayList<>();
-    String filePath;
     @PostMapping("/postImage")
     public void handleFileUpload(@RequestParam("file") MultipartFile file, String userId, String groupId, String postId, String imgType) {
-        // Update User Long.parseLong(userId) or group or post depending on imgType:
-        // -> if the image is a userPic -> update user with the newly generated photoId of the just saved photo
+        // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
         if (imgType.equals("userPic")) {
             Optional<User> optionalEntity =  userService.getUserById(Long.parseLong(userId));
             User user = optionalEntity.get();
+            String imageName = null;
             try {
-                imageService.store(file);
-                filePath = file.getOriginalFilename();
-                files.add(filePath);
+                imageName = imageService.store(file); //übergibt das Photo zum Speichern an imageService und gibt den Namen des Photos zum gerade gespeicherten Photo zurück
+                System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + imageName);
             } catch (Exception e) {
                 System.out.println("Error at groupController.handleFileUpload():" + e);
             }
-            user.setProfilePic(filePath);
-            userService.saveOrUpdateUser(user);
-
+            user.setProfilePic(imageName);  //verknüpft den Photonamen mit dem User, der es hochgeladen hat
+            userService.saveOrUpdateUser(user); //updated den User in der datenbank, damit der Photoname da auch gespeichert ist.
         } else if (imgType.equals("productPic")) {
-            //TODO:
+            //TODO: Product Fotos auch speicherbar machen (bisher gehen nur Userfotos)
             System.out.println("groupController.postImage-> groupPics are not programmed yet");
         } else if (imgType.equals("postPic")) {
-            //TODO
+            //TODO:
+            //ich weiß grad auch nichtmehr, was ein postPic sein sollte... Vielleicht wenn etwas Offtopic geposted wird?
             System.out.println("groupController.postImage-> postPics are not programmed yet");
         }
     }
-
-    /*
-     * getting all images from local storage! to angular
-     */
-    @GetMapping("/allImages")
-    public ResponseEntity<List<String>> getListFiles(Model model) {
-        List<String> fileNames = files
-                .stream().map(fileName -> MvcUriComponentsBuilder
-                        .fromMethodName(ProductController.class, "getFile", fileName).build().toString())
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok().body(fileNames);
-    }
-
 
 }
