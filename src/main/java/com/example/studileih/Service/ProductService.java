@@ -29,7 +29,7 @@ public class ProductService {
 
     public List<Product> listAllProducts() {
         List<Product> products = new ArrayList<>();
-        productRepository.findAll().forEach(products::add);
+        productRepository.findAll().forEach(products::add);  // products::add ist gleich wie: products.add(product)
         return products;
     }
 }

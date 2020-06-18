@@ -8,8 +8,8 @@ import java.util.List;
 
 @Entity
 @Table(name="user")
-@Data  // Project Lombock: erstellt automatisch alle Getter/Settet, eine ToString Methode, einen Konstruktor mit allen Pflichtfeldern... https://projectlombok.org/features/Data
-@NoArgsConstructor // erstellt leeren Konstruktor: public User() {}
+@Data  // Project Lombock: erstellt automatisch alle Getter/Setter, eine ToString Methode, einen Konstruktor mit allen Pflichtfeldern... https://projectlombok.org/features/Data
+@NoArgsConstructor // erstellt einfach nen leeren Konstruktor: public User() {}
 public class User extends BaseEntity{
 
     private String name;
@@ -26,12 +26,13 @@ public class User extends BaseEntity{
     // Jeder User hat nur ein Wohnheim, aber ein Wohnheim hat viele User/Bewohner. -> ManyToOne. Hier wird das Dorm direkt in die user Tabelle geholt mit dem JoinColumn.
     // Weiter oben bei Products habe ich kein JoinColumn benutzt, weil es hier viele Produkte gibt, ich glaub dann geht das gar nicht?
     // Das Wohnheim soll nicht gelöscht werden, nur weil ein User gelöscht wird, daher kein cascade = {CascadeType.ALL}
+    // mappedBy wird hier nicht benutzt, da es schon in Dorm eingesetzt wird - it's a good practice to mark many-to-one side as the owning side. User would be the owning side and Dorm the inverse side, which is marked with mappedBy
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "dorm")
     private Dorm dorm;
 
 
-    //Die verschiedenen Konstruktoren waren nötig, weil ich schnell unterschiedliche User testen wollte.
+    //Die verschiedenen Konstruktoren sind nötig, weil ich schnell unterschiedliche User anlegen und testen wollte.
     // profilePic kann nicht im Konstrukor schon festgelegt werden, da es später erst vom Nutzer hochgeladen werden muss.
     public User(String name) {
         this.name = name;

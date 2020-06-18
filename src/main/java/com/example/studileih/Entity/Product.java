@@ -29,7 +29,7 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    //for testing
+    //um schnell ein Produkt zum Testen erzeugen zu können:
     public Product(String name) {
         this.name = name;
     }

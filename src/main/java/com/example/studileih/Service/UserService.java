@@ -29,7 +29,7 @@ public class UserService {
 
     public List<User> listAllUser() {
         List<User> users = new ArrayList<>();
-        userRepository.findAll().forEach(users::add);
+        userRepository.findAll().forEach(users::add); // users::add ist gleich wie: users.add(user)
         return users;
     }
 }
