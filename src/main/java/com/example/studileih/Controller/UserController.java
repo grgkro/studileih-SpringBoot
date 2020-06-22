@@ -31,12 +31,10 @@ public class UserController {
     @PostConstruct
     public void createBaseDataset() {
         // can be deleted later
-        Dorm inDerAu = new Dorm("In der Au 16");  // Für später: inDerAu.setCreatedAt(Calendar.getInstance().getTime());
-        Address inderAuAddress = new Address("In der Au 16", inDerAu);
         Product product1 = new Product("Haralds VW Golf");
         List<Product> haraldsList = new ArrayList<>();
         haraldsList.add(product1);
-        User user = new User("Harald", "harald@gmx.com", "2345", haraldsList, inDerAu);
+        User user = new User("Harald", "harald@gmx.com", "2345", haraldsList, "In der Au");
         userService.saveOrUpdateUser(user);
 
         product1.setUser(user);
