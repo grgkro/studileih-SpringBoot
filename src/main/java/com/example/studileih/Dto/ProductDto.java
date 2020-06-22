@@ -46,4 +46,89 @@ public class ProductDto {
         dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
         this.updatedAt = dateFormat.format(updatedAt);
     }
+
+    public static SimpleDateFormat getDateFormat() {
+        return dateFormat;
+    }
+
+
+//    public Long getId() {
+//        return id;
+//    }
+//
+//    public void setId(Long id) {
+//        this.id = id;
+//    }
+//
+//    public Long getUserId() {
+//        return userId;
+//    }
+//
+//    public void setUserId(Long userId) {
+//        this.userId = userId;
+//    }
+//
+//    public String getName() {
+//        return name;
+//    }
+//
+//    public void setName(String name) {
+//        this.name = name;
+//    }
+//
+//    public String getTitle() {
+//        return title;
+//    }
+//
+//    public void setTitle(String title) {
+//        this.title = title;
+//    }
+//
+//    public double getPrice() {
+//        return price;
+//    }
+//
+//    public void setPrice(double price) {
+//        this.price = price;
+//    }
+//
+//    public int getViews() {
+//        return views;
+//    }
+//
+//    public void setViews(int views) {
+//        this.views = views;
+//    }
+//
+//    public boolean isAvailable() {
+//        return available;
+//    }
+//
+//    public void setAvailable(boolean available) {
+//        this.available = available;
+//    }
+//
+//    public String getCreatedAt() {
+//        return createdAt;
+//    }
+//
+//    public void setCreatedAt(String createdAt) {
+//        this.createdAt = createdAt;
+//    }
+//
+//    public String getUpdatedAt() {
+//        return updatedAt;
+//    }
+//
+//    public void setUpdatedAt(String updatedAt) {
+//        this.updatedAt = updatedAt;
+//    }
+//
+//    public ArrayList<String> getPicPaths() {
+//        return picPaths;
+//    }
+//
+//    public void setPicPaths(ArrayList<String> picPaths) {
+//        this.picPaths = picPaths;
+//    }
 }

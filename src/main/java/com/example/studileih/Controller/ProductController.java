@@ -41,23 +41,11 @@ public class ProductController {
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
 
     /**
-     * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielprodukt in die DB -> Kann später auskommentiert/gelöscht werden
-      */
-    @PostConstruct
-    public void createBaseDataset() {
-        Product monopoly = new Product("Monopoly");
-        // Ich hab CreatedAt und UpdatedAt jetzt so eingestellt, dass es keine Pflichtfelder mehr sind, das ist einfacher am Anfang. Sollten später wieder zu Pflichtfeldern gemacht werden, dazu muss in BaseEntity das nullable = false wieder hinzugefügt werden
-        // monopoly.setCreatedAt(Calendar.getInstance().getTime());
-        // monopoly.setUpdatedAt(Calendar.getInstance().getTime());
-        productService.saveOrUpdateProduct((Product) monopoly);
-    }
-    /**
      * @return: all products from the repository
      */
     @GetMapping("allProducts")
     public List<ProductDto> getAllProducts() {
-        List<Product> allProducts = new ArrayList<>();
-        allProducts = productService.listAllProducts();
+        List<Product> allProducts = productService.listAllProducts();
         System.out.println(allProducts.get(0).toString());
         return allProducts.stream()                 // List<Product> muss zu List<ProductDto> konvertiert werden. Hier tun wir zuerst die List<Product> in einen Stream umwandeln
                 .map(this::convertToDto)            // Dann jedes Product ausm Stream herausnehmen und zu ProductDto umwandeln
@@ -76,33 +64,4 @@ public class ProductController {
         if (product.getUpdatedAt() != null) productDto.setUpdatedAt(product.getUpdatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString());
         return productDto;
     }
-
-    /*
-     * method for posting images into the image folder (src -> main -> resources -> images) and put the filePath into the database.
-     */
-    @PostMapping("/postImage")
-    public void handleFileUpload(@RequestParam("file") MultipartFile file, String userId, String groupId, String postId, String imgType) {
-        // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
-        if (imgType.equals("userPic")) {
-            Optional<User> optionalEntity =  userService.getUserById(Long.parseLong(userId));
-            User user = optionalEntity.get();
-            String imageName = null;
-            try {
-                imageName = imageService.store(file); //übergibt das Photo zum Speichern an imageService und gibt den Namen des Photos zum gerade gespeicherten Photo zurück
-                System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + imageName);
-            } catch (Exception e) {
-                System.out.println("Error at groupController.handleFileUpload():" + e);
-            }
-            user.setProfilePic(imageName);  //verknüpft den Photonamen mit dem User, der es hochgeladen hat
-            userService.saveOrUpdateUser(user); //updated den User in der datenbank, damit der Photoname da auch gespeichert ist.
-        } else if (imgType.equals("productPic")) {
-            //TODO: Product Fotos auch speicherbar machen (bisher gehen nur Userfotos)
-            System.out.println("groupController.postImage-> groupPics are not programmed yet");
-        } else if (imgType.equals("postPic")) {
-            //TODO:
-            //ich weiß grad auch nichtmehr, was ein postPic sein sollte... Vielleicht wenn etwas Offtopic geposted wird?
-            System.out.println("groupController.postImage-> postPics are not programmed yet");
-        }
-    }
-
 }
