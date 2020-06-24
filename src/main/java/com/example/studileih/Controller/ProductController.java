@@ -59,7 +59,7 @@ public class ProductController {
     @GetMapping("products")
     public List<ProductDto> getAllProducts() {
         List<Product> allProducts = productService.listAllProducts();
-        System.out.println(allProducts.get(0).toString());
+        //System.out.println(allProducts.get(0).toString());
         return allProducts.stream()                 // List<Product> muss zu List<ProductDto> konvertiert werden. Hier tun wir zuerst die List<Product> in einen Stream umwandeln
                 .map(this::convertToDto)            // Dann jedes Product ausm Stream herausnehmen und zu ProductDto umwandeln
                 .collect(Collectors.toList());      // und dann den neuen Stream als List<ProductDto> einsammeln.
