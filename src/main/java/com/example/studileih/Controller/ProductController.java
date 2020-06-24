@@ -41,18 +41,6 @@ public class ProductController {
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
 
     /**
-     * @return: all products from the repository
-     */
-    @GetMapping("allProducts")
-    public List<ProductDto> getAllProducts() {
-        List<Product> allProducts = productService.listAllProducts();
-        System.out.println(allProducts.get(0).toString());
-        return allProducts.stream()                 // List<Product> muss zu List<ProductDto> konvertiert werden. Hier tun wir zuerst die List<Product> in einen Stream umwandeln
-                .map(this::convertToDto)            // Dann jedes Product ausm Stream herausnehmen und zu ProductDto umwandeln
-                .collect(Collectors.toList());      // und dann den neuen Stream als List<ProductDto> einsammeln.
-    }
-
-    /**
      * Converts a Product to a ProductDto. The createdAt and updatedAt Dates are converted to simple Strings, because Date is Java specific and can't be send to Angular.
      * @param product
      * @return productDto
@@ -64,4 +52,38 @@ public class ProductController {
         if (product.getUpdatedAt() != null) productDto.setUpdatedAt(product.getUpdatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString());
         return productDto;
     }
+
+    /**
+     * @return: all products from the repository
+     */
+    @GetMapping("products")
+    public List<ProductDto> getAllProducts() {
+        List<Product> allProducts = productService.listAllProducts();
+        System.out.println(allProducts.get(0).toString());
+        return allProducts.stream()                 // List<Product> muss zu List<ProductDto> konvertiert werden. Hier tun wir zuerst die List<Product> in einen Stream umwandeln
+                .map(this::convertToDto)            // Dann jedes Product ausm Stream herausnehmen und zu ProductDto umwandeln
+                .collect(Collectors.toList());      // und dann den neuen Stream als List<ProductDto> einsammeln.
+    }
+
+    @GetMapping("/products/{id}")
+    public Optional<Product> getProduct(@PathVariable Long id) {
+        return productService.getProductById(id);
+    }
+
+    @PostMapping(path = "/products", consumes = "application/json", produces = "application/json")
+    public boolean addProduct(@RequestBody Product product) {
+        return productService.addProduct(product);
+    }
+
+    @DeleteMapping(value = "/products/{id}")
+    public void deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+    }
+
+    @PutMapping(value = "/products/{id}")
+    public void updateProduct(@RequestBody Product product,@PathVariable Long id) {
+        productService.updateProduct(product,id);
+    }
+
+
 }

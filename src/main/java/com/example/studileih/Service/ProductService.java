@@ -32,4 +32,31 @@ public class ProductService {
         productRepository.findAll().forEach(products::add);  // products::add ist gleich wie: products.add(product)
         return products;
     }
+
+    public boolean addProduct(Product product) {
+        productRepository.save(product);
+        return true;
+    }
+
+
+    public Product updateProduct(Product newProduct, Long id) {
+        Product oldProduct = getProductById(id).get();
+
+        if(oldProduct.isAvailable()){
+            oldProduct.setName(newProduct.getName());
+            oldProduct.setTitle(newProduct.getTitle());
+            oldProduct.setType(newProduct.getType());
+            oldProduct.setPrice(newProduct.getPrice());
+            oldProduct.setViews(newProduct.getViews());
+            oldProduct.setAvailable(newProduct.isAvailable());
+            oldProduct.setPicPaths(newProduct.getPicPaths());
+
+            productRepository.save(oldProduct);
+            System.out.println(oldProduct);
+            return oldProduct;
+        }
+
+        return null;
+    }
+
 }
