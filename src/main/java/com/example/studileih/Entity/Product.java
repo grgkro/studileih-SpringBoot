@@ -1,21 +1,36 @@
 package com.example.studileih.Entity;
 
-import com.example.studileih.Entity.BaseEntity;
-import com.example.studileih.Entity.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Date;
 
 @Entity
-//@Data // Irgendwie funktioniert die @Data Annotation bei mir (Georg) nicht mehr richtig, und auch nur bei der Product Entity hier... deshalb musste ich die Getter & Setter hier wieder von Hand machen. Sobald ich das Problem gelöst habe, lösche ich sie wieder.
+@Data // Irgendwie funktioniert die @Data Annotation bei mir (Georg) nicht mehr richtig, und auch nur bei der Product Entity hier... deshalb musste ich die Getter & Setter hier wieder von Hand machen. Sobald ich das Problem gelöst habe, lösche ich sie wieder.
 @NoArgsConstructor
-public class Product extends BaseEntity {
+public class Product {
+    @Id  // for more details why the ID is generated like this: https://stackoverflow.com/questions/62548985/hibernate-generates-one-id-for-two-tables-entities/62549190?noredirect=1#comment110616128_62549190
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_generator")
+    @SequenceGenerator(name="product_generator", sequenceName = "product_seq", allocationSize=50)
+    @Column(name = "id", updatable = false, nullable = false)
+    private Long id;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at", updatable = false)
+    //  @Column(name = "created_at", nullable = false, updatable = false)  // durch nullable = false wird es zu Pflichtfeld
+    @CreatedDate
+    private Date createdAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at")
+    //  @Column(name = "updated_at", nullable = false) // durch nullable = false wird es zu Pflichtfeld
+    @LastModifiedDate
+    private Date updatedAt;
 
      private String name;
      private String title;
@@ -25,7 +40,7 @@ public class Product extends BaseEntity {
      private boolean available = true; //is it available?
      private ArrayList<Path> picPaths;
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
