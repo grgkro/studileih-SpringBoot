@@ -8,6 +8,8 @@ import com.example.studileih.Service.ProductService;
 import com.example.studileih.Service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,7 +36,7 @@ public class ImageController {
      * method for posting images into the image folder (src -> main -> resources -> images) and put the filePath into the database.
      */
     @PostMapping("/postImage")
-    public void handleFileUpload(@RequestParam("file") MultipartFile file, String userId, String groupId, String postId, String imgType) {
+    public ResponseEntity handleFileUpload(@RequestParam("file") MultipartFile file, String userId, String groupId, String postId, String imgType) {
         // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
         if (imgType.equals("userPic")) {
             Optional<User> optionalEntity =  userService.getUserById(Long.parseLong(userId));
@@ -45,6 +47,7 @@ public class ImageController {
                 System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + imageName);
             } catch (Exception e) {
                 System.out.println("Error at groupController.handleFileUpload():" + e);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("a) image with same name was already uploaded - b) uploaded file was not an image");
             }
             user.setProfilePic(imageName);  //verknüpft den Photonamen mit dem User, der es hochgeladen hat
             userService.saveOrUpdateUser(user); //updated den User in der datenbank, damit der Photoname da auch gespeichert ist.
@@ -56,6 +59,7 @@ public class ImageController {
             //ich weiß grad auch nichtmehr, was ein postPic sein sollte... Vielleicht wenn etwas Offtopic geposted wird?
             System.out.println("groupController.postImage-> postPics are not programmed yet");
         }
+        return ResponseEntity.status(HttpStatus.OK).body("Image was saved.");
     }
 
 }
