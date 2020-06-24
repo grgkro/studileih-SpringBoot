@@ -16,7 +16,7 @@ import java.util.Date;
 public class Product {
     @Id  // for more details why the ID is generated like this: https://stackoverflow.com/questions/62548985/hibernate-generates-one-id-for-two-tables-entities/62549190?noredirect=1#comment110616128_62549190
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_generator")
-    @SequenceGenerator(name="product_generator", sequenceName = "product_seq", allocationSize=50)
+    @SequenceGenerator(name="product_generator", sequenceName = "product_seq", allocationSize=1)
     @Column(name = "id", updatable = false, nullable = false)
     private Long id;
 
@@ -111,5 +111,22 @@ public class Product {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", name='" + name + '\'' +
+                ", title='" + title + '\'' +
+                ", type='" + type + '\'' +
+                ", price=" + price +
+                ", views=" + views +
+                ", available=" + available +
+                ", picPaths=" + picPaths +
+                ", user=" + user +
+                '}';
     }
 }
