@@ -18,6 +18,8 @@ import java.nio.file.Paths;
 @Service
 public class ImageService {
 
+    // nach diesem Tutorial erstellt: https://grokonez.com/spring-framework/spring-boot/angular-6-upload-get-multipartfile-spring-boot-example
+
     // Logger is similar to system.out.println, but you can also see the outprint on a server-log (was useful for running on AWS Cloud)
     Logger log = LoggerFactory.getLogger(this.getClass().getName());
 
@@ -40,7 +42,6 @@ public class ImageService {
         return file.getOriginalFilename();
     }
 
-    // wird noch nicht benutzt
     public Resource loadFile(String filename) {
         try {
             Path file = imageFolderLocation.resolve(filename);
