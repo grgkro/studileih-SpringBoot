@@ -6,11 +6,7 @@ import com.example.studileih.Entity.Product;
 import com.example.studileih.Service.ProductService;
 import com.example.studileih.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
@@ -44,9 +40,14 @@ public class UserController {
     /**
      * @return: all users from the repository
      */
-    @GetMapping("getAllUsers")
+    @GetMapping("users")
     public List<User> getAllUsers() {
         return userService.listAllUser();
+    }
+
+    @GetMapping("/users/{id}")
+    public Optional<User> getUser(@PathVariable Long id) {
+        return userService.getUserById(id);
     }
 
     /**
@@ -56,6 +57,21 @@ public class UserController {
     public Boolean saveUser(@RequestBody UserDto userDto) {
         userService.saveOrUpdateUser(new User(userDto.getName()));
         return true;
+    }
+
+    @PostMapping(path = "/users", consumes = "application/json", produces = "application/json")
+    public boolean addUser(@RequestBody User user) {
+        return userService.addUser(user);
+    }
+
+    @DeleteMapping(value = "/users/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+    }
+
+    @PutMapping(value = "/users/{id}")
+    public void updateUser(@RequestBody User user, @PathVariable Long id) {
+        userService.updateUser(user, id);
     }
 
 }

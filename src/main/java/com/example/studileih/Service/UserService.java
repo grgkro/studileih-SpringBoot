@@ -1,5 +1,6 @@
 package com.example.studileih.Service;
 
+import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
 import com.example.studileih.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,4 +33,33 @@ public class UserService {
         userRepository.findAll().forEach(users::add); // users::add ist gleich wie: users.add(user)
         return users;
     }
+
+    public boolean addUser(User user) {
+        userRepository.save(user);
+        return true;
+    }
+
+    public User updateUser(User newUser, Long id) {
+        User oldUser = null;
+
+        if(getUserById(id).isPresent()){
+            assert false; //assert oldUser != null;
+            oldUser.setName(newUser.getName());
+            oldUser.setName(newUser.getName());
+
+            oldUser.setEmail(newUser.getEmail());
+            oldUser.setPassword(newUser.getPassword());
+            oldUser.setRoom(newUser.getRoom());
+            oldUser.setProfilePic(newUser.getProfilePic());
+            oldUser.setDorm(newUser.getDorm());
+            oldUser.setCity(newUser.getCity());
+
+            userRepository.save(oldUser);
+            System.out.println(oldUser);
+            return oldUser;
+        }
+
+        return oldUser;
+    }
+
 }
