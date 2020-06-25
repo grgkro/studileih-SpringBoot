@@ -1,5 +1,6 @@
 package com.example.studileih.Service;
 
+import com.example.studileih.Entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -27,7 +28,8 @@ public class ImageService {
 
     // basePath is the root folder where you saved the project. imageFolderLocation completes the basePath to the image folder location
     private final String basePath = new File("").getAbsolutePath();
-    private final Path imageFolderLocation = Paths.get(basePath + "/src/main/resources/images/users");
+    private String parentFolderLocation = basePath + "/src/main/resources/images/user";
+    private Path imageFolderLocation;
 
     /**
      * The image gets send from the frontend as a Multipartfile. Here we save it.
@@ -35,8 +37,10 @@ public class ImageService {
      * TODO: Find a better solution here, at least tell the user at the frontend that the upload didn't work.
      * @param file
      */
-    public ResponseEntity storeUserImage(MultipartFile file) {
+    public ResponseEntity storeUserImage(MultipartFile file, User user) {
         try {
+            String tempUserFolderLocation = parentFolderLocation + user.getId();
+            imageFolderLocation = Paths.get(tempUserFolderLocation);
             createUserImageFolder(); //creates a folder named "user". Only if folder doesn't already exist.
             Files.copy(file.getInputStream(), this.imageFolderLocation.resolve(file.getOriginalFilename()));
         } catch (Exception e) {
@@ -46,8 +50,10 @@ public class ImageService {
         return ResponseEntity.status(HttpStatus.OK).body("Dein Foto wurde gespeichert.");
     }
 
-    public Resource loadFile(String filename) {
+    public Resource loadFile(String filename, User user) {
         try {
+            String tempUserFolderLocation = parentFolderLocation + user.getId();
+            imageFolderLocation = Paths.get(tempUserFolderLocation);
             Path file = imageFolderLocation.resolve(filename);
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() || resource.isReadable()) {
@@ -61,9 +67,9 @@ public class ImageService {
     }
 
     // wird noch nicht benutzt
-    public void deleteAll() {
-        FileSystemUtils.deleteRecursively(imageFolderLocation.toFile());
-    }
+//    public void deleteAll() {
+//        FileSystemUtils.deleteRecursively(imageFolderLocation.toFile());
+//    }
 
     public void deleteImage(File file) {
         if(file.delete()) // deletes the file and returns boolean

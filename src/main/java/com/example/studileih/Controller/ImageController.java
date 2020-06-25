@@ -60,7 +60,7 @@ public class ImageController {
         User user = optionalEntity.get();
         ResponseEntity response = null;
         if (!hasUserAlreadySavedThisFile(file, user)) {
-            response = imageService.storeUserImage(file); //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück
+            response = imageService.storeUserImage(file, user); //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück
             if (response.getStatusCodeValue() == 200) {
                 System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename());
                 user.setProfilePic(file.getOriginalFilename());  //verknüpft den Photonamen mit dem User, der es hochgeladen hat
@@ -81,7 +81,7 @@ public class ImageController {
 
     private void deleteOldProfilePic(User user) {
         try {
-            Resource resource = imageService.loadFile(user.getProfilePic());
+            Resource resource = imageService.loadFile(user.getProfilePic(), user);
             imageService.deleteImage(new File(resource.getURI()));
         } catch (IOException e) {
             e.printStackTrace();
@@ -94,9 +94,15 @@ public class ImageController {
         Optional<User> optionalEntity = userService.getUserById(Long.parseLong(userId));
         User user = optionalEntity.get();
         // load the picture from the local storage
-        Resource file = imageService.loadFile(user.getProfilePic());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
-                .body(file);
+        if (user.getProfilePic() != null) {
+            Resource file = imageService.loadFile(user.getProfilePic(), user);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
+                    .body(file);
+        } else {
+            System.out.println("User has no profilePic yet (user.getProfilePic() = null)");
+            return ResponseEntity.notFound().build();
+        }
+
     }
 }
