@@ -48,6 +48,12 @@ public class Product {
     public Product(String name) {
         this.name = name;
     }
+    //auch zum Testen
+    public Product(String name, String title, double price) {
+        this.name = name;
+        this.title = title;
+        this.price = price;
+    }
 
     public String getName() {
         return name;
