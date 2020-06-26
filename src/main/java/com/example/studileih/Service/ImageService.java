@@ -41,7 +41,7 @@ public class ImageService {
         try {
             String tempUserFolderLocation = parentFolderLocation + user.getId();
             imageFolderLocation = Paths.get(tempUserFolderLocation);
-            createUserImageFolder(); //creates a folder named "user". Only if folder doesn't already exist.
+            createUserImageFolder(); //creates a folder named "user + userId". Only if folder doesn't already exists.
             Files.copy(file.getInputStream(), this.imageFolderLocation.resolve(file.getOriginalFilename()));
         } catch (Exception e) {
             System.out.println("Error at imageService:" + e);
@@ -72,7 +72,7 @@ public class ImageService {
 //    }
 
     public void deleteImage(File file) {
-        if(file.delete()) // deletes the file and returns boolean
+        if(file.delete()) // deletes the file already in the if statement and returns boolean (that we don't use)
         {
             System.out.println("Old User profile pic was deleted successfully");
         }
