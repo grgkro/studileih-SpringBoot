@@ -6,6 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -37,7 +38,7 @@ public class Product {
      private double price = 0;
      private int views = 0; //How often was the product viewed?
      private boolean available = true; //is it available?
-     private ArrayList<String> picPaths;
+     private ArrayList<Path> picPaths;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -52,13 +53,6 @@ public class Product {
         this.name = name;
         this.title = title;
         this.price = price;
-    }
-
-    public Product(String name, String title, double price, User user) {
-        this.name = name;
-        this.title = title;
-        this.price = price;
-        this.user = user;
     }
 
     public String getName() {
@@ -109,11 +103,11 @@ public class Product {
         this.available = available;
     }
 
-    public ArrayList<String> getPicPaths() {
+    public ArrayList<Path> getPicPaths() {
         return picPaths;
     }
 
-    public void setPicPaths(ArrayList<String> picPaths) {
+    public void setPicPaths(ArrayList<Path> picPaths) {
         this.picPaths = picPaths;
     }
 
@@ -138,7 +132,7 @@ public class Product {
                 ", views=" + views +
                 ", available=" + available +
                 ", picPaths=" + picPaths +
-                ", user=" + "" +          // the user String has to be empty, otherwise when loading a product, hibernate calls the toString of Product, which calls the User toString method, which calls the Product toString method ... https://stackoverflow.com/questions/40266770/spring-jpa-bi-directional-cannot-evaluate-tostring
+                ", user=" + user +
                 '}';
     }
 }
