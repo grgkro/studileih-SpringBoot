@@ -66,8 +66,10 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
-    public Optional<Product> getProduct(@PathVariable Long id) {
-        return productService.getProductById(id);
+    public ProductDto getProduct(@PathVariable String id) {
+        Optional<Product> optional = productService.getProductById(Long.parseLong(id));   // the id always comes as a string from angular, even when you send it as a number in angular...
+        Product product = optional.get();
+        return convertToDto(product);
     }
 
     @PostMapping(path = "/products", consumes = "application/json", produces = "application/json")
@@ -76,13 +78,13 @@ public class ProductController {
     }
 
     @DeleteMapping(value = "/products/{id}")
-    public void deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
+    public void deleteProduct(@PathVariable String id) {
+        productService.deleteProduct(Long.parseLong(id));
     }
 
     @PutMapping(value = "/products/{id}")
-    public void updateProduct(@RequestBody Product product,@PathVariable Long id) {
-        productService.updateProduct(product,id);
+    public void updateProduct(@RequestBody Product product,@PathVariable String id) {
+        productService.updateProduct(product,Long.parseLong(id));
     }
 
 
