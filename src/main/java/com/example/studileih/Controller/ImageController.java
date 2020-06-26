@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.NoResultException;
 import java.io.File;
 import java.io.IOException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -56,15 +58,14 @@ public class ImageController {
     }
 
     private ResponseEntity saveUserPic(MultipartFile file, String userId, String groupId, String postId, String imgType) {
-        Optional<User> optionalEntity = userService.getUserById(Long.parseLong(userId));
-        User user = optionalEntity.get();
-        ResponseEntity response = null;
-        if (!hasUserAlreadySavedThisFile(file, user)) {
-            response = imageService.storeUserImage(file, user); //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück
-            if (response.getStatusCodeValue() == 200) {
+        User user = getActiveUser(userId);                                      // We first load the user, for whom we wann save the profile pic.
+        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
+        if (!hasUserAlreadySavedThisFile(file, user)) {                         // checks, if User is currently using a Photo with exact same name as ProfilePic
+            ResponseEntity response = imageService.storeUserImage(file, user);  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
+            if (response.getStatusCodeValue() == 200) {                         // if saving Pfoto was successfull => response status = 200...
                 System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename());
-                user.setProfilePic(file.getOriginalFilename());  //verknüpft den Photonamen mit dem User, der es hochgeladen hat
-                userService.saveOrUpdateUser(user); //updated den User in der datenbank, damit der Photoname da auch gespeichert ist.
+                user.setProfilePic(file.getOriginalFilename());
+                userService.saveOrUpdateUser(user);                             //updated den User in der datenbank, damit der Fotoname da auch gespeichert ist.
             }
             return response;
         }
@@ -88,21 +89,32 @@ public class ImageController {
         }
     }
 
+    /*
+    *
+     */
     @PostMapping("/loadProfilePicByUserId")
-    public ResponseEntity<Resource> getImageByUserId(@RequestBody String userId) {
-        // retrieve the file Name of the photo saved in the user database table
-        Optional<User> optionalEntity = userService.getUserById(Long.parseLong(userId));
-        User user = optionalEntity.get();
-        // load the picture from the local storage
+    public ResponseEntity getImageByUserId(@RequestBody String userId) {
+        // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
+        User user = getActiveUser(userId);
+        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
+        // Then we load the picture from the local storage
         if (user.getProfilePic() != null) {
-            Resource file = imageService.loadFile(user.getProfilePic(), user);
+            Resource file = imageService.loadFile(user.getProfilePic(), user);  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
-                    .body(file);
+                    .body(file);  // the response body now contains the profile pic
         } else {
-            System.out.println("User has no profilePic yet (user.getProfilePic() = null)");
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with userId = " + userId + "has no profilePic yet (user.getProfilePic() = null)");  // Returns a status = 404 response
         }
 
+    }
+
+    public User getActiveUser(String userId) {
+        try {
+            Optional<User> optionalEntity = userService.getUserById(Long.parseLong(userId));
+            return optionalEntity.get();
+        } catch (NoSuchElementException e) {
+            return null;
+        }
     }
 }
