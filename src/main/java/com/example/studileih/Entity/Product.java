@@ -55,6 +55,13 @@ public class Product {
         this.price = price;
     }
 
+    public Product(String name, String title, double price, User user) {
+        this.name = name;
+        this.title = title;
+        this.price = price;
+        this.user = user;
+    }
+
     public String getName() {
         return name;
     }
@@ -132,7 +139,7 @@ public class Product {
                 ", views=" + views +
                 ", available=" + available +
                 ", picPaths=" + picPaths +
-                ", user=" + user +
+                ", user=" + "" +          // the user String has to be empty, otherwise when loading a product, hibernate calls the toString of Product, which calls the User toString method, which calls the Product toString method ... https://stackoverflow.com/questions/40266770/spring-jpa-bi-directional-cannot-evaluate-tostring
                 '}';
     }
 }
