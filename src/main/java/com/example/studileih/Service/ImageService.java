@@ -147,7 +147,7 @@ public class ImageService {
         }
     }
 
-    public List<Resource> listFilesForFolder(final Path folderLocation) throws IOException {
+    public List<Resource> listFilesForFolder(final Path folderLocation) throws IOException {              // https://stackoverflow.com/questions/1844688/how-to-read-all-files-in-a-folder-from-java
         try (Stream<Path> paths = Files.walk(Paths.get(String.valueOf(folderLocation)))) {
             return paths
                         .filter(Files::isRegularFile)
