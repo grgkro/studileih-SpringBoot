@@ -6,7 +6,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -38,7 +37,7 @@ public class Product {
      private double price = 0;
      private int views = 0; //How often was the product viewed?
      private boolean available = true; //is it available?
-     private ArrayList<Path> picPaths;
+     private ArrayList<String> picPaths;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -110,11 +109,11 @@ public class Product {
         this.available = available;
     }
 
-    public ArrayList<Path> getPicPaths() {
+    public ArrayList<String> getPicPaths() {
         return picPaths;
     }
 
-    public void setPicPaths(ArrayList<Path> picPaths) {
+    public void setPicPaths(ArrayList<String> picPaths) {
         this.picPaths = picPaths;
     }
 
