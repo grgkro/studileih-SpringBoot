@@ -7,11 +7,13 @@ import com.example.studileih.Service.ProductService;
 import com.example.studileih.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -37,22 +40,12 @@ public class ImageController {
     private ProductService productService;
 
     /*
-    * loads all product pics
+    * loads a product pic
      */
-    @GetMapping("images/productPics")
-    public ResponseEntity loadProductPics() {
-        // load all the pictures from the local storage
-           // ArrayList<ArrayList<Resource>> productPics = imageService.loadProductPics();
-//            return ResponseEntity.ok()
-//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; all product pics")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
-//                    .body(imageService.loadProductPics());  // the response body now contains the product pics
-        List<Resource> listOfAllPicsOfOneProduct;
-        List<List> listOfAllPics = new ArrayList<>();
-        listOfAllPicsOfOneProduct = imageService.loadProductPics().get(0);
-        System.out.println(listOfAllPicsOfOneProduct.get(0));
-        return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; all product pics")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
-                    .body(listOfAllPicsOfOneProduct.get(2));  // the response body now contains the product pics
+    @PostMapping("/images/loadProductPicByFilename")    //https://bezkoder.com/spring-boot-upload-multiple-files/
+    public ResponseEntity loadProductPicByFilename(@RequestParam("filename") String filename, String productId) {
+        // load the picture from the local storage
+            return imageService.loadImageByFilename(filename, Long.parseLong(productId));  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
     }
 
     /*
@@ -94,7 +87,7 @@ public class ImageController {
     private ResponseEntity saveUserPic(MultipartFile file, String userId) {
         User user = getActiveUser(userId);                                      // We first load the user, for whom we wann save the profile pic.
         if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
-        if (!hasUserAlreadySavedThisFile(file, user)) {                         // checks, if User is currently using a Photo with exact same name as ProfilePic
+        deleteOldProfilePic(user);                                              // deletes old User Pic, so that there's always only one profile pic
             ResponseEntity response = imageService.storeUserImage(file, user);  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
             if (response.getStatusCodeValue() == 200) {                         // if saving Pfoto was successfull => response status = 200...
                 System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename());
@@ -102,16 +95,6 @@ public class ImageController {
                 userService.saveOrUpdateUser(user);                             //updated den User in der datenbank, damit der Fotoname da auch gespeichert ist.
             }
             return response;
-        }
-        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Foto mit selbem Namen wurde vom gleichen User schonmal hochgeladen.");
-    }
-
-    private boolean hasUserAlreadySavedThisFile(MultipartFile file, User user) {
-        if (user.getProfilePic() != null) {
-            if (user.getProfilePic().equals(file.getOriginalFilename())) return true;
-            deleteOldProfilePic(user);
-        }
-        return false;
     }
 
     private void deleteOldProfilePic(User user) {
@@ -126,7 +109,7 @@ public class ImageController {
     /*
     *
      */
-    @PostMapping("/loadProfilePicByUserId")
+    @PostMapping("/loadProfilePic")
     public ResponseEntity getImageByUserId(@RequestBody String userId) {
         // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
         User user = getActiveUser(userId);
