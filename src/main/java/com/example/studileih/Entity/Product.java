@@ -6,7 +6,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import javax.persistence.*;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -38,7 +37,7 @@ public class Product {
      private double price = 0;
      private int views = 0; //How often was the product viewed?
      private boolean available = true; //is it available?
-     private ArrayList<Path> picPaths;
+     private ArrayList<String> picPaths;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -47,6 +46,19 @@ public class Product {
     //um schnell ein Produkt zum Testen erzeugen zu können:
     public Product(String name) {
         this.name = name;
+    }
+    //auch zum Testen
+    public Product(String name, String title, double price) {
+        this.name = name;
+        this.title = title;
+        this.price = price;
+    }
+
+    public Product(String name, String title, double price, User user) {
+        this.name = name;
+        this.title = title;
+        this.price = price;
+        this.user = user;
     }
 
     public String getName() {
@@ -97,11 +109,11 @@ public class Product {
         this.available = available;
     }
 
-    public ArrayList<Path> getPicPaths() {
+    public ArrayList<String> getPicPaths() {
         return picPaths;
     }
 
-    public void setPicPaths(ArrayList<Path> picPaths) {
+    public void setPicPaths(ArrayList<String> picPaths) {
         this.picPaths = picPaths;
     }
 
@@ -126,7 +138,7 @@ public class Product {
                 ", views=" + views +
                 ", available=" + available +
                 ", picPaths=" + picPaths +
-                ", user=" + user +
+                ", user=" + "" +          // the user String has to be empty, otherwise when loading a product, hibernate calls the toString of Product, which calls the User toString method, which calls the Product toString method ... https://stackoverflow.com/questions/40266770/spring-jpa-bi-directional-cannot-evaluate-tostring
                 '}';
     }
 }
