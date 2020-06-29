@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.GsonBuilderUtils;
@@ -47,16 +48,9 @@ public class ImageService {
      * @return ResponseEntity  
      */
     public ResponseEntity storeUserImage(MultipartFile file, User user) {
-        try {
-            String tempUserFolderLocation = parentFolderLocation  + "/users/user" + user.getId();
-            Path imageFolderLocation = Paths.get(tempUserFolderLocation);
-            createImageFolder(imageFolderLocation); //creates a folder named "user + userId". Only if folder doesn't already exists.
-            Files.copy(file.getInputStream(), imageFolderLocation.resolve(file.getOriginalFilename()));
-        } catch (Exception e) {
-            System.out.println("Error at imageService:" + e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("a) image with same name was already uploaded - b) uploaded file was not an image - c) file size > 500KBs");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body("Dein Foto wurde gespeichert.");
+        Path imageFolderLocation = Paths.get(parentFolderLocation  + "/users/user" + user.getId());
+        createImageFolder(imageFolderLocation); //creates a folder named "user + userId". Only if folder doesn't already exists.
+        return storeImage(file, "userPic", imageFolderLocation);
     }
 
     /**
@@ -66,23 +60,37 @@ public class ImageService {
      * @return ResponseEntity
      */
     public ResponseEntity storeProductImage(MultipartFile file, Product product) {
-        try {
-            Path imageFolderLocation = Paths.get(parentFolderLocation + "/products/product" + product.getId());
-            createImageFolder(imageFolderLocation);    //creates a new folder named "product + productId". Only if folder doesn't already exists.
-            Files.copy(file.getInputStream(), imageFolderLocation.resolve(file.getOriginalFilename()));
-        } catch (Exception e) {
-            System.out.println("Error at imageService:" + e);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("a) image with same name was already uploaded - b) uploaded file was not an image - c) file size > 500KBs");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body("Dein Foto wurde gespeichert.");
+        Path imageFolderLocation = Paths.get(parentFolderLocation + "/products/product" + product.getId());
+        createImageFolder(imageFolderLocation);    //creates a new folder named "product + productId". Only if folder doesn't already exists.
+        return storeImage(file, "productPic", imageFolderLocation);
     }
 
+    public ResponseEntity storeImage(MultipartFile file, String type, Path imageFolderLocation) {
+        if (type.equals("userPic")) {
+            try {
+                Files.copy(file.getInputStream(), imageFolderLocation.resolve(file.getOriginalFilename()));  // this line saves the image at the provided path (not in the database)
+            } catch (Exception e) {
+                System.out.println("Error at imageService:" + e);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("a) user image with same name was already uploaded - b) uploaded file was not an image - c) file size > 500KBs");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body("Dein Profilfoto wurde gespeichert.");
+        } else if (type.equals(("productPic"))) {
+            try {
+                Files.copy(file.getInputStream(), imageFolderLocation.resolve(file.getOriginalFilename())); // this line saves the image at the provided path (not in the database)
+            } catch (Exception e) {
+                System.out.println("Error at imageService:" + e);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("a) Product image with same name was already uploaded - b) uploaded file was not an image - c) file size > 500KBs");
+            }
+            return ResponseEntity.status(HttpStatus.OK).body("Das Foto wurde zu deinem Produkt gespeichert.");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unerwarteter Fehler");
+     }
+
     public Resource loadUserProfilePic(String filename, User user) {
+            Path imageFolderLocation = Paths.get(parentFolderLocation  + "/users/user" + user.getId());
+            Path filePath = imageFolderLocation.resolve(filename);
         try {
-            String tempUserFolderLocation = parentFolderLocation  + "/users/user" + user.getId();
-            Path imageFolderLocation = Paths.get(tempUserFolderLocation);
-            Path file = imageFolderLocation.resolve(filename);
-            Resource resource = new UrlResource(file.toUri());
+            Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists() || resource.isReadable()) {
                 return resource;
             } else {
@@ -93,13 +101,38 @@ public class ImageService {
         }
     }
 
+    /*
+     * returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+     */
+    public ResponseEntity loadImageByFilename(String filename, Long productId) {
+        Path imageFolderLocation = Paths.get(parentFolderLocation  + "/products/product" + productId); // Each product has an own image folder. imageFolderLocation is the location of that folder.
+        Path filePath = imageFolderLocation.resolve(filename);
+        return loadFile(filePath);
+    }
+
+    // This is the function that really loads the image from the local storage
+    public ResponseEntity loadFile(Path filePath) {
+        try {
+            Resource resource = new UrlResource(filePath.toUri());
+            if (resource.exists() || resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"").body(resource);
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Foto existiert nicht oder konnte nicht gelesen werden.");
+            }
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: " + ex);
+        }
+    }
+
     // wird noch nicht benutzt
 //    public void deleteAll() {
 //        FileSystemUtils.deleteRecursively(imageFolderLocation.toFile());
 //    }
 
     public void deleteImage(File file) {
-        if(file.delete()) // deletes the file already in the if statement and returns boolean (that we don't use)
+        if(file.delete()) // the command in the if statement deletes the file already in the if statement and returns boolean (which we don't use)
         {
             System.out.println("Old User profile pic was deleted successfully");
         }
@@ -119,53 +152,29 @@ public class ImageService {
         }
     }
 
-    public List<List> loadProductPics() {
-        // get all products from database
-        List<Product> allProducts = productService.listAllProducts();
-        // for each product get all pics (Each product can have multiple pics) and add them to a List
-        List<Resource> listOfAllPicsOfOneProduct;
-        List<List> listOfAllPics = new ArrayList<>();
-        for (Product product: allProducts) {
-            if (product.getPicPaths() != null) {
-                listOfAllPicsOfOneProduct = loadProductPicsById(product.getId());
-                listOfAllPics.add(listOfAllPicsOfOneProduct);
-            }
-        }
-        return listOfAllPics;
-    }
-
-    public List<Resource> loadProductPicsById(Long productId) {
-        try {
-            String tempProductFolderLocation = parentFolderLocation  + "/products/product" + productId;
-            Path imageFolderLocation = Paths.get(tempProductFolderLocation);
-            return listFilesForFolder(imageFolderLocation);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException("Something went wrong while loading the pictures for each product");
-        }
-    }
-
-    public List<Resource> listFilesForFolder(final Path folderLocation) throws IOException {              // https://stackoverflow.com/questions/1844688/how-to-read-all-files-in-a-folder-from-java
-        try (Stream<Path> paths = Files.walk(Paths.get(String.valueOf(folderLocation)))) {
-            return paths
-                        .filter(Files::isRegularFile)
-                        .map(Path::toUri)
-                        .map(uri -> {
-                            try {
-                                return new UrlResource(uri);
-                            } catch (MalformedURLException e) {
-                                e.printStackTrace();
-                                return null;
-                            }
-                        })
-                        .filter(Resource::isReadable)
-                        .collect(Collectors.toList());
-
-        }
-    }
 }
 
 
+
+
+//    public List<ResponseEntity<UrlResource>> listFilesForFolder(final Path folderLocation) throws IOException {              // https://stackoverflow.com/questions/1844688/how-to-read-all-files-in-a-folder-from-java
+//        try (Stream<Path> paths = Files.walk(Paths.get(String.valueOf(folderLocation)))) {
+//            return paths
+//                        .filter(Files::isRegularFile)
+//                        .map(Path::toUri)
+//                        .map(uri -> {
+//                            try {
+//                                return new UrlResource(uri);
+//                            } catch (MalformedURLException e) {
+//                                e.printStackTrace();
+//                                return null;
+//                            }
+//                        })
+//                        .filter(Resource::isReadable)
+//                        .map(urlResource -> ResponseEntity.ok()
+//                            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; all product pics")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
+//                            .body(urlResource) )
+//                        .collect(Collectors.toList());
+//        }
+//    }
 
