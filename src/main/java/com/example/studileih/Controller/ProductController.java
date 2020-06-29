@@ -53,6 +53,12 @@ public class ProductController {
         return productDto;
     }
 
+    //https://www.baeldung.com/entity-to-and-from-dto-for-a-java-spring-application for more information
+    public Product convertToProduct(ProductDto productDto) {
+        Product product = modelMapper.map(productDto, Product.class);
+        return  product;
+    }
+
     /**
      * @return: all products from the repository
      */
@@ -71,7 +77,8 @@ public class ProductController {
     }
 
     @PostMapping(path = "/products", consumes = "application/json", produces = "application/json")
-    public boolean addProduct(@RequestBody Product product) {
+    public boolean addProduct(@RequestBody ProductDto productDto) {
+        Product product = this.convertToProduct(productDto);
         return productService.addProduct(product);
     }
 

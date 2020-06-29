@@ -1,7 +1,9 @@
 package com.example.studileih.Service;
 
+import com.example.studileih.Dto.ProductDto;
 import com.example.studileih.Entity.Product;
 import com.example.studileih.Repository.ProductRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,9 @@ public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     public void saveOrUpdateProduct(Product product) {
         productRepository.save(product);
