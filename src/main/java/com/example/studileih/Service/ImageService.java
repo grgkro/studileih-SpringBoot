@@ -44,25 +44,16 @@ public class ImageService {
     /**
      * The image gets send from the frontend as a Multipartfile. Here we save it.
      * There can't be two images in the image folder with the same name, so we return an error response if that happens.
-     * @param file
-     * @return ResponseEntity  
-     */
-    public ResponseEntity storeUserImage(MultipartFile file, User user) {
-        Path imageFolderLocation = Paths.get(parentFolderLocation  + "/users/user" + user.getId());
-        createImageFolder(imageFolderLocation); //creates a folder named "user + userId". Only if folder doesn't already exists.
-        return storeImage(file, "userPic", imageFolderLocation);
-    }
-
-    /**
-     * The image gets send from the frontend as a Multipartfile. Here we save it.
-     * There can't be two images in the image folder with the same name, so we return an error response if that happens.
-     * @param file
+     *
+     * @param file, type, id -> type can here either be "user" or "product". Depending on the type the photo will be saved as user profile pic or product pic
      * @return ResponseEntity
      */
-    public ResponseEntity storeProductImage(MultipartFile file, Product product) {
-        Path imageFolderLocation = Paths.get(parentFolderLocation + "/products/product" + product.getId());
-        createImageFolder(imageFolderLocation);    //creates a new folder named "product + productId". Only if folder doesn't already exists.
-        return storeImage(file, "productPic", imageFolderLocation);
+    public ResponseEntity storeImage(MultipartFile file, String type, Long id) {
+        createFolder(Paths.get(basePath + "/src/main/resources/images"));   // falls "images" folder fehlt, erzeugen wir den:
+        createFolder(Paths.get(parentFolderLocation + "/" + type + "s"));  // falls "users" folder fehlt, erzeugen wir den:
+        createFolder(Paths.get(parentFolderLocation + "/" + type + "s/" + type + id)); //creates a folder named "user + userId". Only if folder doesn't already exists.
+        return storeImage(file, type + "Pic", Paths.get(parentFolderLocation + "/" + type + "s/" + type + id));   // jetzt können wir das Foto in den user1, user2,... folder speichern:
+
     }
 
     public ResponseEntity storeImage(MultipartFile file, String type, Path imageFolderLocation) {
@@ -84,11 +75,11 @@ public class ImageService {
             return ResponseEntity.status(HttpStatus.OK).body("Das Foto wurde zu deinem Produkt gespeichert.");
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unerwarteter Fehler");
-     }
+    }
 
     public Resource loadUserProfilePic(String filename, User user) {
-            Path imageFolderLocation = Paths.get(parentFolderLocation  + "/users/user" + user.getId());
-            Path filePath = imageFolderLocation.resolve(filename);
+        Path imageFolderLocation = Paths.get(parentFolderLocation + "/users/user" + user.getId());
+        Path filePath = imageFolderLocation.resolve(filename);
         try {
             Resource resource = new UrlResource(filePath.toUri());
             if (resource.exists() || resource.isReadable()) {
@@ -105,7 +96,7 @@ public class ImageService {
      * returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
      */
     public ResponseEntity loadImageByFilename(String filename, Long productId) {
-        Path imageFolderLocation = Paths.get(parentFolderLocation  + "/products/product" + productId); // Each product has an own image folder. imageFolderLocation is the location of that folder.
+        Path imageFolderLocation = Paths.get(parentFolderLocation + "/products/product" + productId); // Each product has an own image folder. imageFolderLocation is the location of that folder.
         Path filePath = imageFolderLocation.resolve(filename);
         return loadFile(filePath);
     }
@@ -132,20 +123,18 @@ public class ImageService {
 //    }
 
     public void deleteImage(File file) {
-        if(file.delete()) // the command in the if statement deletes the file already in the if statement and returns boolean (which we don't use)
+        if (file.delete()) // the command in the if statement deletes the file already in the if statement and returns boolean (which we don't use)
         {
             System.out.println("Old User profile pic was deleted successfully");
-        }
-        else
-        {
+        } else {
             System.out.println("Failed to delete the old User profile pic");
         }
     }
 
-    public void createImageFolder(Path imageFolderLocation) {
-        if(Files.notExists(imageFolderLocation)) {
+    public void createFolder(Path FolderLocation) {
+        if (Files.notExists(FolderLocation)) {
             try {
-                Files.createDirectory(imageFolderLocation);
+                Files.createDirectory(FolderLocation);
             } catch (IOException e) {
                 throw new RuntimeException("Could not initialize storage!");
             }
@@ -153,8 +142,6 @@ public class ImageService {
     }
 
 }
-
-
 
 
 //    public List<ResponseEntity<UrlResource>> listFilesForFolder(final Path folderLocation) throws IOException {              // https://stackoverflow.com/questions/1844688/how-to-read-all-files-in-a-folder-from-java
