@@ -69,6 +69,11 @@ public class ProductController {
     public Optional<Product> getProduct(@PathVariable Long id) {
         return productService.getProductById(id);
     }
+    
+    @GetMapping("/productsdto/{id}")
+    public List<ProductDto> getProductDto(@PathVariable Long id) {
+        return productService.getProductDtoById(id);
+    }
 
     @PostMapping(path = "/products", consumes = "application/json", produces = "application/json")
     public boolean addProduct(@RequestBody Product product) {

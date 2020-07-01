@@ -24,18 +24,15 @@ public class UserController {
     /**
      * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielwohnheim/Adresse/2 Pro in die DB -> Kann später auskommentiert/gelöscht werden
      */
-    @PostConstruct
-    public void createBaseDataset() {
-        // can be deleted later
-        Product product1 = new Product("Haralds VW Golf");
-        List<Product> haraldsList = new ArrayList<>();
-        haraldsList.add(product1);
-        User user = new User("Harald", "harald@gmx.com", "2345", haraldsList, "In der Au");
-        userService.saveOrUpdateUser(user);
-
-        product1.setUser(user);
-        ProductService.saveOrUpdateProduct(product1);
-    }
+	/*
+	 * @PostConstruct public void createBaseDataset() { // can be deleted later
+	 * Product product1 = new Product("Haralds VW Golf"); List<Product> haraldsList
+	 * = new ArrayList<>(); haraldsList.add(product1); User user = new
+	 * User("Harald", "harald@gmx.com", "2345", haraldsList, "In der Au");
+	 * userService.saveOrUpdateUser(user);
+	 * 
+	 * product1.setUser(user); ProductService.saveOrUpdateProduct(product1); }
+	 */
 
     /**
      * @return: all users from the repository
@@ -48,6 +45,11 @@ public class UserController {
     @GetMapping("/users/{id}")
     public Optional<User> getUser(@PathVariable Long id) {
         return userService.getUserById(id);
+    }
+    
+    @GetMapping("/usersdto/{id}")
+    public List<UserDto> getUserDto(@PathVariable Long id) {
+        return userService.getUserDtoById(id);
     }
 
     /**
