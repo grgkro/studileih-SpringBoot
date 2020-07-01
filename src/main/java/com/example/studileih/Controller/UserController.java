@@ -34,7 +34,6 @@ public class UserController {
         haraldsList.add(product2);
         User user = new User("Harald", "harald@gmx.com", "2345", haraldsList, "In der Au");
         userService.saveOrUpdateUser(user);
-
         product1.setUser(user);
         product2.setUser(user);
         ProductService.saveOrUpdateProduct(product1);
