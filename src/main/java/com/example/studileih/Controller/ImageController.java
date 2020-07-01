@@ -66,7 +66,7 @@ public class ImageController {
         Product product = getProduct(productId);                                      // We first load the product, for which we wanna save the pic.
         if (product == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
         if (!hasProductAlreadyHasThisFile(file, product)) {                         // checks, if User is currently using a Photo with exact same name as ProfilePic
-            ResponseEntity response = imageService.storeProductImage(file, product);  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
+            ResponseEntity response = imageService.storeImage(file, "product", product.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
             if (response.getStatusCodeValue() == 200) {
                 System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename()); // if saving Pfoto was successfull => response status = 200...
                 if (product.getPicPaths() == null) {                                   // we only saved the pic in the pic folder until now, not in the database. A Product can have multiple images, so the pic needs to get stored in a List
@@ -87,8 +87,13 @@ public class ImageController {
     private ResponseEntity saveUserPic(MultipartFile file, String userId) {
         User user = getActiveUser(userId);                                      // We first load the user, for whom we wann save the profile pic.
         if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
+<<<<<<< HEAD
         deleteOldProfilePic(user);                                              // deletes old User Pic, so that there's always only one profile pic
             ResponseEntity response = imageService.storeUserImage(file, user);  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
+=======
+        if (user.getProfilePic() != null) deleteOldProfilePic(user);            // deletes old User Pic, so that there's always only one profile pic
+            ResponseEntity response = imageService.storeImage(file, "user", user.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
+>>>>>>> improved the image storing function
             if (response.getStatusCodeValue() == 200) {                         // if saving Pfoto was successfull => response status = 200...
                 System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename());
                 user.setProfilePic(file.getOriginalFilename());
