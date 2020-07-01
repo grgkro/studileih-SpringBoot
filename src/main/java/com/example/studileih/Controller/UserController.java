@@ -45,7 +45,7 @@ public class UserController {
      * @return: all users from the repository
      */
     @GetMapping("users")
-    public List<User> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         return userService.listAllUser();
     }
 

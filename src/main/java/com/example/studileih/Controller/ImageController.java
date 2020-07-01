@@ -87,7 +87,7 @@ public class ImageController {
     private ResponseEntity saveUserPic(MultipartFile file, String userId) {
         User user = getActiveUser(userId);                                      // We first load the user, for whom we wann save the profile pic.
         if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
-        deleteOldProfilePic(user);                                              // deletes old User Pic, so that there's always only one profile pic
+        if (user.getProfilePic() != null) deleteOldProfilePic(user);            // deletes old User Pic, so that there's always only one profile pic
             ResponseEntity response = imageService.storeUserImage(file, user);  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
             if (response.getStatusCodeValue() == 200) {                         // if saving Pfoto was successfull => response status = 200...
                 System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename());
