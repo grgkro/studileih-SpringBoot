@@ -78,28 +78,62 @@ public class ImageService {
     }
 
     public Resource loadUserProfilePic(String filename, User user) {
-        Path imageFolderLocation = Paths.get(parentFolderLocation + "/users/user" + user.getId());
-        Path filePath = imageFolderLocation.resolve(filename);
-        try {
-            Resource resource = new UrlResource(filePath.toUri());
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
-            } else {
-                throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
-            }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
+        Resource resource = loadImageByFilenameAsResource(filename, "userPic", user.getId());
+        if (resource.exists() || resource.isReadable()) {
+            return resource;
+        } else {
+            throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
         }
     }
+
 
     /*
      * returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
      */
-    public ResponseEntity loadImageByFilename(String filename, Long productId) {
-        Path imageFolderLocation = Paths.get(parentFolderLocation + "/products/product" + productId); // Each product has an own image folder. imageFolderLocation is the location of that folder.
-        Path filePath = imageFolderLocation.resolve(filename);
-        return loadFile(filePath);
+    public Resource loadProductPic(String filename, Long productId) {
+        Resource resource = loadImageByFilenameAsResource(filename, "productPic", productId);
+        if (resource.exists() || resource.isReadable()) {
+            return resource;
+        } else {
+            throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
+        }
     }
+
+    /*
+     * returns a resource with the product pic.
+     */
+    public Resource loadImageByFilenameAsResource(String filename, String type, Long id) {
+        if (type.equals("userPic")) {
+                Path imageFolderLocation = Paths.get(parentFolderLocation + "/users/user" + id);
+                Path filePath = imageFolderLocation.resolve(filename);
+            try {
+                Resource resource = new UrlResource(filePath.toUri());
+                if (resource.exists() || resource.isReadable()) {
+                    return resource;
+                } else {
+                    throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
+                }
+            }catch (MalformedURLException e) {
+                throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
+            }
+        } else if (type.equals(("productPic"))) {
+                Path imageFolderLocation = Paths.get(parentFolderLocation + "/products/product" + id); // Each product has an own image folder. imageFolderLocation is the location of that folder.
+                Path filePath = imageFolderLocation.resolve(filename);
+                try {
+                    Resource resource = new UrlResource(filePath.toUri());
+                    if (resource.exists() || resource.isReadable()) {
+                        return resource;
+                    } else {
+                        throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
+                    }
+            } catch (Exception e) {
+                    throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
+            }
+        }
+        throw new RuntimeException("Unexpected error when loading the image in backend");
+    }
+
+
 
     // This is the function that really loads the image from the local storage
     public ResponseEntity loadFile(Path filePath) {
@@ -122,14 +156,6 @@ public class ImageService {
 //        FileSystemUtils.deleteRecursively(imageFolderLocation.toFile());
 //    }
 
-    public void deleteImage(File file) {
-        if (file.delete()) // the command in the if statement deletes the file already in the if statement and returns boolean (which we don't use)
-        {
-            System.out.println("Old User profile pic was deleted successfully");
-        } else {
-            System.out.println("Failed to delete the old User profile pic");
-        }
-    }
 
     public void createFolder(Path FolderLocation) {
         if (Files.notExists(FolderLocation)) {
@@ -141,6 +167,18 @@ public class ImageService {
         }
     }
 
+    public ResponseEntity deleteImageByFilename(String filename, String type, long id) {
+        Boolean successfullyDeleted;
+            try {
+                Resource resource = loadImageByFilenameAsResource(filename, type, id);
+                successfullyDeleted = new File(resource.getURI()).delete();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+            }
+        return ResponseEntity.status(HttpStatus.OK).body(successfullyDeleted);
+
+    }
 }
 
 
