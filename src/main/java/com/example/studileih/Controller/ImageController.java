@@ -49,6 +49,24 @@ public class ImageController {
     }
 
     /*
+     * loads a product pic
+     */
+    @PostMapping("/images/deleteProductPicByFilename")
+    public ResponseEntity deleteProductPicByFilename(@RequestParam("filename") String filename, String productId) {
+        // first remove the image from the databse
+        Optional<Product> optional = productService.getProductById(Long.parseLong(productId));   // the id always comes as a string from angular, even when you send it as a number in angular...
+        Product product = optional.get();
+        if (product != null && product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
+            product.getPicPaths().remove(filename);
+            productService.saveOrUpdateProduct(product);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ProductPic konnte in Datenbank nicht gefunden werden.");
+        }
+        // if the image was removed from DB, remove the image from the local storage, too:
+        return imageService.deleteImageByFilename(filename, "productPic", Long.parseLong(productId));  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+    }
+
+    /*
      * method for posting images into the image folder (src -> main -> resources -> images) and put the filePath into the database.
      */
     @PostMapping("/postImage")
@@ -105,7 +123,7 @@ public class ImageController {
     private void deleteOldProfilePic(User user) {
         try {
             Resource resource = imageService.loadUserProfilePic(user.getProfilePic(), user);
-            imageService.deleteImage(new File(resource.getURI()));
+            new File(resource.getURI()).delete();
         } catch (IOException e) {
             e.printStackTrace();
         }
