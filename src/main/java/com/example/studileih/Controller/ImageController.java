@@ -44,8 +44,19 @@ public class ImageController {
      */
     @PostMapping("/images/loadProductPicByFilename")    //https://bezkoder.com/spring-boot-upload-multiple-files/
     public ResponseEntity loadProductPicByFilename(@RequestParam("filename") String filename, String productId) {
-        // load the picture from the local storage
-            return imageService.loadImageByFilename(filename, Long.parseLong(productId));  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+        // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
+        Product product = getProduct(productId);
+        if (product == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
+        // Then we load the picture from the local storage
+        if (product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
+            Resource file = imageService.loadProductPic(filename, Long.parseLong(productId));  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
+            System.out.println(file);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
+                    .body(file);  // the response body now contains the profile pic
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with userId = " + productId + "has no pictures yet or no picture with the given filename");  // Returns a status = 404 response
+        }
     }
 
     /*
