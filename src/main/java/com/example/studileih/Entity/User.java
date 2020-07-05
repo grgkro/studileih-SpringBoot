@@ -35,7 +35,7 @@ public class User {
     private String name;
     private String email;
     private String password;
-    private String room;
+
     private String profilePic;
 
     //One user can have many products, so here we have a one-to-many mapping.
@@ -43,7 +43,11 @@ public class User {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = {CascadeType.ALL})  //das cascadeType.ALL sorgt dafür, dass wenn der User gelöscht wird, alle zu ihm gehörenden Produkte auch gelöscht werden.
     private List<Product> products;
 
-    private String dorm;
+//    @ManyToOne()
+//    @JoinColumn(name = "dorm")
+//    private Dorm dorm;
+    private String room;
+
     private String city;
 
 
@@ -53,12 +57,12 @@ public class User {
         this.name = name;
     }
 
-    public User(String name, String email, String password, List<Product> products, String dorm) {
+    public User(String name, String email, String password, List<Product> products) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.products = products;
-        this.dorm = dorm;
+
     }
 
 

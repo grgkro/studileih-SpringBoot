@@ -37,6 +37,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+
     public List<UserDto> listAllUser() {
         // get all users from DB
         List<User> users = new ArrayList<>();
@@ -48,6 +49,7 @@ public class UserService {
                 .collect(Collectors.toList());      // und dann den neuen Stream als List<ProductDto> einsammeln.
     }
 
+    // -----------Funktioniert nicht!------------
     /**
      * Converts a User to a UserDto. The createdAt and updatedAt Dates are converted to simple Strings, because Date is Java specific and can't be send to Angular.
      * @param user
@@ -80,7 +82,7 @@ public class UserService {
             oldUser.setPassword(newUser.getPassword());
             oldUser.setRoom(newUser.getRoom());
             oldUser.setProfilePic(newUser.getProfilePic());
-            oldUser.setDorm(newUser.getDorm());
+//            oldUser.setDorm(newUser.getDorm());
             oldUser.setCity(newUser.getCity());
 
             userRepository.save(oldUser);
