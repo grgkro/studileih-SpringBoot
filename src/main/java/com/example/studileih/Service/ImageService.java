@@ -78,22 +78,29 @@ public class ImageService {
     }
 
     public Resource loadUserProfilePic(String filename, User user) {
-        Path imageFolderLocation = Paths.get(parentFolderLocation + "/users/user" + user.getId());
-        Path filePath = imageFolderLocation.resolve(filename);
-        try {
-            Resource resource = new UrlResource(filePath.toUri());
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
-            } else {
-                throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
-            }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
+        Resource resource = loadImageByFilenameAsResource(filename, "userPic", user.getId());
+        if (resource.exists() || resource.isReadable()) {
+            return resource;
+        } else {
+            throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
+        }
+    }
+
+
+    /*
+     * returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+     */
+    public Resource loadProductPic(String filename, Long productId) {
+        Resource resource = loadImageByFilenameAsResource(filename, "productPic", productId);
+        if (resource.exists() || resource.isReadable()) {
+            return resource;
+        } else {
+            throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
         }
     }
 
     /*
-     * returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+     * returns a resource with the product pic.
      */
     public Resource loadImageByFilenameAsResource(String filename, String type, Long id) {
         if (type.equals("userPic")) {
@@ -126,14 +133,7 @@ public class ImageService {
         throw new RuntimeException("Unexpected error when loading the image in backend");
     }
 
-    /*
-     * returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
-     */
-    public ResponseEntity loadImageByFilename(String filename, Long productId) {
-        Path imageFolderLocation = Paths.get(parentFolderLocation + "/products/product" + productId); // Each product has an own image folder. imageFolderLocation is the location of that folder.
-        Path filePath = imageFolderLocation.resolve(filename);
-        return loadFile(filePath);
-    }
+
 
     // This is the function that really loads the image from the local storage
     public ResponseEntity loadFile(Path filePath) {
