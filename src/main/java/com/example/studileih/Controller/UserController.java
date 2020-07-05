@@ -19,25 +19,26 @@ public class UserController {
     private UserService userService;
 
     @Autowired
-    private ProductService ProductService;
+    private ProductService productService;
 
     /**
      * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielwohnheim/Adresse/2 Pro in die DB -> Kann später auskommentiert/gelöscht werden
      */
     @PostConstruct
     public void createBaseDataset() {
-        // can be deleted later
+        // at the start we create some dorms into the database, but only if there are no entries yet!
         Product product1 = new Product("Haralds VW Golf", "VW 3er Golf, BJ. 1998, 100.000km", 30);
         Product product2 = new Product("Haralds Bohrmaschine", "Bosch Bohrmaschine", 0);
         List<Product> haraldsList = new ArrayList<>();
         haraldsList.add(product1);
         haraldsList.add(product2);
-        User user = new User("Harald", "harald@gmx.com", "2345", haraldsList, "In der Au");
+        User user = new User("Harald", "harald@gmx.com", "2345", haraldsList);
         userService.saveOrUpdateUser(user);
         product1.setUser(user);
         product2.setUser(user);
-        ProductService.saveOrUpdateProduct(product1);
-        ProductService.saveOrUpdateProduct(product2);
+        productService.saveOrUpdateProduct(product1);
+        productService.saveOrUpdateProduct(product2);
+
     }
 
     /**
