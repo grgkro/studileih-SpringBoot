@@ -32,8 +32,12 @@ public class DormController {
     public void createBaseDataset() {
         // at the start we create some dorms into the database, but only if there are no entries yet!
         if (dormService.listAllDorms().isEmpty()) {
-            Dorm alexanderstraße = new Dorm("alexanderstraße",48.767485, 9.179693, DormDistricts.StuttgartMitte.toString());
-            Dorm annaHerrigelHaus = new Dorm("anna-herrigel-haus",48.807598, 9.220796, DormDistricts.StuttgartMitte.toString());
+            Dorm alexanderstraße = new Dorm("Alexanderstraße",48.767485, 9.179693, DormDistricts.StuttgartMitte.toString());
+            Dorm annaHerrigelHaus = new Dorm("Anna-Herrigel-Haus",48.807598, 9.220796, DormDistricts.StuttgartMitte.toString());
+            Dorm allmandring1 = new Dorm("Allmandring I",48.745091, 9.101267, DormDistricts.StuttgartVaihingen.toString());
+            Dorm allmandring2 = new Dorm("Allmandring II",48.744399, 9.097331, DormDistricts.StuttgartVaihingen.toString());
+            Dorm allmandring3 = new Dorm("Allmandring III",48.744202, 9.095966, DormDistricts.StuttgartVaihingen.toString());
+            Dorm allmandring4 = new Dorm("Allmandring IV",48.743459, 9.095129, DormDistricts.StuttgartVaihingen.toString());
             dormService.addDorm(alexanderstraße);
             dormService.addDorm(annaHerrigelHaus);
         }
