@@ -25,9 +25,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ApiResponse;
+
 
 @RestController
 @CrossOrigin
+@Api(tags = "Images API - controller methods for managing Images")
 public class ImageController {
 
     @Autowired
@@ -40,6 +46,7 @@ public class ImageController {
      * method for posting images into the image folder (src -> main -> resources -> images) and put the filePath into the database.
      */
     @PostMapping("/postImage")
+    @ApiOperation(value = "Add new Image")
     public ResponseEntity handleFileUpload(@RequestParam("file") MultipartFile file, String userId, String groupId, String postId, String imgType) {
         // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
         if (imgType.equals("userPic")) {
@@ -89,6 +96,7 @@ public class ImageController {
     }
 
     @PostMapping("/loadProfilePicByUserId")
+    @ApiOperation(value = "Add new Profile Image to User identified by ID")
     public ResponseEntity<Resource> getImageByUserId(@RequestBody String userId) {
         // retrieve the file Name of the photo saved in the user database table
         Optional<User> optionalEntity = userService.getUserById(Long.parseLong(userId));
