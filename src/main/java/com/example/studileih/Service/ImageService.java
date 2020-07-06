@@ -49,7 +49,7 @@ public class ImageService {
      * @return ResponseEntity
      */
     public ResponseEntity storeImage(MultipartFile file, String type, Long id) {
-        createFolder(Paths.get(basePath + "/src/main/resources/images"));   // falls "images" folder fehlt, erzeugen wir den:
+        createFolder(Paths.get(parentFolderLocation));   // falls "images" folder fehlt, erzeugen wir den:
         createFolder(Paths.get(parentFolderLocation + "/" + type + "s"));  // falls "users" folder fehlt, erzeugen wir den:
         createFolder(Paths.get(parentFolderLocation + "/" + type + "s/" + type + id)); //creates a folder named "user + userId". Only if folder doesn't already exists.
         return storeImage(file, type + "Pic", Paths.get(parentFolderLocation + "/" + type + "s/" + type + id));   // jetzt können wir das Foto in den user1, user2,... folder speichern:
@@ -76,6 +76,27 @@ public class ImageService {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unerwarteter Fehler");
     }
+
+//    public ResponseEntity storeFile(File file, String type, Path imageFolderLocation) {
+//        if (type.equals("userPic")) {
+//            try {
+//                Files.copy(file.getInputStream(), imageFolderLocation.resolve(file.getOriginalFilename()));  // this line saves the image at the provided path (not in the database)
+//            } catch (Exception e) {
+//                System.out.println("Error at imageService:" + e);
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("a) user image with same name was already uploaded - b) uploaded file was not an image - c) file size > 500KBs");
+//            }
+//            return ResponseEntity.status(HttpStatus.OK).body("Dein Profilfoto wurde gespeichert.");
+//        } else if (type.equals(("productPic"))) {
+//            try {
+//                Files.copy(file.getInputStream(), imageFolderLocation.resolve(file.getOriginalFilename())); // this line saves the image at the provided path (not in the database)
+//            } catch (Exception e) {
+//                System.out.println("Error at imageService:" + e);
+//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("a) Product image with same name was already uploaded - b) uploaded file was not an image - c) file size > 500KBs");
+//            }
+//            return ResponseEntity.status(HttpStatus.OK).body("Das Foto wurde zu deinem Produkt gespeichert.");
+//        }
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unerwarteter Fehler");
+//    }
 
     public Resource loadUserProfilePic(String filename, User user) {
         Resource resource = loadImageByFilenameAsResource(filename, "userPic", user.getId());
