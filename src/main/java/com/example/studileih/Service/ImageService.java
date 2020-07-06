@@ -125,8 +125,8 @@ public class ImageService {
      */
     public Resource loadImageByFilenameAsResource(String filename, String type, Long id) {
         if (type.equals("userPic")) {
-                Path imageFolderLocation = Paths.get(parentFolderLocation + "/users/user" + id);
-                Path filePath = imageFolderLocation.resolve(filename);
+            Path imageFolderLocation = Paths.get(parentFolderLocation + "/users/user" + id);
+            Path filePath = imageFolderLocation.resolve(filename);
             try {
                 Resource resource = new UrlResource(filePath.toUri());
                 if (resource.exists() || resource.isReadable()) {
@@ -134,26 +134,38 @@ public class ImageService {
                 } else {
                     throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
                 }
-            }catch (MalformedURLException e) {
+            } catch (MalformedURLException e) {
                 throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
             }
         } else if (type.equals(("productPic"))) {
-                Path imageFolderLocation = Paths.get(parentFolderLocation + "/products/product" + id); // Each product has an own image folder. imageFolderLocation is the location of that folder.
-                Path filePath = imageFolderLocation.resolve(filename);
-                try {
-                    Resource resource = new UrlResource(filePath.toUri());
-                    if (resource.exists() || resource.isReadable()) {
-                        return resource;
-                    } else {
-                        throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
-                    }
+            Path imageFolderLocation = Paths.get(parentFolderLocation + "/products/product" + id); // Each product has an own image folder. imageFolderLocation is the location of that folder.
+            Path filePath = imageFolderLocation.resolve(filename);
+            try {
+                Resource resource = new UrlResource(filePath.toUri());
+                if (resource.exists() || resource.isReadable()) {
+                    return resource;
+                } else {
+                    throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
+                }
             } catch (Exception e) {
-                    throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
+                throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
+            }
+        } else if (type.equals(("archiveProductPic"))) {
+            Path imageFolderLocation = Paths.get(parentFolderLocation + "/archive/products/product" + id); // Each product has an own image folder. imageFolderLocation is the location of that folder.
+            Path filePath = imageFolderLocation.resolve(filename);
+            try {
+                Resource resource = new UrlResource(filePath.toUri());
+                if (resource.exists() || resource.isReadable()) {
+                    return resource;
+                } else {
+                    throw new RuntimeException("It seems like you deleted the images in the archive on the server, without also deleting them in the database ");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("It seems like you deleted the images in the archive on the server, without deleting them in the database ");
             }
         }
         throw new RuntimeException("Unexpected error when loading the image in backend");
     }
-
 
 
     // This is the function that really loads the image from the local storage
@@ -190,13 +202,13 @@ public class ImageService {
 
     public ResponseEntity deleteImageByFilename(String filename, String type, long id) {
         Boolean successfullyDeleted;
-            try {
-                Resource resource = loadImageByFilenameAsResource(filename, type, id);
-                successfullyDeleted = new File(resource.getURI()).delete();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
-            }
+        try {
+            Resource resource = loadImageByFilenameAsResource(filename, type, id);
+            successfullyDeleted = new File(resource.getURI()).delete();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+        }
         return ResponseEntity.status(HttpStatus.OK).body(successfullyDeleted);
 
     }
