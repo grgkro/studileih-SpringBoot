@@ -40,6 +40,10 @@ public class DormController {
             Dorm allmandring4 = new Dorm("Allmandring IV",48.743459, 9.095129, DormDistricts.StuttgartVaihingen.toString());
             dormService.addDorm(alexanderstraße);
             dormService.addDorm(annaHerrigelHaus);
+            dormService.addDorm(allmandring1);
+            dormService.addDorm(allmandring2);
+            dormService.addDorm(allmandring3);
+            dormService.addDorm(allmandring4);
         }
 
     }
