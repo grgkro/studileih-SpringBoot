@@ -6,6 +6,12 @@ import com.example.studileih.Entity.User;
 import com.example.studileih.Service.ImageService;
 import com.example.studileih.Service.ProductService;
 import com.example.studileih.Service.UserService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ApiResponse;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -26,6 +34,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
+@Api(tags = "Products API - controller methods for managing Products")
 public class ProductController {
 
     @Autowired
@@ -57,6 +66,7 @@ public class ProductController {
      * @return: all products from the repository
      */
     @GetMapping("products")
+    @ApiOperation(value = "Return all available products converted to DTOs")
     public List<ProductDto> getAllProducts() {
         List<Product> allProducts = productService.listAllProducts();
         //System.out.println(allProducts.get(0).toString());
@@ -66,26 +76,34 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
+    @ApiOperation(value = "Returns a product entity by its ID. The result is not clean enough, be careful")
     public Optional<Product> getProduct(@PathVariable Long id) {
         return productService.getProductById(id);
     }
     
     @GetMapping("/productsdto/{id}")
+    @ApiOperation(value = "Return one product by ID as DTO, in order to avoid Entity-related issues")
+    @ApiResponses(value = { @ApiResponse(code = SC_OK, message = "Everything OK"), 
+            @ApiResponse(code = SC_BAD_REQUEST, message = "An unexpected error occurred") 
+          })
     public List<ProductDto> getProductDto(@PathVariable Long id) {
         return productService.getProductDtoById(id);
     }
 
     @PostMapping(path = "/products", consumes = "application/json", produces = "application/json")
+    @ApiOperation(value = "Add a new product to the database")
     public boolean addProduct(@RequestBody Product product) {
         return productService.addProduct(product);
     }
 
     @DeleteMapping(value = "/products/{id}")
+    @ApiOperation(value = "Deletes one product identified by its ID")
     public void deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
     }
 
     @PutMapping(value = "/products/{id}")
+    @ApiOperation(value = "Updates one product identified by its ID.")
     public void updateProduct(@RequestBody Product product,@PathVariable Long id) {
         productService.updateProduct(product,id);
     }

@@ -6,6 +6,7 @@
 /home/gszalay/Dokumente/AWKAPB/studileih-SpringBoot-AWS-CICD/src/main/java/com/example/studileih/Controller/ProductController.java
 /home/gszalay/Dokumente/AWKAPB/studileih-SpringBoot-AWS-CICD/src/main/java/com/example/studileih/Service/ProductService.java
 /home/gszalay/Dokumente/AWKAPB/studileih-SpringBoot-AWS-CICD/src/main/java/com/example/studileih/Entity/User.java
+/home/gszalay/Dokumente/AWKAPB/studileih-SpringBoot-AWS-CICD/src/main/java/com/example/studileih/Swagger2UiConfiguration.java
 /home/gszalay/Dokumente/AWKAPB/studileih-SpringBoot-AWS-CICD/src/main/java/com/example/studileih/Controller/ImageController.java
 /home/gszalay/Dokumente/AWKAPB/studileih-SpringBoot-AWS-CICD/src/main/java/com/example/studileih/Repository/UserRepository.java
 /home/gszalay/Dokumente/AWKAPB/studileih-SpringBoot-AWS-CICD/src/main/java/com/example/studileih/Dto/UserDto.java
