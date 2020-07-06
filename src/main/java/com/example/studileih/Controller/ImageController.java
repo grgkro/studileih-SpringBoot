@@ -5,6 +5,7 @@ import com.example.studileih.Entity.User;
 import com.example.studileih.Service.ImageService;
 import com.example.studileih.Service.ProductService;
 import com.example.studileih.Service.UserService;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -122,6 +123,21 @@ public class ImageController {
         // return success entity (OK - 200)
         return ResponseEntity.status(HttpStatus.OK).body(imgType + " erfolgreich wiederhergestellt");
     }
+
+    /*
+     * gets an archived product pic from the archive and restores it to the local storage and the database
+     */
+    @PostMapping("/images/deleteArchive")
+    public ResponseEntity deleteArchive(@RequestParam("archiveType") String archiveType, String id) throws IOException {
+        String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
+        String archiveFolderLocation = parentFolderLocation + "/archive/" + archiveType + "s/" + archiveType + id;
+        File file = new File(archiveFolderLocation);
+        FileUtils.deleteDirectory(file);
+        // return success entity (OK - 200)
+        return ResponseEntity.status(HttpStatus.OK).body(archiveType + " Archiv erfolgreich gelöscht");
+    }
+
+
 
         /*
          * loads a product pic
