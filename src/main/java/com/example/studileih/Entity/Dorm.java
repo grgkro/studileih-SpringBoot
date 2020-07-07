@@ -23,8 +23,8 @@ public class Dorm {
     private Long id;
 
     private String name;
-//    @OneToMany(mappedBy = "dorm")
-//    private List<User> users;
+    @OneToMany(mappedBy = "dorm")
+    private List<User> users;
 
     private Double lat;
     private Double lng;
@@ -44,5 +44,19 @@ public class Dorm {
         this.lng = lng;
         this.city = city;
         this.district = district;
+    }
+
+    // gleiches Problem mit Rekursion wie bei Product.java -> Dorm enthält User enthält Dorm enthält...
+    @Override
+    public String toString() {
+        return "Dorm{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", users=" + "" +
+                ", lat=" + lat +
+                ", lng=" + lng +
+                ", city='" + city + '\'' +
+                ", district='" + district + '\'' +
+                '}';
     }
 }

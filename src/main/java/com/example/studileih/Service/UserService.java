@@ -42,8 +42,7 @@ public class UserService {
         // get all users from DB
         List<User> users = new ArrayList<>();
         userRepository.findAll().forEach(users::add); // users::add ist gleich wie: users.add(user)
-        // map all users to userDtos
-        List<UserDto> userDtos = new ArrayList<>();
+        // map all users to userDtos (das ummappen klappt, obwohl es im UserDto nur eine Variable "private Long dormId" gibt und im User das als richtiges Dorm drin ist (private Dorm dorm). der modelmapper scheint da einfach gut zu raten, dass er von user nur die dorm.id nehmen muss und sie in dormId im Dto kommt.
         return users.stream()                 // List<Product> muss zu List<ProductDto> konvertiert werden. Hier tun wir zuerst die List<Product> in einen Stream umwandeln
                 .map(this::convertUserToDto)            // Dann jedes Product ausm Stream herausnehmen und zu ProductDto umwandeln
                 .collect(Collectors.toList());      // und dann den neuen Stream als List<ProductDto> einsammeln.
