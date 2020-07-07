@@ -25,7 +25,7 @@ public class UserDto {
     private String updatedAt;
     private String room;
     private List<ProductDto> products;
-    private String dorm;
+    private Long dormId;
     private String city;
 
 

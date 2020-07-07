@@ -3,6 +3,7 @@ package com.example.studileih.Controller;
 import com.example.studileih.Dto.UserDto;
 import com.example.studileih.Entity.*;
 import com.example.studileih.Entity.Product;
+import com.example.studileih.Service.DormService;
 import com.example.studileih.Service.ProductService;
 import com.example.studileih.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ public class UserController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private DormService dormService;
+
     /**
      * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielwohnheim/Adresse/2 Pro in die DB -> Kann später auskommentiert/gelöscht werden
      */
@@ -29,15 +33,22 @@ public class UserController {
         // at the start we create some dorms into the database, but only if there are no entries yet!
         Product product1 = new Product("Haralds VW Golf", "VW 3er Golf, BJ. 1998, 100.000km", 30);
         Product product2 = new Product("Haralds Bohrmaschine", "Bosch Bohrmaschine", 0);
+        Product product3 = new Product("Hartmuts Bohrmaschine", "Bosch Bohrmaschine", 5);
         List<Product> haraldsList = new ArrayList<>();
+        List<Product> hartmutsList = new ArrayList<>();
         haraldsList.add(product1);
         haraldsList.add(product2);
-        User user = new User("Harald", "harald@gmx.com", "2345", haraldsList);
-        userService.saveOrUpdateUser(user);
-        product1.setUser(user);
-        product2.setUser(user);
-        productService.saveOrUpdateProduct(product1);
-        productService.saveOrUpdateProduct(product2);
+        hartmutsList.add(product3);
+        User harald = new User("Harald", "harald@gmx.com", "2345", haraldsList, dormService.getDormById(1L).get());
+        User hartmut = new User("Hartmut", "hartmut@gmx.com", "5432", hartmutsList, dormService.getDormById(2L).get());
+        product1.setUser(harald);
+        product2.setUser(harald);
+        product3.setUser(hartmut);
+        userService.saveOrUpdateUser(harald);
+        userService.saveOrUpdateUser(hartmut);
+        // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
+
+
 
     }
 
