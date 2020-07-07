@@ -28,12 +28,21 @@ public class Dorm {
 
     private Double lat;
     private Double lng;
+    private String city;
     private String district;
 
-    public Dorm(String name, Double lat, Double lng, String district) {
+    public Dorm(String name, Double lat, Double lng, String city) {
         this.name = name;
         this.lat = lat;
         this.lng = lng;
+        this.city = city;
+    }
+
+    public Dorm(String name, Double lat, Double lng, String city, String district) {
+        this.name = name;
+        this.lat = lat;
+        this.lng = lng;
+        this.city = city;
         this.district = district;
     }
 }
