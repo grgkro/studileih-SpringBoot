@@ -35,7 +35,7 @@ public class DormController {
         // https://www.studierendenwerk-stuttgart.de/wohnen/wohnanlagen/
         // at the start we create some dorms into the database, but only if there are no entries yet!
         if (dormService.listAllDorms().isEmpty()) {
-            //vollständige Liste (Stuggi mitte)
+
             Dorm alexanderstraße = new Dorm("Alexanderstraße",48.767485, 9.179693, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartMitte.toString());
             Dorm annaHerrigelHaus = new Dorm("Anna-Herrigel-Haus",48.807598, 9.220796, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartMitte.toString());
             Dorm birkenwaldstraße = new Dorm("Birkenwaldstraße",48.790106, 9.174672, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartMitte.toString());
@@ -59,12 +59,23 @@ public class DormController {
             Dorm allmandring2 = new Dorm("Allmandring II",48.744399, 9.097331, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartVaihingen.toString());
             Dorm allmandring3 = new Dorm("Allmandring III",48.744202, 9.095966, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartVaihingen.toString());
             Dorm allmandring4 = new Dorm("Allmandring IV",48.743459, 9.095129, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartVaihingen.toString());
+            Dorm bauhäusle = new Dorm("Bauhäusle",48.743527, 9.097635, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartVaihingen.toString());
+            Dorm filderbahnplatz = new Dorm("Filderbahnplatz",48.730925, 9.148441, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartVaihingen.toString());
+            Dorm straußäcker2 = new Dorm("Straußi II",48.742248, 9.102229, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartVaihingen.toString());
+            Dorm straußäcker3 = new Dorm("Straußi III",48.742253, 9.102226, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartVaihingen.toString());
 
             Dorm boardinghausEsslingen = new Dorm("Boardinghaus Esslingen",48.741887, 9.289050, CityEnum.Esslingen.toString());
-            //vollständige Liste (göppingen)
+            Dorm fabrikstraße = new Dorm("Fabrikstraße",48.738291, 9.307852, CityEnum.Esslingen.toString());
+            Dorm geschwisterScholl = new Dorm("Geschwister Scholl",48.747223, 9.325982, CityEnum.Esslingen.toString());
+            Dorm goerdelerweg = new Dorm("Goerdelerweg",48.746854, 9.326301, CityEnum.Esslingen.toString());
+            Dorm rossneckar1 = new Dorm("Rossneckar I",48.741743, 9.290082, CityEnum.Esslingen.toString());
+            Dorm rossneckar2 = new Dorm("Rossneckar II",48.741894, 9.289018, CityEnum.Esslingen.toString());
+
             Dorm studentendorfGöppingen = new Dorm("Studentendorf Göppingen",48.695202, 9.674639, CityEnum.Göppingen.toString());
 
             Dorm oFDWohnturm = new Dorm("OFD Wohnturm",48.889811, 9.196151, CityEnum.Ludwigsburg.toString());
+            Dorm studentendorfLudwigsburg = new Dorm("Studentendorf",48.911245, 9.179221, CityEnum.Ludwigsburg.toString());
+            Dorm wohnhausDerFinanzen = new Dorm("Wohnhaus der Finanzen",48.910570, 9.178520, CityEnum.Ludwigsburg.toString());
 
             Dorm felsennelkenanger = new Dorm("Felsennelkenanger",48.209765, 11.564023, CityEnum.München.toString(), DormDistricts.MünchenNord.toString());
 
@@ -91,12 +102,23 @@ public class DormController {
             dormService.addDorm(allmandring2);
             dormService.addDorm(allmandring3);
             dormService.addDorm(allmandring4);
+            dormService.addDorm(bauhäusle);
+            dormService.addDorm(filderbahnplatz);
+            dormService.addDorm(straußäcker2);
+            dormService.addDorm(straußäcker3);
 
             dormService.addDorm(boardinghausEsslingen);
+            dormService.addDorm(fabrikstraße);
+            dormService.addDorm(geschwisterScholl);
+            dormService.addDorm(goerdelerweg);
+            dormService.addDorm(rossneckar1);
+            dormService.addDorm(rossneckar2);
 
             dormService.addDorm(studentendorfGöppingen);
 
             dormService.addDorm(oFDWohnturm);
+            dormService.addDorm(studentendorfLudwigsburg);
+            dormService.addDorm(wohnhausDerFinanzen);
 
             dormService.addDorm(felsennelkenanger);
         }
