@@ -167,10 +167,28 @@ public class ImageController {
             if (imgType.equals("userPic")) {
                 return saveUserPic(file, userId);
             } else if (imgType.equals("productPic")) {
+                // before we store the image, we need to check if the image is already in the archive. If so, we need to delete it there. Otherwise it would be in the archive and in the normal folder at the same time. If you then delete it (transfer it from normal folder to archive, or restore it (transfer it from archive to normal folder) you would get a fileAlreadyExists Exeption.
+                if (checkIfPicIsAlreadyInArchive(file, Long.parseLong(productId))) deletePicFromArchive( file,  Long.parseLong(productId));
                 return saveProductPic(file, productId);
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Der imgType im Angular Code war falsch...");
         }
+
+    private Boolean checkIfPicIsAlreadyInArchive(MultipartFile file, Long id) {
+        try {
+            imageService.loadImageByFilenameAsResource(file.getOriginalFilename(), "archiveProductPic", id);
+            return true;
+        } catch (Exception e) {
+            System.out.println(e);
+            return false;
+        }
+    }
+
+    // delete img from archive
+    private ResponseEntity deletePicFromArchive(MultipartFile file,  Long id) {
+        System.out.println(file.getOriginalFilename());
+        return imageService.deleteImageByFilename(file.getOriginalFilename(), "archiveProductPic", id);  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+    }
 
         private ResponseEntity saveProductPic (MultipartFile file, String productId){
             Product product = getProduct(productId);                                      // We first load the product, for which we wanna save the pic.
@@ -188,6 +206,7 @@ public class ImageController {
                         product.getPicPaths().add(file.getOriginalFilename());
                         product.setPicPaths(product.getPicPaths());
                     }
+                    System.out.println(product.getPicPaths());
                     productService.addProduct(product);                             //updated das Product in der datenbank, damit der Fotoname da auch gespeichert ist.
                 }
                 return response;
