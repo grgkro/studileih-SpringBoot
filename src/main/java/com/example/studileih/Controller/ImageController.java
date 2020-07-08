@@ -186,7 +186,6 @@ public class ImageController {
 
     // delete img from archive
     private ResponseEntity deletePicFromArchive(MultipartFile file,  Long id) {
-        System.out.println(file.getOriginalFilename());
         return imageService.deleteImageByFilename(file.getOriginalFilename(), "archiveProductPic", id);  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
     }
 
