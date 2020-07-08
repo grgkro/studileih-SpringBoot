@@ -179,7 +179,7 @@ public class ImageController {
             imageService.loadImageByFilenameAsResource(file.getOriginalFilename(), "archiveProductPic", id);
             return true;
         } catch (Exception e) {
-            System.out.println(e);
+//            System.out.println(e);
             return false;
         }
     }
