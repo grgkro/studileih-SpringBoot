@@ -44,6 +44,7 @@ class StudileihApplicationTests {
 		encryptor.setAlgorithm("PBEWithMD5AndTripleDES");
 
 		String encryptedText = encryptor.encrypt(privateData2);
+		// System.out.println(encryptedText);
 		assertNotSame(privateData2, encryptedText);
 
 		String plainText2 = encryptor.decrypt(encryptedText);
