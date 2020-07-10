@@ -147,7 +147,7 @@ public class ImageController {
     }
 
     /*
-     * gets an archived product pic from the archive and restores it to the local storage and the database
+     * deletes the archive of one product or user (depending on the provided archiveType)
      */
     @PostMapping("/images/deleteArchive")
     public ResponseEntity deleteArchive(@RequestParam("archiveType") String archiveType, String id) throws IOException {
@@ -160,7 +160,7 @@ public class ImageController {
     }
 
     /*
-     * gets an archived product pic from the archive and restores it to the local storage and the database
+     * deletes the imageFolder of one product or user (depending on the provided folderType)
      */
     @PostMapping("/images/deleteImageFolder")
     public ResponseEntity deleteImageFolder(@RequestParam("folderType") String folderType, String id) throws IOException {
