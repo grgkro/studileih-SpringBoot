@@ -14,9 +14,12 @@ import io.swagger.annotations.ApiResponse;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
@@ -99,11 +102,15 @@ public class ProductController {
         return productService.addProduct(product);
     }
 
-    @DeleteMapping(value = "/products/{id}")
+    @PostMapping(value = "/products/delete/{id}")
     @ApiOperation(value = "Deletes one product identified by its ID")
-
-    public void deleteProduct(@PathVariable String id) {
-        productService.deleteProduct(Long.parseLong(id));
+    public ResponseEntity<String> deleteProduct(@RequestParam("id") String id) {
+        try {
+            productService.deleteProduct(Long.parseLong(id));
+            return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich gelöscht.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produkt existiert nicht mehr in der Datenbank.");
+        }
     }
 
     @PutMapping(value = "/products/{id}")

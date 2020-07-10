@@ -159,6 +159,20 @@ public class ImageController {
         return ResponseEntity.status(HttpStatus.OK).body(archiveType + " Archiv erfolgreich gelöscht");
     }
 
+    /*
+     * gets an archived product pic from the archive and restores it to the local storage and the database
+     */
+    @PostMapping("/images/deleteImageFolder")
+    public ResponseEntity deleteImageFolder(@RequestParam("folderType") String folderType, String id) throws IOException {
+        String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
+        String archiveFolderLocation = parentFolderLocation + "/" + folderType + "s/" + folderType + id;
+        File file = new File(archiveFolderLocation);
+        FileUtils.deleteDirectory(file);
+        // return success entity (OK - 200)
+        return ResponseEntity.status(HttpStatus.OK).body(folderType + " Bilder erfolgreich gelöscht");
+    }
+
+
 
 
         /*
