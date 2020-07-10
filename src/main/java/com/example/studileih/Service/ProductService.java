@@ -1,8 +1,13 @@
 package com.example.studileih.Service;
 
 import com.example.studileih.Dto.ProductDto;
+
+import com.example.studileih.Dto.UserDto;
 import com.example.studileih.Entity.Product;
+import com.example.studileih.Entity.User;
 import com.example.studileih.Repository.ProductRepository;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,12 +16,16 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+    
+    @Autowired
+    private ModelMapper modelMapper;
 
     public void saveOrUpdateProduct(Product product) {
         productRepository.save(product);
@@ -24,6 +33,19 @@ public class ProductService {
 
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
+    }
+    
+    public List<ProductDto> getProductDtoById(Long id) {
+    	//leere Liste für das Ergebnis
+    	List<ProductDto> productDto = new ArrayList<>();
+    	//Umwandlung: gefundene Produkt zu Liste
+    	List<Product> products= productRepository.findById(id).stream().collect(Collectors.toList());
+    	//Umwandlung: users zu Dtos
+    	for (Product produkt : products) {
+    		ProductDto produktDto = modelMapper.map(produkt, ProductDto.class);
+    		productDto.add(produktDto);
+    	}
+    	return productDto;
     }
 
     public void deleteProduct(Long id) {
