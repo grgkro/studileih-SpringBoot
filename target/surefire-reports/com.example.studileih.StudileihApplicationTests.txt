@@ -1,12 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.example.studileih.StudileihApplicationTests
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 2.588 s <<< FAILURE! - in com.example.studileih.StudileihApplicationTests
-contextLoads  Time elapsed: 0.001 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'userController': Invocation of init method failed; nested exception is org.springframework.dao.DataIntegrityViolationException: could not execute statement; SQL [n/a]; constraint [null]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
-Caused by: org.springframework.dao.DataIntegrityViolationException: could not execute statement; SQL [n/a]; constraint [null]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
-Caused by: org.hibernate.exception.ConstraintViolationException: could not execute statement
-Caused by: java.sql.SQLIntegrityConstraintViolationException: (conn=58) Column 'created_at' cannot be null
-Caused by: java.sql.SQLException: Column 'created_at' cannot be null
-
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.159 s - in com.example.studileih.StudileihApplicationTests

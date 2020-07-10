@@ -6,15 +6,26 @@ import com.example.studileih.Entity.User;
 import com.example.studileih.Service.ImageService;
 import com.example.studileih.Service.ProductService;
 import com.example.studileih.Service.UserService;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ApiResponse;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -26,6 +37,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
+@Api(tags = "Products API - controller methods for managing Products")
 public class ProductController {
 
     @Autowired
@@ -53,16 +65,11 @@ public class ProductController {
         return productDto;
     }
 
-    //https://www.baeldung.com/entity-to-and-from-dto-for-a-java-spring-application for more information
-    public Product convertToProduct(ProductDto productDto) {
-        Product product = modelMapper.map(productDto, Product.class);
-        return  product;
-    }
-
     /**
      * @return: all products from the repository
      */
     @GetMapping("products")
+    @ApiOperation(value = "Return all available products converted to DTOs")
     public List<ProductDto> getAllProducts() {
         List<Product> allProducts = productService.listAllProducts();
         //System.out.println(allProducts.get(0).toString());
@@ -72,26 +79,44 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
+    @ApiOperation(value = "Returns a product entity by its ID. The result is not clean enough, be careful")
+
     public ProductDto getProduct(@PathVariable String id) {
         Optional<Product> optional = productService.getProductById(Long.parseLong(id));   // the id always comes as a string from angular, even when you send it as a number in angular...
         Product product = optional.get();
         return convertToDto(product);
     }
+    
+    @GetMapping("/productsdto/{id}")
+    @ApiOperation(value = "Return one product by ID as DTO, in order to avoid Entity-related issues")
+    @ApiResponses(value = { @ApiResponse(code = SC_OK, message = "Everything OK"), 
+            @ApiResponse(code = SC_BAD_REQUEST, message = "An unexpected error occurred") 
+          })
+    public List<ProductDto> getProductDto(@PathVariable Long id) {
+        return productService.getProductDtoById(id);
+    }
 
     @PostMapping(path = "/products", consumes = "application/json", produces = "application/json")
-    public boolean addProduct(@RequestBody ProductDto productDto) {
-        Product product = this.convertToProduct(productDto);
+    @ApiOperation(value = "Add a new product to the database")
+    public boolean addProduct(@RequestBody Product product) {
         return productService.addProduct(product);
     }
 
-    @DeleteMapping(value = "/products/{id}")
-    public void deleteProduct(@PathVariable String id) {
-        productService.deleteProduct(Long.parseLong(id));
+    @PostMapping(value = "/products/delete/{id}")
+    @ApiOperation(value = "Deletes one product identified by its ID")
+    public ResponseEntity<String> deleteProduct(@RequestParam("id") String id) {
+        try {
+            productService.deleteProduct(Long.parseLong(id));
+            return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich gelöscht.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produkt existiert nicht mehr in der Datenbank.");
+        }
     }
 
     @PutMapping(value = "/products/{id}")
+    @ApiOperation(value = "Updates one product identified by its ID.")
     public void updateProduct(@RequestBody Product product,@PathVariable String id) {
-        productService.updateProduct(product,Long.parseLong(id));
+        productService.updateProduct(product, Long.parseLong(id));
     }
 
 

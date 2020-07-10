@@ -13,12 +13,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.ApiResponse;
+
 
 import javax.annotation.PostConstruct;
 import java.util.*;
 
 @RestController
 @CrossOrigin
+@Api(tags = "Users API - controller methods for managing Users")
 public class UserController {
 
     @Autowired
@@ -58,45 +64,54 @@ public class UserController {
 
         // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
         emailService.sendSimpleMessage("georgkromer@pm.me", "server started", "yolo" );
-
-
-
-
     }
+
 
     /**
      * @return: all users from the repository
      */
     @GetMapping("users")
+    @ApiOperation(value = "Return all available users as Entities")
     public List<UserDto> getAllUsers() {
         return userService.listAllUser();
     }
 
     @GetMapping("/users/{id}")
+    @ApiOperation(value = "Return one User identified by ID")
     public Optional<User> getUser(@PathVariable String id) {
         return userService.getUserById(Long.parseLong(id));
+    }
+    
+    @GetMapping("/usersdto/{id}")
+    @ApiOperation(value = "Return one User identified by ID as DTO")
+    public List<UserDto> getUserDto(@PathVariable Long id) {
+        return userService.getUserDtoById(id);
     }
 
     /**
      * Get's an user as JSON from the angular-client and saves it as a new user into the repository
      */
     @PostMapping("saveUser")
+    @ApiOperation(value = "Add/update new User as DTO")
     public Boolean saveUser(@RequestBody UserDto userDto) {
         userService.saveOrUpdateUser(new User(userDto.getName()));
         return true;
     }
 
     @PostMapping(path = "/users", consumes = "application/json", produces = "application/json")
+    @ApiOperation(value = "Add new User as Entity")
     public boolean addUser(@RequestBody User user) {
         return userService.addUser(user);
     }
 
     @DeleteMapping(value = "/users/{id}")
+    @ApiOperation(value = "Remove User identified by ID")
     public void deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
     }
 
     @PutMapping(value = "/users/{id}")
+    @ApiOperation(value = "Update User identified by ID")
     public void updateUser(@RequestBody User user, @PathVariable Long id) {
         userService.updateUser(user, id);
     }

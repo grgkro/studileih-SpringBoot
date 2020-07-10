@@ -5,6 +5,7 @@ import com.example.studileih.Dto.UserDto;
 import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
 import com.example.studileih.Repository.UserRepository;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,20 @@ public class UserService {
 
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
+    }
+    
+    //Wir wollen ein DTO zurückbekommen, damit keine unendliche Rekursion entsteht
+    public List<UserDto> getUserDtoById(Long id) {
+    	//leere Liste für das Ergebnis
+    	List<UserDto> userDto = new ArrayList<>();
+    	//Umwandlung: gefundene User zu Liste
+    	List<User> users= userRepository.findById(id).stream().collect(Collectors.toList());
+    	//Umwandlung: users zu Dtos
+    	for (User juzer : users) {
+    		UserDto juzerDto = modelMapper.map(juzer, UserDto.class);
+    		userDto.add(juzerDto);
+    	}
+    	return userDto;
     }
 
     public void deleteUser(Long id) {
