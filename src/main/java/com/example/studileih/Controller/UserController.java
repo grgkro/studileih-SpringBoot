@@ -1,12 +1,10 @@
 package com.example.studileih.Controller;
 
+import com.example.studileih.Dto.MessageDto;
 import com.example.studileih.Dto.UserDto;
 import com.example.studileih.Entity.*;
 import com.example.studileih.Entity.Product;
-import com.example.studileih.Service.DormService;
-import com.example.studileih.Service.EmailService;
-import com.example.studileih.Service.ProductService;
-import com.example.studileih.Service.UserService;
+import com.example.studileih.Service.*;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,6 +37,9 @@ public class UserController {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private MessageService messageService;
+
     /**
      * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielwohnheim/Adresse/2 Pro in die DB -> Kann später auskommentiert/gelöscht werden
      */
@@ -58,10 +59,35 @@ public class UserController {
         product1.setUser(harald);
         product2.setUser(harald);
         product3.setUser(hartmut);
+
         userService.saveOrUpdateUser(harald);
         userService.saveOrUpdateUser(hartmut);
-        // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
 
+        Message fromHaraldToHartmut = new Message("TestEinsZwoEinsZwo", "Testtesttestte", "11.11.2020 11:11:11", harald, hartmut);
+        Message fromHaraldToHartmut2 = new Message("TestEinsZwoEinsZwo2", "Testtesttestte2", "12.11.2020 11:11:11", harald, hartmut);
+        Message fromHartmutToHarald = new Message("TestEinsZwoEinsZwo2", "Testtesttestte2", "12.11.2020 11:11:11", hartmut, harald);
+        List<Message> messagesHarald = new ArrayList<>();
+        List<Message> messagesHartmut = new ArrayList<>();
+        messagesHarald.add(fromHaraldToHartmut);
+        messagesHarald.add(fromHaraldToHartmut);
+        messagesHarald.add(fromHartmutToHarald);
+        messagesHartmut.add(fromHaraldToHartmut);
+        messagesHartmut.add(fromHaraldToHartmut2);
+        messagesHartmut.add(fromHartmutToHarald);
+        harald.setSentMessages(messagesHarald);
+        hartmut.setReceivedMessages(messagesHartmut);
+
+
+
+        messageService.saveOrUpdateMessage(fromHaraldToHartmut);
+
+        userService.saveOrUpdateUser(harald);
+        userService.saveOrUpdateUser(hartmut);
+
+
+
+
+        // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
         // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
         emailService.sendSimpleMessage("georgkromer@pm.me", "server started", "yolo" );
     }
@@ -107,7 +133,13 @@ public class UserController {
     @DeleteMapping(value = "/users/{id}")
     @ApiOperation(value = "Remove User identified by ID")
     public void deleteUser(@PathVariable Long id) {
+
         userService.deleteUser(id);
+        List<MessageDto> allMessages = messageService.loadAll();
+        allMessages.stream().forEach(messageDto -> {
+            if (messageDto.getSender() == null && messageDto.getReceiver() == null) {
+                messageService.deleteMessage(messageDto.getId());
+            }});
     }
 
     @PutMapping(value = "/users/{id}")
