@@ -15,7 +15,7 @@ public class MessageDto {
     private String text;
     private String sendetAt;   // = createdAt
     private String receivedAt; // = updatedAt
-    private User sender;
-    private User receiver;
+    private UserDto sender;
+    private UserDto receiver;
 
 }

@@ -77,19 +77,12 @@ public class UserController {
         harald.setSentMessages(messagesHarald);
         hartmut.setReceivedMessages(messagesHartmut);
 
-
-
         messageService.saveOrUpdateMessage(fromHaraldToHartmut);
 
         userService.saveOrUpdateUser(harald);
         userService.saveOrUpdateUser(hartmut);
-
-
-
-
         // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
-        // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-        emailService.sendSimpleMessage("georgkromer@pm.me", "server started", "yolo" );
+
     }
 
 
@@ -147,43 +140,6 @@ public class UserController {
     @ApiOperation(value = "Update User identified by ID")
     public void updateUser(@RequestBody User user, @PathVariable Long id) {
         userService.updateUser(user, id);
-    }
-
-    /*
-     * sends an "Ausleihanfrage" Email with the startdate, enddate, product, ausleihender user etc. to the product owner`s email address
-     */
-    @PostMapping("/users/sendEmail")
-    public ResponseEntity<String> sendEmailToOwner (@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId){
-        try {
-            // get the two users and the product
-            User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
-            User owner = userService.getUserById(Long.parseLong(ownerId)).get();
-            Product product = productService.getProductById(Long.parseLong(productId)).get();
-            // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-            return emailService.sendEmailToOwner(startDate, endDate, product, userWhoWantsToRent, owner);
-        } catch (NoSuchElementException e) {
-            System.out.println(e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
-        }
-    }
-
-    /*
-     * sends an "Ausleihanfrage" Message with the startdate, enddate, product, ausleihender user etc. to the product owner in Studileih (like a intern Facebook message from one user to another)
-     */
-    @PostMapping("/users/sendMessage")
-    public ResponseEntity<String> sendMessageToOwner (@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId){
-        try {
-            // get the two users and the product
-            User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
-            User owner = userService.getUserById(Long.parseLong(ownerId)).get();
-            Product product = productService.getProductById(Long.parseLong(productId)).get();
-            // transfer the message to the messageService where it will be saved to the database
-            return messageService.sendMessageToOwner(startDate, endDate, product, userWhoWantsToRent, owner);
-        } catch (NoSuchElementException e) {
-            System.out.println(e);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
-        }
-
     }
 
 }

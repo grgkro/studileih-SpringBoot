@@ -82,6 +82,12 @@ public class MessageService {
         return ResponseEntity.status(HttpStatus.OK).body(owner.getName() + " erhält auf Studileih.de eine Benachrichtigung über deine Anfrage.");
     }
 
+    public List<Message> listAllMessages() {
+        List<Message> messages = new ArrayList<>();
+        messageRepository.findAll().forEach(messages::add);  // messages::add ist gleich wie: messages.add(message)
+        return messages;
+    }
+
 
 
 }
