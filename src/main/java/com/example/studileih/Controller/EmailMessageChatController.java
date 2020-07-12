@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin
 @Api(tags = "Emails and Messages API - controller methods for managing Emails & Messages")
-public class EmailAndMessageController {
+public class EmailMessageChatController {
 
     @Autowired
     private UserService userService;

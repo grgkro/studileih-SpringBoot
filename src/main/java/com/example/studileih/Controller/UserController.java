@@ -40,12 +40,14 @@ public class UserController {
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private ChatService chatService;
+
     /**
      * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielwohnheim/Adresse/2 Pro in die DB -> Kann später auskommentiert/gelöscht werden
      */
     @PostConstruct
     public void createBaseDataset() {
-        // at the start we create some dorms into the database, but only if there are no entries yet!
         Product product1 = new Product("Haralds VW Golf", "VW 3er Golf, BJ. 1998, 100.000km", 30);
         Product product2 = new Product("Haralds Bohrmaschine", "Bosch Bohrmaschine", 0);
         Product product3 = new Product("Hartmuts Bohrmaschine", "Bosch Bohrmaschine", 5);
@@ -60,28 +62,30 @@ public class UserController {
         product2.setUser(harald);
         product3.setUser(hartmut);
 
-        userService.saveOrUpdateUser(harald);
-        userService.saveOrUpdateUser(hartmut);
-
-        Message fromHaraldToHartmut = new Message("TestEinsZwoEinsZwo", "Testtesttestte", "11.11.2020 11:11:11", harald, hartmut);
-        Message fromHaraldToHartmut2 = new Message("TestEinsZwoEinsZwo2", "Testtesttestte2", "12.11.2020 11:11:11", harald, hartmut);
-        Message fromHartmutToHarald = new Message("TestEinsZwoEinsZwo2", "Testtesttestte2", "12.11.2020 11:11:11", hartmut, harald);
-        List<Message> messagesHarald = new ArrayList<>();
-        List<Message> messagesHartmut = new ArrayList<>();
-        messagesHarald.add(fromHaraldToHartmut);
-        messagesHarald.add(fromHaraldToHartmut);
-        messagesHarald.add(fromHartmutToHarald);
-        messagesHartmut.add(fromHaraldToHartmut);
-        messagesHartmut.add(fromHaraldToHartmut2);
-        messagesHartmut.add(fromHartmutToHarald);
-        harald.setSentMessages(messagesHarald);
-        hartmut.setReceivedMessages(messagesHartmut);
-
-        messageService.saveOrUpdateMessage(fromHaraldToHartmut);
-
-        userService.saveOrUpdateUser(harald);
-        userService.saveOrUpdateUser(hartmut);
         // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
+        userService.saveOrUpdateUser(harald);
+        userService.saveOrUpdateUser(hartmut);
+
+//        Chat chatHaraldHartmut = new Chat(harald, hartmut);
+//        chatService.saveOrUpdateChat(chatHaraldHartmut);
+//
+//        Message fromHaraldToHartmut = new Message("Harald an Hartmut", "Hey Harti", "11.11.2020 11:11:11", harald, hartmut, chatHaraldHartmut);
+//        Message fromHaraldToHartmut2 = new Message("Harald an Hartmut 2", "Jo Harald", "12.11.2020 11:11:11", harald, hartmut, chatHaraldHartmut);
+//        Message fromHartmutToHarald = new Message("HARTMUT an HARALD", "Ruhe Harald!", "12.11.2020 11:11:11", hartmut, harald, chatHaraldHartmut);
+//        List<Message> messagesHarald = new ArrayList<>();
+//        List<Message> messagesHartmut = new ArrayList<>();
+//        messagesHarald.add(fromHaraldToHartmut);
+//        messagesHarald.add(fromHaraldToHartmut2);
+//        messagesHarald.add(fromHartmutToHarald);
+//        messagesHartmut.add(fromHaraldToHartmut);
+//        messagesHartmut.add(fromHaraldToHartmut2);
+//        messagesHartmut.add(fromHartmutToHarald);
+//        harald.setSentMessages(messagesHarald);
+//        hartmut.setReceivedMessages(messagesHartmut);
+//
+//        messageService.saveOrUpdateMessage(fromHaraldToHartmut);
+//        messageService.saveOrUpdateMessage(fromHaraldToHartmut2);
+//        messageService.saveOrUpdateMessage(fromHartmutToHarald);
 
     }
 
