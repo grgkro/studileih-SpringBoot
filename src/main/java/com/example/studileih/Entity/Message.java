@@ -20,7 +20,8 @@ public class Message {
 
     private String subject;
     @Column
-    @Lob                 // wir sagen der DB, dass sie diese Spalte als Datentyp LongText (Large Object = lob) anlegen soll, damit auch längere Texte rein gehen. Sonst legt sie es automatich als VARCHAR an und das ist schnell zu klein.
+    @Lob
+    // wir sagen der DB, dass sie diese Spalte als Datentyp LongText (Large Object = lob) anlegen soll, damit auch längere Texte rein gehen. Sonst legt sie es automatich als VARCHAR an und das ist schnell zu klein.
     private String text;
     private String sendetAt;   // = createdAt, can be later changed to a Date type instead of String
     private String receivedAt; // = updatedAt
@@ -32,6 +33,8 @@ public class Message {
     @ManyToOne
     private User receiver;
 
+    // wir erstellen eine Verbindungstabelle für chat und messages = chat_messages. Das hat den Vorteil, dass man nicht immer alle Messages durchfiltern muss, um herauszufinden, in welchem chat sie sind. In chat_message steht für jede Message, zu welchem Chat sie gehört.
+    // https://stackoverflow.com/questions/7979382/how-to-create-join-table-with-jpa-annotations
     @ManyToOne
     @JoinTable(name = "chat_messages",
             joinColumns = @JoinColumn(name = "message_id",
