@@ -135,6 +135,7 @@ public class UserController {
     public void deleteUser(@PathVariable Long id) {
 
         userService.deleteUser(id);
+        // everytime a user gets deleted, we should also check, if there are still messages connected to him. but only the message if both users, the sender and the receiver got deleted.
         List<MessageDto> allMessages = messageService.loadAll();
         allMessages.stream().forEach(messageDto -> {
             if (messageDto.getSender() == null && messageDto.getReceiver() == null) {
@@ -151,24 +152,38 @@ public class UserController {
     /*
      * sends an "Ausleihanfrage" Email with the startdate, enddate, product, ausleihender user etc. to the product owner`s email address
      */
-    @PostMapping("/emails/sendEmail")
+    @PostMapping("/users/sendEmail")
     public ResponseEntity<String> sendEmailToOwner (@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId){
-        // get the two users and the product
-        User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
-        User owner = userService.getUserById(Long.parseLong(ownerId)).get();
-        Product product = productService.getProductById(Long.parseLong(productId)).get();
-        // send the email
-        if (product != null && owner != null && userWhoWantsToRent != null) {
-            if (owner.getEmail() != null) {
-                // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-                return emailService.sendEmailToOwner(startDate, endDate, product, userWhoWantsToRent, owner);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Der Besitzer dieses Produkts hat keine Email Addresse hinterlegt.");  // sobald Email Addresse Pflichtfeld ist kann das weg.
-            }
-
-        } else {
+        try {
+            // get the two users and the product
+            User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
+            User owner = userService.getUserById(Long.parseLong(ownerId)).get();
+            Product product = productService.getProductById(Long.parseLong(productId)).get();
+            // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
+            return emailService.sendEmailToOwner(startDate, endDate, product, userWhoWantsToRent, owner);
+        } catch (NoSuchElementException e) {
+            System.out.println(e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
         }
+    }
+
+    /*
+     * sends an "Ausleihanfrage" Message with the startdate, enddate, product, ausleihender user etc. to the product owner in Studileih (like a intern Facebook message from one user to another)
+     */
+    @PostMapping("/users/sendMessage")
+    public ResponseEntity<String> sendMessageToOwner (@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId){
+        try {
+            // get the two users and the product
+            User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
+            User owner = userService.getUserById(Long.parseLong(ownerId)).get();
+            Product product = productService.getProductById(Long.parseLong(productId)).get();
+            // transfer the message to the messageService where it will be saved to the database
+            return messageService.sendMessageToOwner(startDate, endDate, product, userWhoWantsToRent, owner);
+        } catch (NoSuchElementException e) {
+            System.out.println(e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
+        }
+
     }
 
 }

@@ -27,33 +27,33 @@ class StudileihApplicationTests {
 
 
 
-	@Test
-	public void whenSenderAndReceiverGetDeleted_thenAlsoDeleteTheMessages() {
-//create Test Data
-		User harald = new User("HaraldTest", "grg.kro@gmail.com", "2345");
-		User hartmut = new User("HartmuTest", "georgkromer@pm.me", "5432");
-
-//		userService.saveOrUpdateUser(harald);
-//		userService.saveOrUpdateUser(hartmut);
-
-		Message fromHaraldToHartmut = new Message("TestEinsZwoEinsZwo", "Testtesttestte", "11.11.2020 11:11:11", harald, hartmut);
-		Message fromHaraldToHartmut2 = new Message("TestEinsZwoEinsZwo2", "Testtesttestte2", "12.11.2020 11:11:11", harald, hartmut);
-		Message fromHartmutToHarald = new Message("TestEinsZwoEinsZwo2", "Testtesttestte2", "12.11.2020 11:11:11", hartmut, harald);
-		List<Message> messagesHarald = new ArrayList<>();
-		List<Message> messagesHartmut = new ArrayList<>();
-		messagesHarald.add(fromHaraldToHartmut);
-		messagesHarald.add(fromHaraldToHartmut);
-		messagesHarald.add(fromHartmutToHarald);
-		messagesHartmut.add(fromHaraldToHartmut);
-		messagesHartmut.add(fromHaraldToHartmut2);
-		messagesHartmut.add(fromHartmutToHarald);
-		harald.setSentMessages(messagesHarald);
-		hartmut.setReceivedMessages(messagesHartmut);
-
-// test...
-
-
-	}
+//	@Test
+//	public void whenSenderAndReceiverGetDeleted_thenAlsoDeleteTheMessages() {
+////create Test Data
+//		User harald = new User("HaraldTest", "grg.kro@gmail.com", "2345");
+//		User hartmut = new User("HartmuTest", "georgkromer@pm.me", "5432");
+//
+////		userService.saveOrUpdateUser(harald);
+////		userService.saveOrUpdateUser(hartmut);
+//
+//		Message fromHaraldToHartmut = new Message("TestEinsZwoEinsZwo", "Testtesttestte", "11.11.2020 11:11:11", harald, hartmut);
+//		Message fromHaraldToHartmut2 = new Message("TestEinsZwoEinsZwo2", "Testtesttestte2", "12.11.2020 11:11:11", harald, hartmut);
+//		Message fromHartmutToHarald = new Message("TestEinsZwoEinsZwo2", "Testtesttestte2", "12.11.2020 11:11:11", hartmut, harald);
+//		List<Message> messagesHarald = new ArrayList<>();
+//		List<Message> messagesHartmut = new ArrayList<>();
+//		messagesHarald.add(fromHaraldToHartmut);
+//		messagesHarald.add(fromHaraldToHartmut);
+//		messagesHarald.add(fromHartmutToHarald);
+//		messagesHartmut.add(fromHaraldToHartmut);
+//		messagesHartmut.add(fromHaraldToHartmut2);
+//		messagesHartmut.add(fromHartmutToHarald);
+//		harald.setSentMessages(messagesHarald);
+//		hartmut.setReceivedMessages(messagesHartmut);
+//
+//// test...
+//
+//
+//	}
 
 	@Test
 	public void simplyTestThatJasyptEncryptionWorks() {
