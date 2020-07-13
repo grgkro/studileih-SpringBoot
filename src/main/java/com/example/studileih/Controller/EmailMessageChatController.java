@@ -1,7 +1,9 @@
 package com.example.studileih.Controller;
 
+import com.example.studileih.Dto.ChatDto;
 import com.example.studileih.Dto.MessageDto;
 import com.example.studileih.Dto.UserDto;
+import com.example.studileih.Entity.Chat;
 import com.example.studileih.Entity.Message;
 import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
@@ -39,6 +41,9 @@ public class EmailMessageChatController {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private ChatService chatService;
 
     @Autowired
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
@@ -113,8 +118,48 @@ public class EmailMessageChatController {
      */
     private MessageDto convertMessageToDto(Message message) {
         MessageDto messageDto = modelMapper.map(message, MessageDto.class);
-        // falls ein Product ein CreatedAt oder UpdatedAt Value hat, muss der zu einem String konvertiert werden. Falls nicht darf das Date nicht konvertiert werden, sonst gibts NullPointerExceptions.
         return messageDto;
+    }
+
+    /*
+     * loads all chats as ChatDtos
+     */
+    @GetMapping("/chats/chats")
+    @ApiOperation(value = "Return all available chats converted to DTOs")
+    public List<ChatDto> loadChats (){
+        List<Chat> allChats = chatService.loadAllChat();
+        System.out.println(allChats.get(0).toString());
+        List<ChatDto> allChatDtos = allChats.stream()
+                .map(this::convertChatToDto)
+                .collect(Collectors.toList());
+        System.out.println(allChatDtos);
+        return allChatDtos;
+    }
+
+    /*
+     * loads all chats as ChatDtos
+     */
+    @GetMapping("/chats/chatsByUser/{id}")
+    @ApiOperation(value = "Return all available chats of one User converted to DTOs")
+    public List<ChatDto> loadChatsByUser (@PathVariable("id") Long id){
+        System.out.println("id: " + id);
+        List<Chat> allChats = chatService.findChatsByUserId(id);
+        System.out.println(allChats.get(0).toString());
+        List<ChatDto> allChatDtos = allChats.stream()
+                .map(this::convertChatToDto)
+                .collect(Collectors.toList());
+        System.out.println(allChatDtos);
+        return allChatDtos;
+    }
+
+    /**
+     * Converts a Chat to a ChatDto.
+     * @param chat
+     * @return chatDto
+     */
+    private ChatDto convertChatToDto(Chat chat) {
+        ChatDto chatDto = modelMapper.map(chat, ChatDto.class);
+        return chatDto;
     }
 
 }

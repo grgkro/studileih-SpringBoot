@@ -11,8 +11,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Service;
 
+import javax.management.Query;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,11 @@ public class ChatService {
     @Autowired
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
 
+    @Autowired
+    private JdbcOperations jdbcOperations;
+
+    private static String BASIC_QUERY = "SELECT * FROM chats";
+
     public void saveOrUpdateChat(Chat chat) {
         chatRepository.save(chat);
     }
@@ -38,6 +45,10 @@ public class ChatService {
         return chats;
     }
 
+    public List<Chat> findChatsByUserId(Long id) {
 
-
+        List<Chat> chats = chatRepository.findChatsByUserId(String.valueOf(id));
+        System.out.println(chats);
+        return chats;
+    }
 }
