@@ -53,6 +53,7 @@ public class ImageController {
      * loads a product pic
      */
     @PostMapping("/images/loadProductPicByFilename")    //https://bezkoder.com/spring-boot-upload-multiple-files/
+    @ApiOperation(value = "Loads and returns the image of a product by it's provided filename")
     public ResponseEntity loadProductPicByFilename(@RequestParam("filename") String filename, String productId) {
         // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
         Product product = getProduct(productId);
@@ -92,6 +93,7 @@ public class ImageController {
      * Ob das imag als user oder product pic abgespeichert wird, hängt vom imgType ab ("product" oder "user")
      */
     @PostMapping("/images/archivePicByFilename")
+    @ApiOperation(value = "Transfers an deleted image from the user or product folder to the archive folder, so that it can be restored later.")
     public ResponseEntity archiveProductPicByFilename(@RequestParam("filename") String filename, String imgType, String productId) throws IOException {
         // find correct paths
         String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
@@ -118,6 +120,7 @@ public class ImageController {
      * gets an archived product pic from the archive and restores it to the local storage and the database
      */
     @PostMapping("/images/restorePicByFilename")
+    @ApiOperation(value = "Restores a deleted image from the archive to the user or product folder")
     public ResponseEntity restorePicByFilename(@RequestParam("filename") String filename, String imgType, String productId) throws IOException {
         // find correct paths
         String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
@@ -150,6 +153,7 @@ public class ImageController {
      * deletes the archive of one product or user (depending on the provided archiveType)
      */
     @PostMapping("/images/deleteArchive")
+    @ApiOperation(value = "Deletes the archive folder of one user or product")
     public ResponseEntity deleteArchive(@RequestParam("archiveType") String archiveType, String id) throws IOException {
         String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
         String archiveFolderLocation = parentFolderLocation + "/archive/" + archiveType + "s/" + archiveType + id;
@@ -163,6 +167,7 @@ public class ImageController {
      * deletes the imageFolder of one product or user (depending on the provided folderType)
      */
     @PostMapping("/images/deleteImageFolder")
+    @ApiOperation(value = "Deletes the imageFolder of one product or user (depending on the provided folderType)")
     public ResponseEntity deleteImageFolder(@RequestParam("folderType") String folderType, String id) throws IOException {
         String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
         String archiveFolderLocation = parentFolderLocation + "/" + folderType + "s/" + folderType + id;
@@ -176,9 +181,10 @@ public class ImageController {
 
 
         /*
-         * loads a product pic
+         * deletes a product image by filename
          */
         @PostMapping("/images/deleteProductPicByFilename")
+        @ApiOperation(value = "Deletes a product image by filename")
         public ResponseEntity deleteProductPicByFilename (@RequestParam("filename") String filename, String productId){
             // first remove the image from the databse
             Optional<Product> optional = productService.getProductById(Long.parseLong(productId));   // the id always comes as a string from angular, even when you send it as a number in angular...

@@ -28,7 +28,6 @@ public class UserDto {
     private Long dormId;
     private String city;
 
-
     public Date getCreatedAtConverted(String timezone) throws ParseException {
         dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
         return dateFormat.parse(this.createdAt);
