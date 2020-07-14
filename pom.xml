@@ -73,6 +73,8 @@
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 
+
+
 		<!-- for encrypting passwords we use jasypt -->
 		<dependency>
 			<groupId>com.github.ulisesbocchio</groupId>

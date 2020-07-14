@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name="dorm")
+@Table(name="dorms")
 @Data
 @NoArgsConstructor
 public class Dorm {

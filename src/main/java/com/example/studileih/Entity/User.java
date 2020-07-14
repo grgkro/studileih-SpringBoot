@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name="user")
+@Table(name="users")
 @Data  // Project Lombock: erstellt automatisch alle Getter/Setter, eine ToString Methode, einen Konstruktor mit allen Pflichtfeldern... https://projectlombok.org/features/Data
 @NoArgsConstructor // erstellt einfach nen leeren Konstruktor: public User() {}
 public class User {
@@ -39,6 +39,7 @@ public class User {
     private String profilePic;
 
     //One user can have many products, so here we have a one-to-many mapping.
+    //optimal would be to use @JoinTabel -> creates a joined table witch connects user and photo ids, then we wouldn't need to load all photos. But we have to load all photos on the startpage anyway so...
     //The way this works at the database level is we have user_id as a primary key in the user table and also a user_id as a foreign key in products.
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = {CascadeType.ALL})  //das cascadeType.ALL sorgt dafür, dass wenn der User gelöscht wird, alle zu ihm gehörenden Produkte auch gelöscht werden.
     private List<Product> products;
@@ -46,15 +47,30 @@ public class User {
     @ManyToOne()
     @JoinColumn(name = "dorm")
     private Dorm dorm;
+
     private String room;
 
     private String city;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "sender", cascade = {CascadeType.ALL})
+    private List<Message> sentMessages;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "receiver", cascade = {CascadeType.ALL})
+    private List<Message> receivedMessages;
+
+
 
 
     //Die verschiedenen Konstruktoren sind nötig, weil ich schnell unterschiedliche User anlegen und testen wollte.
     // profilePic kann nicht im Konstrukor schon festgelegt werden, da es später erst vom Nutzer hochgeladen werden muss.
     public User(String name) {
         this.name = name;
+    }
+
+    public User(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
     }
 
     public User(String name, String email, String password, List<Product> products) {

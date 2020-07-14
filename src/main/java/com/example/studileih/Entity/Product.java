@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 @Entity
+@Table(name="products")
 @Data // Irgendwie funktioniert die @Data Annotation bei mir (Georg) nicht mehr richtig, und auch nur bei der Product Entity hier... deshalb musste ich die Getter & Setter hier wieder von Hand machen. Sobald ich das Problem gelöst habe, lösche ich sie wieder.
 @NoArgsConstructor
 public class Product {

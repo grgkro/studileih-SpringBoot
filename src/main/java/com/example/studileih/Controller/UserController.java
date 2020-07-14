@@ -1,12 +1,10 @@
 package com.example.studileih.Controller;
 
+import com.example.studileih.Dto.MessageDto;
 import com.example.studileih.Dto.UserDto;
 import com.example.studileih.Entity.*;
 import com.example.studileih.Entity.Product;
-import com.example.studileih.Service.DormService;
-import com.example.studileih.Service.EmailService;
-import com.example.studileih.Service.ProductService;
-import com.example.studileih.Service.UserService;
+import com.example.studileih.Service.*;
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,12 +37,17 @@ public class UserController {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private MessageService messageService;
+
+    @Autowired
+    private ChatService chatService;
+
     /**
      * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielwohnheim/Adresse/2 Pro in die DB -> Kann später auskommentiert/gelöscht werden
      */
     @PostConstruct
     public void createBaseDataset() {
-        // at the start we create some dorms into the database, but only if there are no entries yet!
         Product product1 = new Product("Haralds VW Golf", "VW 3er Golf, BJ. 1998, 100.000km", 30);
         Product product2 = new Product("Haralds Bohrmaschine", "Bosch Bohrmaschine", 0);
         Product product3 = new Product("Hartmuts Bohrmaschine", "Bosch Bohrmaschine", 5);
@@ -58,12 +61,32 @@ public class UserController {
         product1.setUser(harald);
         product2.setUser(harald);
         product3.setUser(hartmut);
+
+        // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
         userService.saveOrUpdateUser(harald);
         userService.saveOrUpdateUser(hartmut);
-        // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
 
-        // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-        emailService.sendSimpleMessage("georgkromer@pm.me", "server started", "yolo" );
+//        Chat chatHaraldHartmut = new Chat(harald, hartmut);
+//        chatService.saveOrUpdateChat(chatHaraldHartmut);
+//
+//        Message fromHaraldToHartmut = new Message("Harald an Hartmut", "Hey Harti", "11.11.2020 11:11:11", harald, hartmut, chatHaraldHartmut);
+//        Message fromHaraldToHartmut2 = new Message("Harald an Hartmut 2", "Jo Harald", "12.11.2020 11:11:11", harald, hartmut, chatHaraldHartmut);
+//        Message fromHartmutToHarald = new Message("HARTMUT an HARALD", "Ruhe Harald!", "12.11.2020 11:11:11", hartmut, harald, chatHaraldHartmut);
+//        List<Message> messagesHarald = new ArrayList<>();
+//        List<Message> messagesHartmut = new ArrayList<>();
+//        messagesHarald.add(fromHaraldToHartmut);
+//        messagesHarald.add(fromHaraldToHartmut2);
+//        messagesHarald.add(fromHartmutToHarald);
+//        messagesHartmut.add(fromHaraldToHartmut);
+//        messagesHartmut.add(fromHaraldToHartmut2);
+//        messagesHartmut.add(fromHartmutToHarald);
+//        harald.setSentMessages(messagesHarald);
+//        hartmut.setReceivedMessages(messagesHartmut);
+//
+//        messageService.saveOrUpdateMessage(fromHaraldToHartmut);
+//        messageService.saveOrUpdateMessage(fromHaraldToHartmut2);
+//        messageService.saveOrUpdateMessage(fromHartmutToHarald);
+
     }
 
 
@@ -107,36 +130,20 @@ public class UserController {
     @DeleteMapping(value = "/users/{id}")
     @ApiOperation(value = "Remove User identified by ID")
     public void deleteUser(@PathVariable Long id) {
+
         userService.deleteUser(id);
+        // everytime a user gets deleted, we should also check, if there are still messages connected to him. but only the message if both users, the sender and the receiver got deleted.
+        List<MessageDto> allMessages = messageService.loadAll();
+        allMessages.stream().forEach(messageDto -> {
+            if (messageDto.getSender() == null && messageDto.getReceiver() == null) {
+                messageService.deleteMessage(messageDto.getId());
+            }});
     }
 
     @PutMapping(value = "/users/{id}")
     @ApiOperation(value = "Update User identified by ID")
     public void updateUser(@RequestBody User user, @PathVariable Long id) {
         userService.updateUser(user, id);
-    }
-
-    /*
-     * sends an "Ausleihanfrage" Email with the startdate, enddate, product, ausleihender user etc. to the product owner`s email address
-     */
-    @PostMapping("/emails/sendEmail")
-    public ResponseEntity<String> sendEmailToOwner (@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId){
-        // get the two users and the product
-        User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
-        User owner = userService.getUserById(Long.parseLong(ownerId)).get();
-        Product product = productService.getProductById(Long.parseLong(productId)).get();
-        // send the email
-        if (product != null && owner != null && userWhoWantsToRent != null) {
-            if (owner.getEmail() != null) {
-                // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-                return emailService.sendEmailToOwner(startDate, endDate, product, userWhoWantsToRent, owner);
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Der Besitzer dieses Produkts hat keine Email Addresse hinterlegt.");  // sobald Email Addresse Pflichtfeld ist kann das weg.
-            }
-
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
-        }
     }
 
 }
