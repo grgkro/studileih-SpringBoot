@@ -118,6 +118,37 @@ public class EmailMessageChatController {
         messageService.saveOrUpdateMessage(message);
 
         return ResponseEntity.status(HttpStatus.OK).body("ReceivedAt wurde zur Nachricht hinzugefügt.");
+    }
+
+    /*
+     * updates a Message with the receivedAt
+     */
+    @PostMapping("/messages/sendReply")
+    @ApiOperation(value = "Updates a Message with the receivedAt timestamp (gets called when the receiver opened the message in the frontend)")
+    public ResponseEntity<String> sendReply(@RequestParam("subject") String subject, String messageText, String sendetAt, String chatId, String userId) {
+        Chat chat;
+        User sender;
+        User receiver;
+        try {
+            // get the chat
+            chat = chatService.getChatById(Long.parseLong(chatId)).get();
+            sender = userService.getUserById(Long.parseLong(userId)).get();
+            if (chat.getUser1().getId() == sender.getId()) {
+                receiver = chat.getUser2();
+            } else {
+                receiver = chat.getUser1();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Chat oder User konnten nicht geladen werden.");
+        }
+        // create the message String subject, String text, String sendetAt, User sender, User receiver, Chat chat
+        Message message = new Message(subject, messageText, sendetAt, sender, receiver, chat);
+
+        System.out.println("REPLY: " + message);
+        // update the message in the database
+        messageService.saveOrUpdateMessage(message);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Neue Nachricht wurde zum Chat hinzugefügt.");
 
     }
 
