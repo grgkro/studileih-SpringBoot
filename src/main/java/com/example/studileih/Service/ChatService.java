@@ -18,6 +18,7 @@ import javax.management.Query;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,9 +47,12 @@ public class ChatService {
     }
 
     public List<Chat> findChatsByUserId(Long id) {
-
         List<Chat> chats = chatRepository.findChatsByUserId(String.valueOf(id));
         System.out.println(chats);
         return chats;
+    }
+
+    public Optional<Chat> getChatById(Long id) {
+        return chatRepository.findById(id);
     }
 }

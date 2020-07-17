@@ -55,7 +55,7 @@ public class EmailMessageChatController {
     @PostConstruct
     public void createBaseDataset() {
         // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-        emailService.sendSimpleMessage("georgkromer@pm.me", "server started", "yolo" );
+        emailService.sendSimpleMessage("georgkromer@pm.me", "server started", "yolo");
     }
 
     /*
@@ -63,7 +63,7 @@ public class EmailMessageChatController {
      */
     @PostMapping("/emails/sendEmail")
     @ApiOperation(value = "Sends an \"Ausleihanfrage\" Email from studileih@gmail.com to the owner of the product")
-    public ResponseEntity<String> sendEmailToOwner (@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId){
+    public ResponseEntity<String> sendEmailToOwner(@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId) {
         try {
             // get the two users and the product
             User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
@@ -82,7 +82,7 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendMessage")
     @ApiOperation(value = "Saves a message and connects it with the sending and the receiving user in the Database")
-    public ResponseEntity<String> saveMessage (@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId){
+    public ResponseEntity<String> saveMessage(@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId) {
         try {
             // get the two users and the product
             User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
@@ -94,15 +94,40 @@ public class EmailMessageChatController {
             System.out.println(e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
         }
-
     }
 
     /*
-    * loads all messages as MessageDtos
+     * updates a Message with the receivedAt
+     */
+    @PostMapping("/messages/updateMessage")
+    @ApiOperation(value = "Updates a Message with the receivedAt timestamp (gets called when the receiver opened the message in the frontend)")
+    public ResponseEntity<String> updateMessage(@RequestParam("chatId") String chatId, String messageId, String receivedAt) {
+        Chat chat;
+        Message message;
+        try {
+            // get the chat and the message
+            chat = chatService.getChatById(Long.parseLong(chatId)).get();
+            message = chat.getMessages().stream().filter(chatMessage -> chatMessage.getId() == Long.parseLong(messageId)).collect(Collectors.toList()).get(0);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - die Nachricht konnte nicht geladen werden.");
+        }
+        // add the receivedAt to the message
+        message.setReceivedAt(receivedAt);
+        System.out.println(message.getReceivedAt());
+        // update the message in the database
+        messageService.saveOrUpdateMessage(message);
+
+        return ResponseEntity.status(HttpStatus.OK).body("ReceivedAt wurde zur Nachricht hinzugefügt.");
+
+    }
+
+
+    /*
+     * loads all messages as MessageDtos
      */
     @GetMapping("/messages/messages")
     @ApiOperation(value = "Return all available messages converted to DTOs")
-    public List<MessageDto> loadMessages (){
+    public List<MessageDto> loadMessages() {
         List<Message> allMessages = messageService.listAllMessages();
         System.out.println(allMessages.get(0).toString());
         List<MessageDto> allMessagesDtos = allMessages.stream()                 // List<Message> muss zu List<MessageDto> konvertiert werden. Hier tun wir zuerst die List<Message> in einen Stream umwandeln
@@ -113,6 +138,7 @@ public class EmailMessageChatController {
 
     /**
      * Converts a Message to a MessageDto. The createdAt and updatedAt Dates are converted to simple Strings, because Date is Java specific and can't be send to Angular.
+     *
      * @param message
      * @return messageDto
      */
@@ -126,7 +152,7 @@ public class EmailMessageChatController {
      */
     @GetMapping("/chats/chats")
     @ApiOperation(value = "Return all available chats converted to DTOs")
-    public List<ChatDto> loadChats (){
+    public List<ChatDto> loadChats() {
         List<Chat> allChats = chatService.loadAllChat();
         List<ChatDto> allChatDtos = allChats.stream()
                 .map(this::convertChatToDto)
@@ -139,7 +165,7 @@ public class EmailMessageChatController {
      */
     @GetMapping("/chats/chatsByUser/{id}")
     @ApiOperation(value = "Return all available chats of one User converted to DTOs")
-    public List<ChatDto> loadChatsByUser (@PathVariable("id") Long id){
+    public List<ChatDto> loadChatsByUser(@PathVariable("id") Long id) {
         List<Chat> allChats = chatService.findChatsByUserId(id);
         if (!allChats.isEmpty()) {
             return allChats.stream()
@@ -151,6 +177,7 @@ public class EmailMessageChatController {
 
     /**
      * Converts a Chat to a ChatDto.
+     *
      * @param chat
      * @return chatDto
      */
