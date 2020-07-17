@@ -128,11 +128,9 @@ public class EmailMessageChatController {
     @ApiOperation(value = "Return all available chats converted to DTOs")
     public List<ChatDto> loadChats (){
         List<Chat> allChats = chatService.loadAllChat();
-        System.out.println(allChats.get(0).toString());
         List<ChatDto> allChatDtos = allChats.stream()
                 .map(this::convertChatToDto)
                 .collect(Collectors.toList());
-        System.out.println(allChatDtos);
         return allChatDtos;
     }
 
@@ -142,14 +140,13 @@ public class EmailMessageChatController {
     @GetMapping("/chats/chatsByUser/{id}")
     @ApiOperation(value = "Return all available chats of one User converted to DTOs")
     public List<ChatDto> loadChatsByUser (@PathVariable("id") Long id){
-        System.out.println("id: " + id);
         List<Chat> allChats = chatService.findChatsByUserId(id);
-        System.out.println(allChats.get(0).toString());
-        List<ChatDto> allChatDtos = allChats.stream()
-                .map(this::convertChatToDto)
-                .collect(Collectors.toList());
-        System.out.println(allChatDtos);
-        return allChatDtos;
+        if (!allChats.isEmpty()) {
+            return allChats.stream()
+                    .map(this::convertChatToDto)
+                    .collect(Collectors.toList());
+        }
+        return null;  // if angular receives null from the backend, it will display: "Du hast noch keine Nachrichten. Stell eine Ausleihanfrage an einen anderen User, um hier deine Anfragen und Nachrichten zu sehen."
     }
 
     /**
