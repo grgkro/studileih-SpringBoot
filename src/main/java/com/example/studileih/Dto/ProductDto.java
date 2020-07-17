@@ -1,8 +1,11 @@
 package com.example.studileih.Dto;
 
+import com.example.studileih.Entity.Product;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -10,11 +13,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 
+
 @Data
 @NoArgsConstructor
 public class ProductDto {
+
+    @Autowired
+    private ModelMapper modelMapper;
+
     private static final SimpleDateFormat dateFormat
             = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
 
     private Long id;
     private Long userId;
@@ -26,6 +35,12 @@ public class ProductDto {
     private String createdAt;
     private String updatedAt;
     private ArrayList<String> picPaths;
+
+    public ProductDto(Long userId, String name, String title) {
+        this.userId = userId;
+        this.name = name;
+        this.title = title;
+    }
 
     public Date getCreatedAtConverted(String timezone) throws ParseException {
         dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
@@ -50,6 +65,8 @@ public class ProductDto {
     public static SimpleDateFormat getDateFormat() {
         return dateFormat;
     }
+
+
 
 
 //    public Long getId() {
