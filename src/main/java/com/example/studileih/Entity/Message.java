@@ -43,6 +43,15 @@ public class Message {
                     referencedColumnName = "chat_id"))
     private Chat chat;
 
+    public Message(String subject, String text, String sendetAt, User sender, User receiver) {
+        this.subject = subject;
+        this.text = text;
+        this.sendetAt = sendetAt;
+        this.receivedAt = receivedAt;
+        this.sender = sender;
+        this.receiver = receiver;
+    }
+
     public Message(String subject, String text, String sendetAt, User sender, User receiver, Chat chat) {
         this.subject = subject;
         this.text = text;

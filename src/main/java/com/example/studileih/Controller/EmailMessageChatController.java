@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
+import java.text.ParseException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public class EmailMessageChatController {
      * updates a Message with the receivedAt
      */
     @PostMapping("/messages/sendReply")
-    @ApiOperation(value = "Updates a Message with the receivedAt timestamp (gets called when the receiver opened the message in the frontend)")
+    @ApiOperation(value = "Saves a reply message to a 'Ausleihanfrage' into the database at the specified chat, so that the other chat partner can see it next time on Studileih.de")
     public ResponseEntity<String> sendReply(@RequestParam("subject") String subject, String messageText, String sendetAt, String chatId, String userId) {
         Chat chat;
         User sender;
@@ -149,9 +150,40 @@ public class EmailMessageChatController {
         messageService.saveOrUpdateMessage(message);
 
         return ResponseEntity.status(HttpStatus.OK).body("Neue Nachricht wurde zum Chat hinzugefügt.");
-
     }
 
+    /*
+     * updates a Message with the receivedAt
+     */
+    @PostMapping("/messages/sendEmailReply")
+    @ApiOperation(value = "Sends the reply message with all previous messages as Email to the chat partner")
+    public ResponseEntity<String> sendEmailReply(@RequestParam("subject") String subject, String messageText, String sendetAt, String chatId, String userId) {
+        Chat chat;
+        User sender;
+        User receiver;
+        try {
+            // get the chat and the two users
+            chat = chatService.getChatById(Long.parseLong(chatId)).get();
+            sender = userService.getUserById(Long.parseLong(userId)).get();
+            if (chat.getUser1().getId() == sender.getId()) {
+                receiver = chat.getUser2();
+            } else {
+                receiver = chat.getUser1();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Chat oder einer der User konnten nicht geladen werden.");
+        }
+        // create the message String subject, String text, String sendetAt, User sender, User receiver, Chat chat
+        Message message = new Message(subject, messageText, sendetAt, sender, receiver, chat);
+
+        // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
+        try {
+            return emailService.sendEmailReply(message, chat, sender, receiver);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Interner Datenbankfehler beim Erstellen der Nachricht - Datum konnte nicht umgewandelt werden.");
+        }
+    }
 
     /*
      * loads all messages as MessageDtos

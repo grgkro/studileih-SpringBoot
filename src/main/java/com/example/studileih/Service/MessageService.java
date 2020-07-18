@@ -16,10 +16,14 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,6 +42,9 @@ public class MessageService {
 
     @Autowired
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
+
+    private SimpleDateFormat inputDateFormatter =new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");  // this is the format the dates are saved in the database eg. 2020-07-17T17:51:19.349Z
+    private SimpleDateFormat finalDateFormat =new SimpleDateFormat("dd.MM.yy HH:mm"); // this is the format, we want to present the dates to the user (without milliseconds etc.) eg. 17.07.20 19:42
 
     public void saveOrUpdateMessage(Message message) {
         messageRepository.save(message);
@@ -72,8 +79,16 @@ public class MessageService {
         // get previous Chat between the two Users, or create new Chat
         Chat previousChat = getPreviousChat(userWhoWantsToRent, owner);
         //create Message with the given infos
-        Message message = createMessage(startDate, endDate, product,userWhoWantsToRent, owner, previousChat);
-        //add message to the chat
+        Message message = null;
+        try {
+            message = createAusleihanfrage(startDate, endDate, product, userWhoWantsToRent, owner);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Interner Datenbankfehler beim Erstellen der Nachricht - Datum konnte nicht umgewandelt werden.");
+        }
+        // add chat to the message
+        message.setChat(previousChat);
+        //also add message to the chat
         addMessageToChat(previousChat, message);
         // save the chat
         chatService.saveOrUpdateChat(previousChat);
@@ -95,12 +110,31 @@ public class MessageService {
         }
     }
 
-    private Message createMessage(String startDate, String endDate, Product product, User userWhoWantsToRent, User owner, Chat previousChat) {
+    public Message createAusleihanfrage(String startDate, String endDate, Product product, User userWhoWantsToRent, User owner) throws ParseException {
         String subject = "Neue Ausleianfrage für " + product.getName() + " von " + userWhoWantsToRent.getName();
-        String text = "Hallo " + owner.getName() + ",\n\n" + "der Nutzer " + userWhoWantsToRent.getName() + " aus " + userWhoWantsToRent.getCity() + " möchte dein " + product.getName() + " vom " + startDate + " bis " + endDate + " ausleihen." +
-                "\n Du kannst hier dem Nutzer direkt antworten (er erhält von uns eine Benachrichtigung auf Studileih, sowie eine Benachrichtigung per Email) oder sende " + userWhoWantsToRent.getName() + " direkt eine Nachricht an " + userWhoWantsToRent.getEmail() + "." +
-                "\n\n";
-        return new Message(subject, text, LocalDateTime.now().toString(), userWhoWantsToRent, owner, previousChat);
+        // transform the Message into a fitting string, depending on given values
+        StringBuilder sb = new StringBuilder();
+        sb.append(System.lineSeparator()); // https://stackoverflow.com/questions/14534767/how-to-append-a-newline-to-stringbuilder
+        sb.append(System.lineSeparator());
+        sb.append("Hallo " + owner.getName() + ",");
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("der Nutzer " + userWhoWantsToRent.getName());
+        if (userWhoWantsToRent.getCity() != null) sb.append(" aus " + userWhoWantsToRent.getCity());
+        sb.append(" möchte " + product.getName() + " vom " + finalDateFormat.format(inputDateFormatter.parse(startDate)) + " bis " + finalDateFormat.format(inputDateFormatter.parse(endDate)) + " ausleihen.");  // https://stackoverflow.com/questions/2009207/java-unparseable-date-exception
+        sb.append(System.lineSeparator());
+        sb.append("Du kannst hier dem Nutzer direkt antworten (er erhält von uns eine Benachrichtigung auf Studileih, sowie eine Benachrichtigung per Email).");
+        sb.append(System.lineSeparator());
+        sb.append("Oder sende " + userWhoWantsToRent.getName() + " direkt eine Nachricht an " + userWhoWantsToRent.getEmail() + ".");
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("Gesendet um: " + DateFormat.getDateInstance(DateFormat.SHORT).format(new Date()) + " " + DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date()) );
+        sb.append(System.lineSeparator());
+        sb.append("Don't reply to this email.");
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        
+        return new Message(subject, sb.toString(), LocalDateTime.now().toString(), userWhoWantsToRent, owner);
     }
 
     // get previous Chat between the two Users, or create new Chat
