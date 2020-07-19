@@ -98,7 +98,7 @@ public class ProductController {
     @PostMapping(path = "/products")
     @ApiOperation(value = "Add a new product to the database")
     public ResponseEntity<String> addProduct(String name, String title, Long userId, double price, MultipartFile imageFile, @RequestParam("imageFiles") MultipartFile[] imageFiles) {
-       // first we get the user who added the product
+        // first we get the user who added the product
         User productOwner = userService.getUserById(userId).get();
         System.out.println(imageFiles);
 
@@ -110,9 +110,7 @@ public class ProductController {
         Arrays.asList(imageFiles)
                 .stream()
                 .forEach(file -> imageService.saveProductPic(file, product.getId().toString()));
-
-
-    return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich angelegt.");
+        return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich angelegt.");
     }
 
     @PostMapping(value = "/products/delete/{id}")
