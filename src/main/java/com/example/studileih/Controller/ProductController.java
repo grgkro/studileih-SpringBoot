@@ -96,9 +96,11 @@ public class ProductController {
         return productService.getProductDtoById(id);
     }
 
-    @PostMapping(path = "/products", consumes = "application/json", produces = "application/json")
+    @PostMapping(path = "/products", produces = "application/json")
     @ApiOperation(value = "Add a new product to the database")
-    public boolean addProduct(@RequestBody Product product) {
+    public boolean addProduct(String name, String title, double price) {
+        Product product = new Product(name, title, price);
+        System.out.println(product);
         return productService.addProduct(product);
     }
 

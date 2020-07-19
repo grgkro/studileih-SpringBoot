@@ -44,6 +44,9 @@ public class EmailService {
     public ResponseEntity<String> sendEmailToOwner(String startDate, String endDate, Product product, User userWhoWantsToRent, User owner) {
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setTo(owner.getEmail());
+        mail.setCc(userWhoWantsToRent.getEmail());
+        mail.setReplyTo(userWhoWantsToRent.getEmail());
+        mail.setFrom(userWhoWantsToRent.getEmail());
         mail.setSubject("Neue Ausleianfrage für " + product.getName() + " von " + userWhoWantsToRent.getName());
         //create Message with the given infos
         Message message = null;
@@ -53,9 +56,16 @@ public class EmailService {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Interner Datenbankfehler beim Erstellen der Nachricht - Datum konnte nicht umgewandelt werden.");
         }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Dies ist eine Kopie der auf Studileih.de an " + owner.getName() + " gesendeten Nachricht:");
+        sb.append(message.getText());
+        sb.append(System.lineSeparator()); // https://stackoverflow.com/questions/14534767/how-to-append-a-newline-to-stringbuilder
+        sb.append(System.lineSeparator());
+        sb.append("Du kannst direkt auf diese Email Antworten.");
+        sb.append(System.lineSeparator());
         // add the message to the mail (we only need the text of the message)
         mail.setText(message.getText());
-        // send email
+        // send email to Owner + copy to userWhoWantsToRent
         try {
             emailSender.send(mail);
             return ResponseEntity.status(HttpStatus.OK).body("Deine Anfrage wurde per Email an " + owner.getName() + " gesendet.");
@@ -91,7 +101,7 @@ public class EmailService {
         sb.append(System.lineSeparator());
         sb.append("Gesendet um: " + DateFormat.getDateInstance(DateFormat.SHORT).format(new Date()) + " " + DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date()) );
         sb.append(System.lineSeparator());
-        sb.append("Don't reply to this email.");
+        sb.append("Du kannst direkt auf diese Email antworten.");
         sb.append(System.lineSeparator());
         sb.append(System.lineSeparator());
         // now also append the previous messages (there is at least one, namely the Ausleihanfrage with wich each chat starts.

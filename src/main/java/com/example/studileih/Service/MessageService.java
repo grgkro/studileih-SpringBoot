@@ -123,14 +123,12 @@ public class MessageService {
         if (userWhoWantsToRent.getCity() != null) sb.append(" aus " + userWhoWantsToRent.getCity());
         sb.append(" möchte " + product.getName() + " vom " + finalDateFormat.format(inputDateFormatter.parse(startDate)) + " bis " + finalDateFormat.format(inputDateFormatter.parse(endDate)) + " ausleihen.");  // https://stackoverflow.com/questions/2009207/java-unparseable-date-exception
         sb.append(System.lineSeparator());
-        sb.append("Du kannst hier dem Nutzer direkt antworten (er erhält von uns eine Benachrichtigung auf Studileih, sowie eine Benachrichtigung per Email).");
+        sb.append("Du kannst hier " + owner.getName() + " direkt antworten (" + owner.getName() + " erhält von uns eine Benachrichtigung auf Studileih, sowie eine Benachrichtigung per Email).");
         sb.append(System.lineSeparator());
         sb.append("Oder sende " + userWhoWantsToRent.getName() + " direkt eine Nachricht an " + userWhoWantsToRent.getEmail() + ".");
         sb.append(System.lineSeparator());
         sb.append(System.lineSeparator());
         sb.append("Gesendet um: " + DateFormat.getDateInstance(DateFormat.SHORT).format(new Date()) + " " + DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date()) );
-        sb.append(System.lineSeparator());
-        sb.append("Don't reply to this email.");
         sb.append(System.lineSeparator());
         sb.append(System.lineSeparator());
         
