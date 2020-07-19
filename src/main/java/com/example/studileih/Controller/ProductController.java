@@ -26,12 +26,11 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import javax.annotation.PostConstruct;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
+
+import java.io.File;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -96,12 +95,24 @@ public class ProductController {
         return productService.getProductDtoById(id);
     }
 
-    @PostMapping(path = "/products", produces = "application/json")
+    @PostMapping(path = "/products")
     @ApiOperation(value = "Add a new product to the database")
-    public boolean addProduct(String name, String title, double price) {
-        Product product = new Product(name, title, price);
-        System.out.println(product);
-        return productService.addProduct(product);
+    public ResponseEntity<String> addProduct(String name, String title, Long userId, double price, MultipartFile imageFile, @RequestParam("imageFiles") MultipartFile[] imageFiles) {
+       // first we get the user who added the product
+        User productOwner = userService.getUserById(userId).get();
+        System.out.println(imageFiles);
+
+        // then we create the product
+        Product product = new Product(name, title, price, productOwner);
+        // save the product
+        productService.addProduct(product);
+        // if there were product pics uploaded, we also save them
+        Arrays.asList(imageFiles)
+                .stream()
+                .forEach(file -> imageService.saveProductPic(file, product.getId().toString()));
+
+
+    return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich angelegt.");
     }
 
     @PostMapping(value = "/products/delete/{id}")

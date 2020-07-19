@@ -58,9 +58,9 @@ public class ProductService {
         return products;
     }
 
-    public boolean addProduct(Product product) {
-        productRepository.save(product);
-        return true;
+    public Product addProduct(Product product) {
+        Product product2 = productRepository.save(product);
+        return product2;
     }
 
 
