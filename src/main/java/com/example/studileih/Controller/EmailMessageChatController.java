@@ -64,14 +64,14 @@ public class EmailMessageChatController {
      */
     @PostMapping("/emails/sendEmail")
     @ApiOperation(value = "Sends an \"Ausleihanfrage\" Email from studileih@gmail.com to the owner of the product")
-    public ResponseEntity<String> sendEmailToOwner(@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId) {
+    public ResponseEntity<String> sendEmailToOwner(@RequestParam("startDate") String startDate, String endDate, String pickUpTime, String returnTime, String productId, String userId, String ownerId) {
         try {
             // get the two users and the product
             User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
             User owner = userService.getUserById(Long.parseLong(ownerId)).get();
             Product product = productService.getProductById(Long.parseLong(productId)).get();
             // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-            return emailService.sendEmailToOwner(startDate, endDate, product, userWhoWantsToRent, owner);
+            return emailService.sendEmailToOwner(startDate, endDate, pickUpTime, returnTime, product, userWhoWantsToRent, owner);
         } catch (NoSuchElementException e) {
             System.out.println(e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
@@ -83,14 +83,14 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendMessage")
     @ApiOperation(value = "Saves a message and connects it with the sending and the receiving user in the Database")
-    public ResponseEntity<String> saveMessage(@RequestParam("startDate") String startDate, String endDate, String productId, String userId, String ownerId) {
+    public ResponseEntity<String> saveMessage(@RequestParam("startDate") String startDate, String endDate, String pickUpTime, String returnTime, String productId, String userId, String ownerId) {
         try {
             // get the two users and the product
             User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
             User owner = userService.getUserById(Long.parseLong(ownerId)).get();
             Product product = productService.getProductById(Long.parseLong(productId)).get();
             // transfer the message to the messageService where it will be saved to the database
-            return messageService.sendMessageToOwner(startDate, endDate, product, userWhoWantsToRent, owner);
+            return messageService.sendMessageToOwner(startDate, endDate, pickUpTime, returnTime, product, userWhoWantsToRent, owner);
         } catch (NoSuchElementException e) {
             System.out.println(e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");

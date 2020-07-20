@@ -44,7 +44,7 @@ public class MessageService {
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
 
     private SimpleDateFormat inputDateFormatter =new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");  // this is the format the dates are saved in the database eg. 2020-07-17T17:51:19.349Z
-    private SimpleDateFormat finalDateFormat =new SimpleDateFormat("dd.MM.yy HH:mm"); // this is the format, we want to present the dates to the user (without milliseconds etc.) eg. 17.07.20 19:42
+    private SimpleDateFormat finalDateFormat =new SimpleDateFormat("dd.MM.yy"); // this is the format, we want to present the dates to the user (without milliseconds etc.) eg. 17.07.20 19:42
 
     public void saveOrUpdateMessage(Message message) {
         messageRepository.save(message);
@@ -75,13 +75,13 @@ public class MessageService {
         return messageDto;
     }
 
-    public ResponseEntity<String> sendMessageToOwner(String startDate, String endDate, Product product, User userWhoWantsToRent, User owner) {
+    public ResponseEntity<String> sendMessageToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Product product, User userWhoWantsToRent, User owner) {
         // get previous Chat between the two Users, or create new Chat
         Chat previousChat = getPreviousChat(userWhoWantsToRent, owner);
         //create Message with the given infos
         Message message = null;
         try {
-            message = createAusleihanfrage(startDate, endDate, product, userWhoWantsToRent, owner);
+            message = createAusleihanfrage(startDate, endDate, pickUpTime, returnTime, product, userWhoWantsToRent, owner);
         } catch (ParseException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Interner Datenbankfehler beim Erstellen der Nachricht - Datum konnte nicht umgewandelt werden.");
@@ -110,7 +110,7 @@ public class MessageService {
         }
     }
 
-    public Message createAusleihanfrage(String startDate, String endDate, Product product, User userWhoWantsToRent, User owner) throws ParseException {
+    public Message createAusleihanfrage(String startDate, String endDate, String pickUpTime, String returnTime, Product product, User userWhoWantsToRent, User owner) throws ParseException {
         String subject = "Neue Ausleianfrage für " + product.getName() + " von " + userWhoWantsToRent.getName();
         // transform the Message into a fitting string, depending on given values
         StringBuilder sb = new StringBuilder();
@@ -121,7 +121,27 @@ public class MessageService {
         sb.append(System.lineSeparator());
         sb.append("der Nutzer " + userWhoWantsToRent.getName());
         if (userWhoWantsToRent.getCity() != null) sb.append(" aus " + userWhoWantsToRent.getCity());
-        sb.append(" möchte " + product.getName() + " vom " + finalDateFormat.format(inputDateFormatter.parse(startDate)) + " bis " + finalDateFormat.format(inputDateFormatter.parse(endDate)) + " ausleihen.");  // https://stackoverflow.com/questions/2009207/java-unparseable-date-exception
+        sb.append(" möchte " + product.getName());
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("\t\tvom " + finalDateFormat.format(inputDateFormatter.parse(startDate)));        // https://stackoverflow.com/questions/2009207/java-unparseable-date-exception
+        if (pickUpTime != null) {
+            sb.append(" um " + pickUpTime + " Uhr ");
+        } else {
+            sb.append(" (keine Uhrzeit angegeben.)");
+        }
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("\t\tbis " + finalDateFormat.format(inputDateFormatter.parse(endDate)));
+        if (returnTime != null) {
+            sb.append(" um " + returnTime + " Uhr ");
+        } else {
+            sb.append(" (keine Uhrzeit angegeben.)");
+        }
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("ausleihen.");
+        sb.append(System.lineSeparator());
         sb.append(System.lineSeparator());
         sb.append("Du kannst hier " + owner.getName() + " direkt antworten (" + owner.getName() + " erhält von uns eine Benachrichtigung auf Studileih, sowie eine Benachrichtigung per Email).");
         sb.append(System.lineSeparator());

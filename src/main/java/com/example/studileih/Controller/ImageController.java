@@ -74,8 +74,7 @@ public class ImageController {
 
     @PostMapping("/postImage")
     @ApiOperation(value = "Add new Image")
-    public ResponseEntity handleFileUpload (@RequestParam("file") MultipartFile file, String userId, String
-            productId, String imgType){
+    public ResponseEntity handleFileUpload (@RequestParam("file") MultipartFile file, String userId, String productId, String imgType){
         // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
         if (imgType.equals("userPic")) {
             return saveUserPic(file, userId);
