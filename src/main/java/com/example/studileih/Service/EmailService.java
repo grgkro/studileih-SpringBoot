@@ -41,7 +41,7 @@ public class EmailService {
 
     }
 
-    public ResponseEntity<String> sendEmailToOwner(String startDate, String endDate, Product product, User userWhoWantsToRent, User owner) {
+    public ResponseEntity<String> sendEmailToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Product product, User userWhoWantsToRent, User owner) {
         SimpleMailMessage mail = new SimpleMailMessage();
         mail.setTo(owner.getEmail());
         mail.setCc(userWhoWantsToRent.getEmail());
@@ -51,14 +51,17 @@ public class EmailService {
         //create Message with the given infos
         Message message = null;
         try {
-            message = messageService.createAusleihanfrage(startDate, endDate, product, userWhoWantsToRent, owner);
+            message = messageService.createAusleihanfrage(startDate, endDate, pickUpTime, returnTime, product, userWhoWantsToRent, owner);
         } catch (ParseException e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Interner Datenbankfehler beim Erstellen der Nachricht - Datum konnte nicht umgewandelt werden.");
         }
+        // create the actual email text with small header + message + small footer
         StringBuilder sb = new StringBuilder();
         sb.append("Dies ist eine Kopie der auf Studileih.de an " + owner.getName() + " gesendeten Nachricht:");
+
         sb.append(message.getText());
+
         sb.append(System.lineSeparator()); // https://stackoverflow.com/questions/14534767/how-to-append-a-newline-to-stringbuilder
         sb.append(System.lineSeparator());
         sb.append("Du kannst direkt auf diese Email Antworten.");
