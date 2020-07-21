@@ -40,7 +40,7 @@ public class Product {
      private boolean available = true; //is it available?
 
     @Lob
-    // wir sagen der DB, dass sie diese Spalte als Datentyp LongText (Large Object = lob) anlegen soll, damit auch längere Texte rein gehen. Sonst legt sie es automatich als VARCHAR an und das ist schnell zu klein.
+    // wir sagen der DB, dass sie diese Spalte als Datentyp LongText (Large Object = lob) anlegen soll, damit auch längere Texte rein gehen. Sonst legt sie es automatich als TINYBLOB an und das ist schnell zu klein.
     private ArrayList<String> picPaths;
 
     @ManyToOne(fetch = FetchType.LAZY)
