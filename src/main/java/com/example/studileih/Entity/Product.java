@@ -38,7 +38,10 @@ public class Product {
      private double price = 0;
      private int views = 0; //How often was the product viewed?
      private boolean available = true; //is it available?
-     private ArrayList<String> picPaths;
+
+    @Lob
+    // wir sagen der DB, dass sie diese Spalte als Datentyp LongText (Large Object = lob) anlegen soll, damit auch längere Texte rein gehen. Sonst legt sie es automatich als VARCHAR an und das ist schnell zu klein.
+    private ArrayList<String> picPaths;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
