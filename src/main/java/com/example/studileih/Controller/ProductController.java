@@ -84,8 +84,8 @@ public class ProductController {
     @GetMapping("/products/{id}")
     @ApiOperation(value = "Returns a product entity by its ID. The result is not clean enough, be careful")
 
-    public ProductDto getProduct(@PathVariable String id) {
-        Optional<Product> optional = productService.getProductById(Long.parseLong(id));   // the id always comes as a string from angular, even when you send it as a number in angular...
+    public ProductDto getProduct(@PathVariable Long id) {
+        Optional<Product> optional = productService.getProductById(id);   // the id always comes as a string from angular, even when you send it as a number in angular...
         Product product = optional.get();
         return convertToDto(product);
     }
@@ -124,9 +124,9 @@ public class ProductController {
 
     @PostMapping(value = "/products/delete/{id}")
     @ApiOperation(value = "Deletes one product identified by its ID")
-    public ResponseEntity<String> deleteProduct(@RequestParam("id") String id) {
+    public ResponseEntity<String> deleteProduct(@RequestParam("id") Long id) {
         try {
-            productService.deleteProduct(Long.parseLong(id));
+            productService.deleteProduct(id);
             return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich gelöscht.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produkt existiert nicht mehr in der Datenbank.");
@@ -135,8 +135,8 @@ public class ProductController {
 
     @PutMapping(value = "/products/{id}")
     @ApiOperation(value = "Updates one product identified by its ID.")
-    public void updateProduct(@RequestBody Product product, @PathVariable String id) {
-        productService.updateProduct(product, Long.parseLong(id));
+    public void updateProduct(@RequestBody Product product, @PathVariable Long id) {
+        productService.updateProduct(product, id);
     }
 
 

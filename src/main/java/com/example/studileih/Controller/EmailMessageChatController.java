@@ -64,7 +64,7 @@ public class EmailMessageChatController {
      */
     @PostMapping("/emails/sendEmail")
     @ApiOperation(value = "Sends an \"Ausleihanfrage\" Email from studileih@gmail.com to the owner of the product")
-    public ResponseEntity<String> sendEmailToOwner(@RequestParam("startDate") String startDate, String endDate, String pickUpTime, String returnTime, String productId, String userId, String ownerId) {
+    public ResponseEntity<String> sendEmailToOwner(String startDate, String endDate, String pickUpTime, String returnTime, String productId, String userId, String ownerId) {
         try {
             // get the two users and the product
             User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
@@ -83,7 +83,7 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendMessage")
     @ApiOperation(value = "Saves a message and connects it with the sending and the receiving user in the Database")
-    public ResponseEntity<String> saveMessage(@RequestParam("startDate") String startDate, String endDate, String pickUpTime, String returnTime, String productId, String userId, String ownerId) {
+    public ResponseEntity<String> saveMessage(String startDate, String endDate, String pickUpTime, String returnTime, String productId, String userId, String ownerId) {
         try {
             // get the two users and the product
             User userWhoWantsToRent = userService.getUserById(Long.parseLong(userId)).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
@@ -102,13 +102,13 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/updateMessage")
     @ApiOperation(value = "Updates a Message with the receivedAt timestamp (gets called when the receiver opened the message in the frontend)")
-    public ResponseEntity<String> updateMessage(@RequestParam("chatId") String chatId, String messageId, String receivedAt) {
+    public ResponseEntity<String> updateMessage(Long chatId, Long messageId, String receivedAt) {
         Chat chat;
         Message message;
         try {
             // get the chat and the message
-            chat = chatService.getChatById(Long.parseLong(chatId)).get();
-            message = chat.getMessages().stream().filter(chatMessage -> chatMessage.getId() == Long.parseLong(messageId)).collect(Collectors.toList()).get(0);
+            chat = chatService.getChatById(chatId).get();
+            message = chat.getMessages().stream().filter(chatMessage -> chatMessage.getId() == messageId).collect(Collectors.toList()).get(0);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - die Nachricht konnte nicht geladen werden.");
         }
@@ -126,14 +126,14 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendReply")
     @ApiOperation(value = "Saves a reply message to a 'Ausleihanfrage' into the database at the specified chat, so that the other chat partner can see it next time on Studileih.de")
-    public ResponseEntity<String> sendReply(@RequestParam("subject") String subject, String messageText, String sendetAt, String chatId, String userId) {
+    public ResponseEntity<String> sendReply(String subject, String messageText, String sendetAt, Long chatId, Long userId) {
         Chat chat;
         User sender;
         User receiver;
         try {
             // get the chat
-            chat = chatService.getChatById(Long.parseLong(chatId)).get();
-            sender = userService.getUserById(Long.parseLong(userId)).get();
+            chat = chatService.getChatById(chatId).get();
+            sender = userService.getUserById(userId).get();
             if (chat.getUser1().getId() == sender.getId()) {
                 receiver = chat.getUser2();
             } else {
@@ -157,14 +157,14 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendEmailReply")
     @ApiOperation(value = "Sends the reply message with all previous messages as Email to the chat partner")
-    public ResponseEntity<String> sendEmailReply(@RequestParam("subject") String subject, String messageText, String sendetAt, String chatId, String userId) {
+    public ResponseEntity<String> sendEmailReply(String subject, String messageText, String sendetAt, Long chatId, Long userId) {
         Chat chat;
         User sender;
         User receiver;
         try {
             // get the chat and the two users
-            chat = chatService.getChatById(Long.parseLong(chatId)).get();
-            sender = userService.getUserById(Long.parseLong(userId)).get();
+            chat = chatService.getChatById(chatId).get();
+            sender = userService.getUserById(userId).get();
             if (chat.getUser1().getId() == sender.getId()) {
                 receiver = chat.getUser2();
             } else {
