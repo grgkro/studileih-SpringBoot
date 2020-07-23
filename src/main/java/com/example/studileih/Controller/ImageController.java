@@ -207,7 +207,7 @@ public class ImageController {
 
     @PostMapping("/loadProfilePicByUserId")
     @ApiOperation(value = "Add new Profile Image to User identified by ID")
-    public ResponseEntity getImageByUserId (@RequestBody String userId){
+    public ResponseEntity getImageByUserId (@RequestBody Long userId){
         // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
         User user = getActiveUser(userId);
         if (user == null)
@@ -226,7 +226,7 @@ public class ImageController {
     }
 
         private ResponseEntity saveUserPic (MultipartFile file, String userId){
-            User user = getActiveUser(userId);                                      // We first load the user, for whom we wann save the profile pic.
+            User user = getActiveUser(Long.parseLong(userId));                                      // We first load the user, for whom we wann save the profile pic.
             if (user == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
             if (user.getProfilePic() != null)
@@ -249,9 +249,9 @@ public class ImageController {
             }
         }
 
-        public User getActiveUser (String userId){
+        public User getActiveUser (Long userId){
             try {
-                Optional<User> optionalEntity = userService.getUserById(Long.parseLong(userId));
+                Optional<User> optionalEntity = userService.getUserById(userId);
                 return optionalEntity.get();
             } catch (NoSuchElementException e) {
                 return null;

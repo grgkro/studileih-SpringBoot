@@ -99,15 +99,9 @@ public class UserController {
         return userService.listAllUser();
     }
 
-    @GetMapping("/users/{id}")
-    @ApiOperation(value = "Return one User identified by ID")
-    public Optional<User> getUser(@PathVariable String id) {
-        return userService.getUserById(Long.parseLong(id));
-    }
-
     @GetMapping("/usersdto/{id}")
     @ApiOperation(value = "Return one User identified by ID as DTO")
-    public List<UserDto> getUserDto(@PathVariable Long id) {
+    public UserDto getUserDto(@PathVariable Long id) {
         return userService.getUserDtoById(id);
     }
 
