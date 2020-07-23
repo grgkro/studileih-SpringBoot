@@ -105,8 +105,7 @@ public class ProductController {
                                              String title,
                                              Long userId,
                                              double price,
-                                             MultipartFile imageFile,
-                                             @RequestParam("imageFiles") MultipartFile[] imageFiles) {
+                                             MultipartFile[] imageFiles) {
         // first we get the user who added the product
         User productOwner = userService.getUserById(userId).get();
         System.out.println(imageFiles);
@@ -124,7 +123,7 @@ public class ProductController {
 
     @PostMapping(value = "/products/delete/{id}")
     @ApiOperation(value = "Deletes one product identified by its ID")
-    public ResponseEntity<String> deleteProduct(@RequestParam("id") Long id) {
+    public ResponseEntity<String> deleteProduct(Long id) {
         try {
             productService.deleteProduct(id);
             return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich gelöscht.");
@@ -135,7 +134,7 @@ public class ProductController {
 
     @PutMapping(value = "/products/{id}")
     @ApiOperation(value = "Updates one product identified by its ID.")
-    public void updateProduct(@RequestBody Product product, @PathVariable Long id) {
+    public void updateProduct(Product product, @PathVariable Long id) {
         productService.updateProduct(product, id);
     }
 
