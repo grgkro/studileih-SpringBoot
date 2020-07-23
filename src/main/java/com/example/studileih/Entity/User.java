@@ -48,6 +48,14 @@ public class User {
     @JoinColumn(name = "dorm")
     private Dorm dorm;
 
+    public User(String name, String email, String password, Dorm dorm, String room) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.dorm = dorm;
+        this.room = room;
+    }
+
     private String room;
 
     private String city;

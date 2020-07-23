@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import javax.annotation.PostConstruct;
+
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 
@@ -53,14 +54,17 @@ public class ProductController {
 
     /**
      * Converts a Product to a ProductDto. The createdAt and updatedAt Dates are converted to simple Strings, because Date is Java specific and can't be send to Angular.
+     *
      * @param product
      * @return productDto
      */
     private ProductDto convertToDto(Product product) {
         ProductDto productDto = modelMapper.map(product, ProductDto.class);
         // falls ein Product ein CreatedAt oder UpdatedAt Value hat, muss der zu einem String konvertiert werden. Falls nicht darf das Date nicht konvertiert werden, sonst gibts NullPointerExceptions.
-        if (product.getCreatedAt() != null) productDto.setCreatedAt(product.getCreatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString()); //konvertiert Date zu String -> einfachhaltshaber nimmts immer die Zeitzone des Servers (ZoneId.systemdefault), vielleicht irgendwann mal durch die Zeitzone des Nutzers ersetzen.
-        if (product.getUpdatedAt() != null) productDto.setUpdatedAt(product.getUpdatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString());
+        if (product.getCreatedAt() != null)
+            productDto.setCreatedAt(product.getCreatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString()); //konvertiert Date zu String -> einfachhaltshaber nimmts immer die Zeitzone des Servers (ZoneId.systemdefault), vielleicht irgendwann mal durch die Zeitzone des Nutzers ersetzen.
+        if (product.getUpdatedAt() != null)
+            productDto.setUpdatedAt(product.getUpdatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString());
         return productDto;
     }
 
@@ -85,19 +89,24 @@ public class ProductController {
         Product product = optional.get();
         return convertToDto(product);
     }
-    
+
     @GetMapping("/productsdto/{id}")
     @ApiOperation(value = "Return one product by ID as DTO, in order to avoid Entity-related issues")
-    @ApiResponses(value = { @ApiResponse(code = SC_OK, message = "Everything OK"), 
-            @ApiResponse(code = SC_BAD_REQUEST, message = "An unexpected error occurred") 
-          })
+    @ApiResponses(value = {@ApiResponse(code = SC_OK, message = "Everything OK"),
+            @ApiResponse(code = SC_BAD_REQUEST, message = "An unexpected error occurred")
+    })
     public List<ProductDto> getProductDto(@PathVariable Long id) {
         return productService.getProductDtoById(id);
     }
 
     @PostMapping(path = "/products")
     @ApiOperation(value = "Add a new product to the database")
-    public ResponseEntity<String> addProduct(String name, String title, Long userId, double price, MultipartFile imageFile, @RequestParam("imageFiles") MultipartFile[] imageFiles) {
+    public ResponseEntity<String> addProduct(String name,
+                                             String title,
+                                             Long userId,
+                                             double price,
+                                             MultipartFile imageFile,
+                                             @RequestParam("imageFiles") MultipartFile[] imageFiles) {
         // first we get the user who added the product
         User productOwner = userService.getUserById(userId).get();
         System.out.println(imageFiles);
@@ -126,7 +135,7 @@ public class ProductController {
 
     @PutMapping(value = "/products/{id}")
     @ApiOperation(value = "Updates one product identified by its ID.")
-    public void updateProduct(@RequestBody Product product,@PathVariable String id) {
+    public void updateProduct(@RequestBody Product product, @PathVariable String id) {
         productService.updateProduct(product, Long.parseLong(id));
     }
 

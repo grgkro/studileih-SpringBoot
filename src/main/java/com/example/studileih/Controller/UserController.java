@@ -104,7 +104,7 @@ public class UserController {
     public Optional<User> getUser(@PathVariable String id) {
         return userService.getUserById(Long.parseLong(id));
     }
-    
+
     @GetMapping("/usersdto/{id}")
     @ApiOperation(value = "Return one User identified by ID as DTO")
     public List<UserDto> getUserDto(@PathVariable Long id) {
@@ -121,10 +121,14 @@ public class UserController {
         return true;
     }
 
-    @PostMapping(path = "/users", consumes = "application/json", produces = "application/json")
+    @PostMapping(path = "/users")
     @ApiOperation(value = "Add new User as Entity")
-    public boolean addUser(@RequestBody User user) {
-        return userService.addUser(user);
+    public ResponseEntity<String> addUser(@RequestParam("name") String name, String email, String password, String dormId, String room) {
+        System.out.println(dormId);
+        Optional<Dorm> dorm = dormService.getDormById(Long.parseLong(dormId));
+        System.out.println(dorm);
+        userService.addUser(new User(name, email, password, dorm.get(), room));
+        return ResponseEntity.status(HttpStatus.OK).body("User erfolgreich angelegt.");
     }
 
     @DeleteMapping(value = "/users/{id}")
@@ -137,7 +141,8 @@ public class UserController {
         allMessages.stream().forEach(messageDto -> {
             if (messageDto.getSender() == null && messageDto.getReceiver() == null) {
                 messageService.deleteMessage(messageDto.getId());
-            }});
+            }
+        });
     }
 
     @PutMapping(value = "/users/{id}")
