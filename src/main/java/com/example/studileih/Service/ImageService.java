@@ -225,7 +225,7 @@ public class ImageService {
         }
     }
 
-    public ResponseEntity saveProductPic (MultipartFile file, String productId) {
+    public ResponseEntity saveProductPic (MultipartFile file, Long productId) {
         Product product = getProduct(productId);                                      // We first load the product, for which we wanna save the pic.
         if (product == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
@@ -249,9 +249,9 @@ public class ImageService {
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Foto mit selbem Namen wurde für gleiches Produkt schonmal hochgeladen.");
     }
 
-    public Product getProduct (String productId){
+    public Product getProduct (Long productId){
         try {
-            Optional<Product> optionalEntity = productService.getProductById(Long.parseLong(productId));
+            Optional<Product> optionalEntity = productService.getProductById(productId);
             return optionalEntity.get();
         } catch (NoSuchElementException e) {
             return null;

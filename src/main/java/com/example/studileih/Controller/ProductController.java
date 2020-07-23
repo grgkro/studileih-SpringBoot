@@ -118,7 +118,7 @@ public class ProductController {
         // if there were product pics uploaded, we also save them
         Arrays.asList(imageFiles)
                 .stream()
-                .forEach(file -> imageService.saveProductPic(file, product.getId().toString()));
+                .forEach(file -> imageService.saveProductPic(file, product.getId()));
         return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich angelegt.");
     }
 
