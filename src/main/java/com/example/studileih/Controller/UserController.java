@@ -123,11 +123,10 @@ public class UserController {
 
     @PostMapping(path = "/users")
     @ApiOperation(value = "Add new User as Entity")
-    public ResponseEntity<String> addUser(@RequestParam("name") String name, String email, String password, String dormId, String room) {
-        System.out.println(dormId);
-        Optional<Dorm> dorm = dormService.getDormById(Long.parseLong(dormId));
-        System.out.println(dorm);
-        userService.addUser(new User(name, email, password, dorm.get(), room));
+    public ResponseEntity<String> addUser(String name, String email, String password, Long dormId, String room) {
+
+        Dorm dorm = dormService.getDormById(dormId).get();
+        userService.addUser(new User(name, email, password, dorm, room));
         return ResponseEntity.status(HttpStatus.OK).body("User erfolgreich angelegt.");
     }
 
