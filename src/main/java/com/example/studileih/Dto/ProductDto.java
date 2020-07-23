@@ -35,6 +35,7 @@ public class ProductDto {
     private String createdAt;
     private String updatedAt;
     private ArrayList<String> picPaths;
+    private String category;
 
     public ProductDto(Long userId, String name, String title) {
         this.userId = userId;

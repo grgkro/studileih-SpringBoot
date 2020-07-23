@@ -103,6 +103,7 @@ public class ProductController {
     @ApiOperation(value = "Add a new product to the database")
     public ResponseEntity<String> addProduct(String name,
                                              String title,
+                                             String category,
                                              Long userId,
                                              double price,
                                              MultipartFile[] imageFiles) {
@@ -112,6 +113,10 @@ public class ProductController {
 
         // then we create the product
         Product product = new Product(name, title, price, productOwner);
+        System.out.println(category);
+        if (category != null) {
+            product.setCategory(category);
+        }
         // save the product
         productService.addProduct(product);
         // if there were product pics uploaded, we also save them

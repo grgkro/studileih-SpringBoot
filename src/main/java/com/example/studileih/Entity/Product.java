@@ -39,6 +39,8 @@ public class Product {
      private int views = 0; //How often was the product viewed?
      private boolean available = true; //is it available?
 
+    private String category;
+
     @Lob
     // wir sagen der DB, dass sie diese Spalte als Datentyp LongText (Large Object = lob) anlegen soll, damit auch längere Texte rein gehen. Sonst legt sie es automatich als TINYBLOB an und das ist schnell zu klein.
     private ArrayList<String> picPaths;
