@@ -48,9 +48,10 @@ public class UserController {
      */
     @PostConstruct
     public void createBaseDataset() {
-        Product product1 = new Product("Haralds VW Golf", "VW 3er Golf, BJ. 1998, 100.000km", 30);
-        Product product2 = new Product("Haralds Bohrmaschine", "Bosch Bohrmaschine", 0);
-        Product product3 = new Product("Hartmuts Bohrmaschine", "Bosch Bohrmaschine", 5);
+
+        Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).build();
+        Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).build();
+        Product product3 = new ProductBuilder().withTitle("Hartmuts Bohrmaschine").withDescription("Hartmuts Bohrmaschine").withPrice(5).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).build();
         List<Product> haraldsList = new ArrayList<>();
         List<Product> hartmutsList = new ArrayList<>();
         haraldsList.add(product1);

@@ -111,7 +111,7 @@ public class MessageService {
     }
 
     public Message createAusleihanfrage(String startDate, String endDate, String pickUpTime, String returnTime, Product product, User userWhoWantsToRent, User owner) throws ParseException {
-        String subject = "Neue Ausleianfrage für " + product.getName() + " von " + userWhoWantsToRent.getName();
+        String subject = "Neue Ausleianfrage für " + product.getDescription() + " von " + userWhoWantsToRent.getName();
         // transform the Message into a fitting string, depending on given values
         StringBuilder sb = new StringBuilder();
         sb.append(System.lineSeparator()); // https://stackoverflow.com/questions/14534767/how-to-append-a-newline-to-stringbuilder
@@ -121,7 +121,7 @@ public class MessageService {
         sb.append(System.lineSeparator());
         sb.append("der Nutzer " + userWhoWantsToRent.getName());
         if (userWhoWantsToRent.getCity() != null) sb.append(" aus " + userWhoWantsToRent.getCity());
-        sb.append(" möchte " + product.getName());
+        sb.append(" möchte " + product.getDescription());
         sb.append(System.lineSeparator());
         sb.append(System.lineSeparator());
         sb.append("\t\tvom " + finalDateFormat.format(inputDateFormatter.parse(startDate)));        // https://stackoverflow.com/questions/2009207/java-unparseable-date-exception

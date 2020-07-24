@@ -1,5 +1,6 @@
 package com.example.studileih.Entity;
 
+import com.example.studileih.Service.ProductBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -32,14 +33,21 @@ public class Product {
     @LastModifiedDate
     private Date updatedAt;
 
-     private String name;
+     private String description;
      private String title;
      private String type;
      private double price = 0;
+     private boolean isBeerOk;  // when creating a new product, the user can chose that instead of a price, the renter can also give one beer.
      private int views = 0; //How often was the product viewed?
      private boolean available = true; //is it available?
 
     private String category;
+
+    // the owner can specify, when is a good time for renting the product?
+    private Date startDay;
+    private Date endDay;
+    private String pickUpTime;
+    private String returnTime;
 
     @Lob
     // wir sagen der DB, dass sie diese Spalte als Datentyp LongText (Large Object = lob) anlegen soll, damit auch längere Texte rein gehen. Sonst legt sie es automatich als TINYBLOB an und das ist schnell zu klein.
@@ -49,87 +57,26 @@ public class Product {
     @JoinColumn(name = "user_id")
     private User user;
 
-    //um schnell ein Produkt zum Testen erzeugen zu können:
-    public Product(String name) {
-        this.name = name;
-    }
-    //auch zum Testen
-    public Product(String name, String title, double price) {
-        this.name = name;
-        this.title = title;
-        this.price = price;
-    }
-
-    public Product(String name, String title, double price, User user) {
-        this.name = name;
-        this.title = title;
-        this.price = price;
-        this.user = user;
-    }
-
-    public String getName() {
-        return name;
+    public Product(ProductBuilder builder) {
+        this.id = builder.getId();
+        this.createdAt = builder.getCreatedAt();
+        this.updatedAt = builder.getUpdatedAt();
+        this.description = builder.getDescription();
+        this.title = builder.getTitle();
+        this.price = builder.getPrice();
+        this.isBeerOk = builder.isBeerOk();
+        this.views = builder.getViews();
+        this.available = builder.isAvailable();
+        this.category = builder.getCategory();
+        this.startDay = builder.getStartDay();
+        this.endDay = builder.getEndDay();
+        this.pickUpTime = builder.getPickUpTime();
+        this.returnTime = builder.getReturnTime();
+        this.picPaths = builder.getPicPaths();
+        this.user = builder.getUser();
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public int getViews() {
-        return views;
-    }
-
-    public void setViews(int views) {
-        this.views = views;
-    }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
-    public void setAvailable(boolean available) {
-        this.available = available;
-    }
-
-    public ArrayList<String> getPicPaths() {
-        return picPaths;
-    }
-
-    public void setPicPaths(ArrayList<String> picPaths) {
-        this.picPaths = picPaths;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
 
     @Override
     public String toString() {
@@ -137,7 +84,7 @@ public class Product {
                 "id=" + id +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 ", title='" + title + '\'' +
                 ", type='" + type + '\'' +
                 ", price=" + price +

@@ -47,7 +47,7 @@ public class EmailService {
         mail.setCc(userWhoWantsToRent.getEmail());
         mail.setReplyTo(userWhoWantsToRent.getEmail());
         mail.setFrom(userWhoWantsToRent.getEmail());
-        mail.setSubject("Neue Ausleianfrage für " + product.getName() + " von " + userWhoWantsToRent.getName());
+        mail.setSubject("Neue Ausleianfrage für " + product.getDescription() + " von " + userWhoWantsToRent.getName());
         //create Message with the given infos
         Message message = null;
         try {

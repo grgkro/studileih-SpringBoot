@@ -4,6 +4,8 @@ import com.example.studileih.Dto.ProductDto;
 import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
 import com.example.studileih.Service.ImageService;
+
+import com.example.studileih.Service.ProductBuilder;
 import com.example.studileih.Service.ProductService;
 import com.example.studileih.Service.UserService;
 
@@ -14,6 +16,7 @@ import io.swagger.annotations.ApiResponse;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +32,8 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
 
 import java.io.File;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.text.SimpleDateFormat;
+import java.time.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -101,18 +104,52 @@ public class ProductController {
 
     @PostMapping(path = "/products")
     @ApiOperation(value = "Add a new product to the database")
-    public ResponseEntity<String> addProduct(String name,
+    public ResponseEntity<String> addProduct(String description,
                                              String title,
                                              String category,
                                              Long userId,
                                              double price,
+                                             boolean isBeerOk,
+                                             String startDate,
+                                             String endDate,
+                                             String pickUpTime,
+                                             String returnTime,
                                              MultipartFile[] imageFiles) {
+        System.out.println(startDate);
+        LocalDate localStartDay = null;
+        if (startDate != null) {
+            int positionDot = startDate.indexOf(".");
+            if (positionDot != -1) {
+                 startDate = startDate.substring(0, positionDot );  // if the user didnt change the default start date, the startdate will come in format 2123123123.23 or 2123123123.232 contain milliseconds cuts of the milliseconds (we only need seconds)
+            }
+            Instant instantStart = Instant.ofEpochSecond(Long.parseLong(startDate));
+            localStartDay = instantStart.atZone(ZoneId.systemDefault()).toLocalDate();   // we only need the Day of the year, not the hours + minutes -> localDate() instead of LocalDateTime()
+        }
+        System.out.println(endDate);
+        LocalDate localEndDay = null;
+        if (endDate != null) {
+            Instant instantEnd = Instant.ofEpochSecond(Long.parseLong(endDate));
+            localEndDay = instantEnd.atZone(ZoneId.systemDefault()).toLocalDate();
+        }
+
+        //transform LocalDate to date: https://beginnersbook.com/2017/10/java-convert-localdate-to-date/
+        // 1. get default time zone TODO: Get the actual user time zone from angular!
+        ZoneId defaultZoneId = ZoneId.systemDefault();
+        //2. local date + atStartOfDay() + default time zone + toInstant() = Date
+        Date startDay = Date.from(localStartDay.atStartOfDay(defaultZoneId).toInstant());
+        Date endDay = Date.from(localEndDay.atStartOfDay(defaultZoneId).toInstant());
+
+        System.out.println(startDay);
+        System.out.println(endDay);
+
         // first we get the user who added the product
         User productOwner = userService.getUserById(userId).get();
         System.out.println(imageFiles);
 
         // then we create the product
-        Product product = new Product(name, title, price, productOwner);
+        Product product = new ProductBuilder().withTitle(title).withDescription(description).withCategory(category)
+                .withPrice(price).withIsBeerOk(isBeerOk).withStartDay(startDay).withEndDay(endDay).withUser(productOwner)
+                .withPickUpTime(pickUpTime).withReturnTime(returnTime).withAvailable(true).build();
         System.out.println(category);
         if (category != null) {
             product.setCategory(category);
