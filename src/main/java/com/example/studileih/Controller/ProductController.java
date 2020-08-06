@@ -116,7 +116,12 @@ public class ProductController {
                                              String returnTime,
                                              MultipartFile[] imageFiles) {
         System.out.println(startDate);
+        //transform LocalDate to date: https://beginnersbook.com/2017/10/java-convert-localdate-to-date/
+        // 1. get default time zone TODO: Get the actual user time zone from angular!
+        ZoneId defaultZoneId = ZoneId.systemDefault();
         LocalDate localStartDay = null;
+        Date startDay = null;
+        Date endDay = null;
         if (startDate != null) {
             int positionDot = startDate.indexOf(".");
             if (positionDot != -1) {
@@ -124,20 +129,17 @@ public class ProductController {
             }
             Instant instantStart = Instant.ofEpochSecond(Long.parseLong(startDate));
             localStartDay = instantStart.atZone(ZoneId.systemDefault()).toLocalDate();   // we only need the Day of the year, not the hours + minutes -> localDate() instead of LocalDateTime()
+            //2. local date + atStartOfDay() + default time zone + toInstant() = Date
+            startDay = Date.from(localStartDay.atStartOfDay(defaultZoneId).toInstant());
         }
         System.out.println(endDate);
         LocalDate localEndDay = null;
         if (endDate != null) {
             Instant instantEnd = Instant.ofEpochSecond(Long.parseLong(endDate));
             localEndDay = instantEnd.atZone(ZoneId.systemDefault()).toLocalDate();
+            //2. local date + atStartOfDay() + default time zone + toInstant() = Date
+            endDay = Date.from(localEndDay.atStartOfDay(defaultZoneId).toInstant());
         }
-
-        //transform LocalDate to date: https://beginnersbook.com/2017/10/java-convert-localdate-to-date/
-        // 1. get default time zone TODO: Get the actual user time zone from angular!
-        ZoneId defaultZoneId = ZoneId.systemDefault();
-        //2. local date + atStartOfDay() + default time zone + toInstant() = Date
-        Date startDay = Date.from(localStartDay.atStartOfDay(defaultZoneId).toInstant());
-        Date endDay = Date.from(localEndDay.atStartOfDay(defaultZoneId).toInstant());
 
         System.out.println(startDay);
         System.out.println(endDay);
