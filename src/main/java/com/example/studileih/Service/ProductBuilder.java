@@ -27,6 +27,8 @@ public class ProductBuilder {
     private String returnTime;
     private ArrayList<String> picPaths;
     private User user;
+    private String dorm;
+    private String city;
 
 
         public ProductBuilder withCreatedAt(Date createdAt) {
@@ -88,6 +90,14 @@ public class ProductBuilder {
     }
     public ProductBuilder withUser(User user) {
         this.user = user;
+        return this;
+    }
+    public ProductBuilder withDorm(String dorm) {
+        this.dorm = dorm;
+        return this;
+    }
+    public ProductBuilder withCity(String city) {
+        this.city = city;
         return this;
     }
 
@@ -154,6 +164,10 @@ public class ProductBuilder {
     public User getUser() {
         return user;
     }
+
+    public String getDorm() { return dorm;    }
+
+    public String getCity() { return city; }
 
     // client doesn't get to instantiate Customer directly
         public Product build() {

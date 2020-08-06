@@ -1,5 +1,6 @@
 package com.example.studileih.Controller;
 
+import com.example.studileih.Dto.CityEnum;
 import com.example.studileih.Dto.MessageDto;
 import com.example.studileih.Dto.UserDto;
 import com.example.studileih.Entity.*;
@@ -49,9 +50,9 @@ public class UserController {
     @PostConstruct
     public void createBaseDataset() {
 
-        Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).build();
-        Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).build();
-        Product product3 = new ProductBuilder().withTitle("Hartmuts Bohrmaschine").withDescription("Hartmuts Bohrmaschine").withPrice(5).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).build();
+        Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
+        Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
+        Product product3 = new ProductBuilder().withTitle("Hartmuts Bohrmaschine").withDescription("Hartmuts Bohrmaschine").withPrice(5).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Anna-Herrigel-Haus").withCity(CityEnum.Stuttgart.toString()).build();
         List<Product> haraldsList = new ArrayList<>();
         List<Product> hartmutsList = new ArrayList<>();
         haraldsList.add(product1);

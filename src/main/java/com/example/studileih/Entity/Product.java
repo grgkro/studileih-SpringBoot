@@ -57,6 +57,11 @@ public class Product {
     @JoinColumn(name = "user_id")
     private User user;
 
+    // the next two properties are used to display the city and dorm of the products from the other dorms on the main page (products component) -> extra loading the dorm and city with the userId of the product is too complicated here.
+    private String dorm;
+    private String city;
+
+
     public Product(ProductBuilder builder) {
         this.id = builder.getId();
         this.createdAt = builder.getCreatedAt();
@@ -74,6 +79,8 @@ public class Product {
         this.returnTime = builder.getReturnTime();
         this.picPaths = builder.getPicPaths();
         this.user = builder.getUser();
+        this.dorm = builder.getDorm();
+        this.city = builder.getCity();
     }
 
 
@@ -92,6 +99,8 @@ public class Product {
                 ", available=" + available +
                 ", picPaths=" + picPaths +
                 ", user=" + "" +          // the user String has to be empty, otherwise when loading a product, hibernate calls the toString of Product, which calls the User toString method, which calls the Product toString method ... https://stackoverflow.com/questions/40266770/spring-jpa-bi-directional-cannot-evaluate-tostring
+                ", dorm=" + dorm +
+                ", city=" + city +
                 '}';
     }
 }

@@ -151,7 +151,7 @@ public class ProductController {
         // then we create the product
         Product product = new ProductBuilder().withTitle(title).withDescription(description).withCategory(category)
                 .withPrice(price).withIsBeerOk(isBeerOk).withStartDay(startDay).withEndDay(endDay).withUser(productOwner)
-                .withPickUpTime(pickUpTime).withReturnTime(returnTime).withAvailable(true).build();
+                .withPickUpTime(pickUpTime).withReturnTime(returnTime).withAvailable(true).withDorm(productOwner.getDorm().getName()).withCity(productOwner.getDorm().getCity()).build();
         System.out.println(category);
         if (category != null) {
             product.setCategory(category);

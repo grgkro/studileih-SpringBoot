@@ -42,12 +42,8 @@ public class ProductDto {
     private String endDay;
     private String pickUpTime;
     private String returnTime;
-
-    public ProductDto(Long userId, String name, String title) {
-        this.userId = userId;
-        this.description = name;
-        this.title = title;
-    }
+    private String dorm;
+    private String city;
 
     public Date getCreatedAtConverted(String timezone) throws ParseException {
         dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
