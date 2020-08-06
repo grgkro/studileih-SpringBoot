@@ -87,4 +87,13 @@ public class User {
         this.products = products;
         this.dorm = dorm;
     }
+
+    public User(String name, String email, String password, Dorm dorm, String room) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.dorm = dorm;
+        this.room = room;
+    }
+
 }

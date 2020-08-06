@@ -35,16 +35,10 @@ public class UserService {
     }
     
     //Wir wollen ein DTO zurückbekommen, damit keine unendliche Rekursion entsteht
-    public List<UserDto> getUserDtoById(Long id) {
-    	//leere Liste für das Ergebnis
-    	List<UserDto> userDto = new ArrayList<>();
-    	//Umwandlung: gefundene User zu Liste
-    	List<User> users= userRepository.findById(id).stream().collect(Collectors.toList());
-    	//Umwandlung: users zu Dtos
-    	for (User juzer : users) {
-    		UserDto juzerDto = modelMapper.map(juzer, UserDto.class);
-    		userDto.add(juzerDto);
-    	}
+    public UserDto getUserDtoById(Long id) {
+    	User user= userRepository.findById(id).get();
+    		UserDto userDto = modelMapper.map(user, UserDto.class);
+        System.out.println(userDto);
     	return userDto;
     }
 

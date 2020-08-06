@@ -48,9 +48,10 @@ public class UserController {
      */
     @PostConstruct
     public void createBaseDataset() {
-        Product product1 = new Product("Haralds VW Golf", "VW 3er Golf, BJ. 1998, 100.000km", 30);
-        Product product2 = new Product("Haralds Bohrmaschine", "Bosch Bohrmaschine", 0);
-        Product product3 = new Product("Hartmuts Bohrmaschine", "Bosch Bohrmaschine", 5);
+
+        Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).build();
+        Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).build();
+        Product product3 = new ProductBuilder().withTitle("Hartmuts Bohrmaschine").withDescription("Hartmuts Bohrmaschine").withPrice(5).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).build();
         List<Product> haraldsList = new ArrayList<>();
         List<Product> hartmutsList = new ArrayList<>();
         haraldsList.add(product1);
@@ -99,21 +100,15 @@ public class UserController {
         return userService.listAllUser();
     }
 
-    @GetMapping("/users/{id}")
-    @ApiOperation(value = "Return one User identified by ID")
-    public Optional<User> getUser(@PathVariable String id) {
-        return userService.getUserById(Long.parseLong(id));
-    }
-    
     @GetMapping("/usersdto/{id}")
     @ApiOperation(value = "Return one User identified by ID as DTO")
-    public List<UserDto> getUserDto(@PathVariable Long id) {
+    public UserDto getUserDto(@PathVariable Long id) {
         return userService.getUserDtoById(id);
     }
     
     @GetMapping("/usersdtoprotected/{id}")
     @ApiOperation(value = "Return one User identified by ID as DTO, protected by JWT")
-    public List<UserDto> getUserDtoProtected(@PathVariable Long id) {
+    public UserDto getUserDtoProtected(@PathVariable Long id) {
         return userService.getUserDtoById(id);
     }
 
@@ -127,10 +122,13 @@ public class UserController {
         return true;
     }
 
-    @PostMapping(path = "/users", consumes = "application/json", produces = "application/json")
+    @PostMapping(path = "/users")
     @ApiOperation(value = "Add new User as Entity")
-    public boolean addUser(@RequestBody User user) {
-        return userService.addUser(user);
+    public ResponseEntity<String> addUser(String name, String email, String password, Long dormId, String room) {
+
+        Dorm dorm = dormService.getDormById(dormId).get();
+        userService.addUser(new User(name, email, password, dorm, room));
+        return ResponseEntity.status(HttpStatus.OK).body("User erfolgreich angelegt.");
     }
 
     @DeleteMapping(value = "/users/{id}")
@@ -143,7 +141,8 @@ public class UserController {
         allMessages.stream().forEach(messageDto -> {
             if (messageDto.getSender() == null && messageDto.getReceiver() == null) {
                 messageService.deleteMessage(messageDto.getId());
-            }});
+            }
+        });
     }
 
     @PutMapping(value = "/users/{id}")

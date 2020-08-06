@@ -68,7 +68,7 @@ public class ProductService {
         Product oldProduct = getProductById(id).get();
 
         if(oldProduct.isAvailable()){
-            oldProduct.setName(newProduct.getName());
+            oldProduct.setDescription(newProduct.getDescription());
             oldProduct.setTitle(newProduct.getTitle());
             oldProduct.setType(newProduct.getType());
             oldProduct.setPrice(newProduct.getPrice());

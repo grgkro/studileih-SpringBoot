@@ -27,7 +27,7 @@ public class ProductDto {
 
     private Long id;
     private Long userId;
-    private String name;
+    private String description;
     private String title;
     private double price = 0;
     private int views = 0; //How often was the product viewed?
@@ -35,10 +35,17 @@ public class ProductDto {
     private String createdAt;
     private String updatedAt;
     private ArrayList<String> picPaths;
+    private String category;
+
+    private boolean isBeerOk;  // when creating a new product, the user can chose that instead of a price, the renter can also give one beer.
+    private String startDay;
+    private String endDay;
+    private String pickUpTime;
+    private String returnTime;
 
     public ProductDto(Long userId, String name, String title) {
         this.userId = userId;
-        this.name = name;
+        this.description = name;
         this.title = title;
     }
 
@@ -66,86 +73,4 @@ public class ProductDto {
         return dateFormat;
     }
 
-
-
-
-//    public Long getId() {
-//        return id;
-//    }
-//
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
-//
-//    public Long getUserId() {
-//        return userId;
-//    }
-//
-//    public void setUserId(Long userId) {
-//        this.userId = userId;
-//    }
-//
-//    public String getName() {
-//        return name;
-//    }
-//
-//    public void setName(String name) {
-//        this.name = name;
-//    }
-//
-//    public String getTitle() {
-//        return title;
-//    }
-//
-//    public void setTitle(String title) {
-//        this.title = title;
-//    }
-//
-//    public double getPrice() {
-//        return price;
-//    }
-//
-//    public void setPrice(double price) {
-//        this.price = price;
-//    }
-//
-//    public int getViews() {
-//        return views;
-//    }
-//
-//    public void setViews(int views) {
-//        this.views = views;
-//    }
-//
-//    public boolean isAvailable() {
-//        return available;
-//    }
-//
-//    public void setAvailable(boolean available) {
-//        this.available = available;
-//    }
-//
-//    public String getCreatedAt() {
-//        return createdAt;
-//    }
-//
-//    public void setCreatedAt(String createdAt) {
-//        this.createdAt = createdAt;
-//    }
-//
-//    public String getUpdatedAt() {
-//        return updatedAt;
-//    }
-//
-//    public void setUpdatedAt(String updatedAt) {
-//        this.updatedAt = updatedAt;
-//    }
-//
-//    public ArrayList<String> getPicPaths() {
-//        return picPaths;
-//    }
-//
-//    public void setPicPaths(ArrayList<String> picPaths) {
-//        this.picPaths = picPaths;
-//    }
 }

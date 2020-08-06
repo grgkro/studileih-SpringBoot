@@ -54,14 +54,14 @@ public class ImageController {
      */
     @PostMapping("/images/loadProductPicByFilename")    //https://bezkoder.com/spring-boot-upload-multiple-files/
     @ApiOperation(value = "Loads and returns the image of a product by it's provided filename")
-    public ResponseEntity loadProductPicByFilename(@RequestParam("filename") String filename, String productId) {
+    public ResponseEntity loadProductPicByFilename(String filename, Long productId) {
         // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
         Product product = imageService.getProduct(productId);
         if (product == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
         // Then we load the picture from the local storage
         if (product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
-            Resource file = imageService.loadProductPic(filename, Long.parseLong(productId));  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
+            Resource file = imageService.loadProductPic(filename, productId);  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
             System.out.println(file);
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
@@ -74,13 +74,13 @@ public class ImageController {
 
     @PostMapping("/postImage")
     @ApiOperation(value = "Add new Image")
-    public ResponseEntity handleFileUpload (@RequestParam("file") MultipartFile file, String userId, String productId, String imgType){
+    public ResponseEntity handleFileUpload (MultipartFile file, Long userId, Long productId, String imgType){
         // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
         if (imgType.equals("userPic")) {
             return saveUserPic(file, userId);
         } else if (imgType.equals("productPic")) {
             // before we store the image, we need to check if the image is already in the archive. If so, we need to delete it there. Otherwise it would be in the archive and in the normal folder at the same time. If you then delete it (transfer it from normal folder to archive, or restore it (transfer it from archive to normal folder) you would get a fileAlreadyExists Exeption.
-            if (imageService.checkIfPicIsAlreadyInArchive(file, Long.parseLong(productId))) imageService.deletePicFromArchive( file,  Long.parseLong(productId));
+            if (imageService.checkIfPicIsAlreadyInArchive(file, productId)) imageService.deletePicFromArchive( file,  productId);
             return imageService.saveProductPic(file, productId);
         } else if (imgType.equals("newProduct")) {
 
@@ -95,7 +95,7 @@ public class ImageController {
      */
     @PostMapping("/images/archivePicByFilename")
     @ApiOperation(value = "Transfers an deleted image from the user or product folder to the archive folder, so that it can be restored later.")
-    public ResponseEntity archiveProductPicByFilename(@RequestParam("filename") String filename, String imgType, String productId) throws IOException {
+    public ResponseEntity archiveProductPicByFilename( String filename, String imgType, String productId) throws IOException {
         // find correct paths
         String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
         String archiveFolderLocation = parentFolderLocation + "/archive/" + imgType + "s/" + imgType + productId;
@@ -122,7 +122,7 @@ public class ImageController {
      */
     @PostMapping("/images/restorePicByFilename")
     @ApiOperation(value = "Restores a deleted image from the archive to the user or product folder")
-    public ResponseEntity restorePicByFilename(@RequestParam("filename") String filename, String imgType, String productId) throws IOException {
+    public ResponseEntity restorePicByFilename(String filename, String imgType, Long productId) throws IOException {
         // find correct paths
         String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
         String targetFolderLocation = parentFolderLocation + "/" + imgType + "s/" + imgType + productId + "/";
@@ -144,7 +144,7 @@ public class ImageController {
                 productService.saveOrUpdateProduct(product);
             }
             // delete restored img from archive
-            imageService.deleteImageByFilename(filename, "archiveProductPic", Long.parseLong(productId));  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+            imageService.deleteImageByFilename(filename, "archiveProductPic", productId);  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
         }
         // return success entity (OK - 200)
         return ResponseEntity.status(HttpStatus.OK).body(imgType + " erfolgreich wiederhergestellt");
@@ -155,7 +155,7 @@ public class ImageController {
      */
     @PostMapping("/images/deleteArchive")
     @ApiOperation(value = "Deletes the archive folder of one user or product")
-    public ResponseEntity deleteArchive(@RequestParam("archiveType") String archiveType, String id) throws IOException {
+    public ResponseEntity deleteArchive(String archiveType, String id) throws IOException {
         String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
         String archiveFolderLocation = parentFolderLocation + "/archive/" + archiveType + "s/" + archiveType + id;
         File file = new File(archiveFolderLocation);
@@ -169,7 +169,7 @@ public class ImageController {
      */
     @PostMapping("/images/deleteImageFolder")
     @ApiOperation(value = "Deletes the imageFolder of one product or user (depending on the provided folderType)")
-    public ResponseEntity deleteImageFolder(@RequestParam("folderType") String folderType, String id) throws IOException {
+    public ResponseEntity deleteImageFolder(String folderType, String id) throws IOException {
         String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
         String archiveFolderLocation = parentFolderLocation + "/" + folderType + "s/" + folderType + id;
         File file = new File(archiveFolderLocation);
@@ -186,9 +186,9 @@ public class ImageController {
          */
         @PostMapping("/images/deleteProductPicByFilename")
         @ApiOperation(value = "Deletes a product image by filename")
-        public ResponseEntity deleteProductPicByFilename (@RequestParam("filename") String filename, String productId){
+        public ResponseEntity deleteProductPicByFilename (String filename, Long productId){
             // first remove the image from the databse
-            Optional<Product> optional = productService.getProductById(Long.parseLong(productId));   // the id always comes as a string from angular, even when you send it as a number in angular...
+            Optional<Product> optional = productService.getProductById((productId));   // the id always comes as a string from angular, even when you send it as a number in angular...
             Product product = optional.get();
             if (product != null && product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
                 product.getPicPaths().remove(filename);
@@ -197,7 +197,7 @@ public class ImageController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ProductPic konnte in Datenbank nicht gefunden werden.");
             }
             // if the image was removed from DB, remove the image from the local storage, too:
-            return imageService.deleteImageByFilename(filename, "productPic", Long.parseLong(productId));  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+            return imageService.deleteImageByFilename(filename, "productPic", productId);  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
         }
 
 
@@ -207,7 +207,7 @@ public class ImageController {
 
     @PostMapping("/loadProfilePicByUserId")
     @ApiOperation(value = "Add new Profile Image to User identified by ID")
-    public ResponseEntity getImageByUserId (@RequestBody String userId){
+    public ResponseEntity getImageByUserId (@RequestBody Long userId){
         // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
         User user = getActiveUser(userId);
         if (user == null)
@@ -225,7 +225,7 @@ public class ImageController {
 
     }
 
-        private ResponseEntity saveUserPic (MultipartFile file, String userId){
+        private ResponseEntity saveUserPic (MultipartFile file, Long userId){
             User user = getActiveUser(userId);                                      // We first load the user, for whom we wann save the profile pic.
             if (user == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
@@ -249,9 +249,9 @@ public class ImageController {
             }
         }
 
-        public User getActiveUser (String userId){
+        public User getActiveUser (Long userId){
             try {
-                Optional<User> optionalEntity = userService.getUserById(Long.parseLong(userId));
+                Optional<User> optionalEntity = userService.getUserById(userId);
                 return optionalEntity.get();
             } catch (NoSuchElementException e) {
                 return null;
