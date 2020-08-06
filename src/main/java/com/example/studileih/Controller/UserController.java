@@ -110,6 +110,12 @@ public class UserController {
     public List<UserDto> getUserDto(@PathVariable Long id) {
         return userService.getUserDtoById(id);
     }
+    
+    @GetMapping("/usersdtoprotected/{id}")
+    @ApiOperation(value = "Return one User identified by ID as DTO, protected by JWT")
+    public List<UserDto> getUserDtoProtected(@PathVariable Long id) {
+        return userService.getUserDtoById(id);
+    }
 
     /**
      * Get's an user as JSON from the angular-client and saves it as a new user into the repository
