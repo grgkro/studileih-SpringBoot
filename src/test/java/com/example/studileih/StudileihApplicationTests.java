@@ -3,7 +3,7 @@ package com.example.studileih;
 import com.example.studileih.Entity.Message;
 import com.example.studileih.Entity.User;
 import com.example.studileih.Service.*;
-import javafx.application.Application;
+//import javafx.application.Application;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.util.password.BasicPasswordEncryptor;
 import org.jasypt.util.text.BasicTextEncryptor;
