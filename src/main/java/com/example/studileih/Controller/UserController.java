@@ -16,6 +16,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.ApiResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import javax.annotation.PostConstruct;
@@ -125,10 +126,12 @@ public class UserController {
 
     @PostMapping(path = "/users")
     @ApiOperation(value = "Add new User as Entity")
-    public ResponseEntity<String> addUser(String name, String email, String password, Long dormId, String room) {
+    public ResponseEntity<String> addUser(String name, String email, String password, Long dormId, MultipartFile profilePic) {
 
         Dorm dorm = dormService.getDormById(dormId).get();
-        userService.addUser(new User(name, email, password, dorm, room));
+        User newUser = new User(name, email, password, dorm);
+        userService.addUser(newUser);
+        userService.saveUserPic(profilePic, newUser.getId() );
         return ResponseEntity.status(HttpStatus.OK).body("User erfolgreich angelegt.");
     }
 

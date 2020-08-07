@@ -77,7 +77,7 @@ public class ImageController {
     public ResponseEntity handleFileUpload (MultipartFile file, Long userId, Long productId, String imgType){
         // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
         if (imgType.equals("userPic")) {
-            return saveUserPic(file, userId);
+            return userService.saveUserPic(file, userId);
         } else if (imgType.equals("productPic")) {
             // before we store the image, we need to check if the image is already in the archive. If so, we need to delete it there. Otherwise it would be in the archive and in the normal folder at the same time. If you then delete it (transfer it from normal folder to archive, or restore it (transfer it from archive to normal folder) you would get a fileAlreadyExists Exeption.
             if (imageService.checkIfPicIsAlreadyInArchive(file, productId)) imageService.deletePicFromArchive( file,  productId);
@@ -209,7 +209,7 @@ public class ImageController {
     @ApiOperation(value = "Add new Profile Image to User identified by ID")
     public ResponseEntity getImageByUserId (@RequestBody Long userId){
         // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
-        User user = getActiveUser(userId);
+        User user = userService.getActiveUser(userId);
         if (user == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
         // Then we load the picture from the local storage
@@ -225,38 +225,7 @@ public class ImageController {
 
     }
 
-        private ResponseEntity saveUserPic (MultipartFile file, Long userId){
-            User user = getActiveUser(userId);                                      // We first load the user, for whom we wann save the profile pic.
-            if (user == null)
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
-            if (user.getProfilePic() != null)
-                deleteOldProfilePic(user);            // deletes old User Pic, so that there's always only one profile pic
-            ResponseEntity response = imageService.storeImage(file, "user", user.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
-            if (response.getStatusCodeValue() == 200) {                         // if saving Pfoto was successfull => response status = 200...
-                System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename());
-                user.setProfilePic(file.getOriginalFilename());
-                userService.saveOrUpdateUser(user);                             //updated den User in der datenbank, damit der Fotoname da auch gespeichert ist.
-            }
-            return response;
-        }
 
-        private void deleteOldProfilePic (User user){
-            try {
-                Resource resource = imageService.loadUserProfilePic(user.getProfilePic(), user);
-                new File(resource.getURI()).delete();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public User getActiveUser (Long userId){
-            try {
-                Optional<User> optionalEntity = userService.getUserById(userId);
-                return optionalEntity.get();
-            } catch (NoSuchElementException e) {
-                return null;
-            }
-        }
 
 
 

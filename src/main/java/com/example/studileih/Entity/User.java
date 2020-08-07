@@ -88,12 +88,11 @@ public class User {
         this.dorm = dorm;
     }
 
-    public User(String name, String email, String password, Dorm dorm, String room) {
+    public User(String name, String email, String password, Dorm dorm) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.dorm = dorm;
-        this.room = room;
     }
 
 }

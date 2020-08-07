@@ -54,6 +54,7 @@ public class DormController {
             Dorm theodorHeuss = new Dorm("Theodor-Heuss",48.779592, 9.158887, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartMitte.toString());
             Dorm wiederholdstraße = new Dorm("Wiederholdstraße",48.785276, 9.167170, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartMitte.toString());
             Dorm wohnarealStuttgartRot = new Dorm("Wohnareal Stuttgart-Rot",48.833793, 9.185528, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartMitte.toString());
+            Dorm elPalitoDegerloch = new Dorm("El Palito e.V. Degerloch",48.755229, 9.172726, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartMitte.toString());
 
             Dorm allmandring1 = new Dorm("Allmandring I",48.745091, 9.101267, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartVaihingen.toString());
             Dorm allmandring2 = new Dorm("Allmandring II",48.744399, 9.097331, CityEnum.Stuttgart.toString(), DormDistricts.StuttgartVaihingen.toString());
@@ -97,6 +98,7 @@ public class DormController {
             dormService.addDorm(theodorHeuss);
             dormService.addDorm(wiederholdstraße);
             dormService.addDorm(wohnarealStuttgartRot);
+            dormService.addDorm(elPalitoDegerloch);
 
             dormService.addDorm(allmandring1);
             dormService.addDorm(allmandring2);

@@ -8,12 +8,19 @@ import com.example.studileih.Repository.UserRepository;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -22,6 +29,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ImageService imageService;
 
     @Autowired
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
@@ -99,6 +109,39 @@ public class UserService {
         }
 
         return oldUser;
+    }
+
+    public ResponseEntity saveUserPic(MultipartFile file, Long userId){
+        User user = getActiveUser(userId);                                      // We first load the user, for whom we wanna save the profile pic.
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
+        if (user.getProfilePic() != null)
+            deleteOldProfilePic(user);            // deletes old User Pic, so that there's always only one profile pic
+        ResponseEntity response = imageService.storeImage(file, "user", user.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
+        if (response.getStatusCodeValue() == 200) {                         // if saving Pfoto was successfull => response status = 200...
+            System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename());
+            user.setProfilePic(file.getOriginalFilename());
+            saveOrUpdateUser(user);                             //updated den User in der datenbank, damit der Fotoname da auch gespeichert ist.
+        }
+        return response;
+    }
+
+    private void deleteOldProfilePic (User user){
+        try {
+            Resource resource = imageService.loadUserProfilePic(user.getProfilePic(), user);
+            new File(resource.getURI()).delete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public User getActiveUser (Long userId){
+        try {
+            Optional<User> optionalEntity = getUserById(userId);
+            return optionalEntity.get();
+        } catch (NoSuchElementException e) {
+            return null;
+        }
     }
 
 }
