@@ -126,10 +126,10 @@ public class UserController {
 
     @PostMapping(path = "/users")
     @ApiOperation(value = "Add new User as Entity")
-    public ResponseEntity<String> addUser(String name, String email, String password, Long dormId, MultipartFile profilePic) {
+    public ResponseEntity<String> addUser(String name, String email, String password, String city, Long dormId, MultipartFile profilePic) {
 
         Dorm dorm = dormService.getDormById(dormId).get();
-        User newUser = new User(name, email, password, dorm);
+        User newUser = new User(name, email, password, city, dorm);
         userService.addUser(newUser);
         userService.saveUserPic(profilePic, newUser.getId() );
         return ResponseEntity.status(HttpStatus.OK).body("User erfolgreich angelegt.");
