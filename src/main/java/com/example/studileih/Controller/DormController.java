@@ -134,7 +134,6 @@ public class DormController {
      */
     @GetMapping("/dorms")
     public List<DormDto> getDormLocations() {
-        System.out.println(dormService.listAllDorms());
         return dormService.listAllDorms();
     }
 
