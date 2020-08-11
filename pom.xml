@@ -14,7 +14,7 @@
     <name>studileih</name>
     <description>Demo project for Spring Boot</description>
     <properties>
-        <java.version>11.0.7</java.version>
+        <java.version>11</java.version>
         <swagger.version>2.9.2</swagger.version>
         <swagger-annotations.version>1.5.21</swagger-annotations.version>
         <swagger-models.version>1.5.21</swagger-models.version>
