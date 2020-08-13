@@ -11,9 +11,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,11 +61,24 @@ public class ProductService {
         return products;
     }
 
-    public Product addProduct(Product product) {
-        Product product2 = productRepository.save(product);
-        return product2;
+    public Date transformStringToDate(String stringDate) {
+        //transform LocalDate to date: https://beginnersbook.com/2017/10/java-convert-localdate-to-date/
+        // 1. get default time zone TODO: Get the actual user time zone from angular!
+        ZoneId defaultZoneId = ZoneId.systemDefault();
+        Date date = null;
+        LocalDate localStartDay = null;
+        if (stringDate != null) {
+            int positionDot = stringDate.indexOf(".");
+            if (positionDot != -1) {
+                stringDate = stringDate.substring(0, positionDot );  // if the user didnt change the default start date, the startdate will come in format 2123123123.23 or 2123123123.232 contain milliseconds cuts of the milliseconds (we only need seconds)
+            }
+            Instant instantStart = Instant.ofEpochSecond(Long.parseLong(stringDate));
+            localStartDay = instantStart.atZone(ZoneId.systemDefault()).toLocalDate();   // we only need the Day of the year, not the hours + minutes -> localDate() instead of LocalDateTime()
+            //2. local date + atStartOfDay() + default time zone + toInstant() = Date
+            date = Date.from(localStartDay.atStartOfDay(defaultZoneId).toInstant());
+        }
+        return date;
     }
-
 
     public Product updateProduct(Product newProduct, Long id) {
         Product oldProduct = getProductById(id).get();

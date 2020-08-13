@@ -52,9 +52,9 @@ public class ImageService {
      */
     public ResponseEntity storeImage(MultipartFile file, String type, Long id) {
         createFolder(Paths.get(parentFolderLocation));   // falls "images" folder fehlt, erzeugen wir den:
-        createFolder(Paths.get(parentFolderLocation + "/" + type + "s"));  // falls "users" folder fehlt, erzeugen wir den:
-        createFolder(Paths.get(parentFolderLocation + "/" + type + "s/" + type + id)); //creates a folder named "user + userId". Only if folder doesn't already exists.
-        return storeImage(file, type + "Pic", Paths.get(parentFolderLocation + "/" + type + "s/" + type + id));   // jetzt können wir das Foto in den user1, user2,... folder speichern:
+        createFolder(Paths.get(parentFolderLocation + "/" + type + "s"));  // falls "users" oder "products" folder fehlt, erzeugen wir den:
+        createFolder(Paths.get(parentFolderLocation + "/" + type + "s/" + type + id)); //creates a folder named "user + userId" oder "product" + productId. Only if folder doesn't already exists.
+        return storeImage(file, type + "Pic", Paths.get(parentFolderLocation + "/" + type + "s/" + type + id));   // jetzt können wir das Foto in den user1, user2, bzw. product1, product2,... folder speichern:
 
     }
 
@@ -225,16 +225,17 @@ public class ImageService {
         }
     }
 
-    public ResponseEntity saveProductPic (MultipartFile file, Long productId) {
-        Product product = getProduct(productId);                                      // We first load the product, for which we wanna save the pic.
+    public ResponseEntity saveProductPic (MultipartFile file, Product product) {
+
         if (product == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
-        if (!hasProductAlreadyHasThisFile(file, product)) {                         // checks, if User is currently using a Photo with exact same name as ProfilePic
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + product.getId() + " doesn't exist in db.");    // Returns a status = 404 response
+        if (!hasAlreadyThisFile(file, product)) {                         // checks, if the Productalready has a Photo with exact same name.
             ResponseEntity response = storeImage(file, "product", product.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
             if (response.getStatusCodeValue() == 200) {
                 System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename()); // if saving Pfoto was successfull => response status = 200...
                 if (product.getPicPaths() == null) {                                   // we only saved the pic in the pic folder until now, not in the database. A Product can have multiple images, so the pic needs to get stored in a List
-                    ArrayList<String> arr = new ArrayList();
+                    ArrayList<String> arr = new ArrayList<>();
+                    //add the new picPath
                     arr.add(file.getOriginalFilename());
                     product.setPicPaths(arr);
                 } else {
@@ -242,7 +243,7 @@ public class ImageService {
                     product.setPicPaths(product.getPicPaths());
                 }
                 System.out.println(product.getPicPaths());
-                productService.addProduct(product);                             //updated das Product in der datenbank, damit der Fotoname da auch gespeichert ist.
+                productService.saveOrUpdateProduct(product);                             //updated das Product in der datenbank, damit der Fotoname da auch gespeichert ist.
             }
             return response;
         }
@@ -258,7 +259,7 @@ public class ImageService {
         }
     }
 
-    private boolean hasProductAlreadyHasThisFile (MultipartFile file, Product product){
+    private boolean hasAlreadyThisFile (MultipartFile file, Product product){
         if (product.getPicPaths() != null) {
             Path path = Paths.get(file.getOriginalFilename());
             System.out.println("Path: " + path);

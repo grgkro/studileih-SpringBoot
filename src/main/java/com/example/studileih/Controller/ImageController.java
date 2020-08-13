@@ -81,7 +81,8 @@ public class ImageController {
         } else if (imgType.equals("productPic")) {
             // before we store the image, we need to check if the image is already in the archive. If so, we need to delete it there. Otherwise it would be in the archive and in the normal folder at the same time. If you then delete it (transfer it from normal folder to archive, or restore it (transfer it from archive to normal folder) you would get a fileAlreadyExists Exeption.
             if (imageService.checkIfPicIsAlreadyInArchive(file, productId)) imageService.deletePicFromArchive( file,  productId);
-            return imageService.saveProductPic(file, productId);
+            Product product = imageService.getProduct(productId);                                      // We first load the product, for which we wanna save the pic.
+            return imageService.saveProductPic(file, product);
         } else if (imgType.equals("newProduct")) {
 
         }

@@ -104,7 +104,8 @@ public class ProductController {
 
     @PostMapping(path = "/products")
     @ApiOperation(value = "Add a new product to the database")
-    public ResponseEntity<String> addProduct(String description,
+    public ResponseEntity<String> addProduct(Long id,
+                                             String description,
                                              String title,
                                              String category,
                                              Long userId,
@@ -115,31 +116,18 @@ public class ProductController {
                                              String pickUpTime,
                                              String returnTime,
                                              MultipartFile[] imageFiles) {
+
+        System.out.println("---------------------");
+        System.out.println(imageFiles);
+        System.out.println(imageFiles.length);
+//        System.out.println(imageFiles[0]);
+//        System.out.println(imageFiles[imageFiles.length-1]);
+        System.out.println("--------------");
+
         System.out.println(startDate);
-        //transform LocalDate to date: https://beginnersbook.com/2017/10/java-convert-localdate-to-date/
-        // 1. get default time zone TODO: Get the actual user time zone from angular!
-        ZoneId defaultZoneId = ZoneId.systemDefault();
-        LocalDate localStartDay = null;
-        Date startDay = null;
-        Date endDay = null;
-        if (startDate != null) {
-            int positionDot = startDate.indexOf(".");
-            if (positionDot != -1) {
-                 startDate = startDate.substring(0, positionDot );  // if the user didnt change the default start date, the startdate will come in format 2123123123.23 or 2123123123.232 contain milliseconds cuts of the milliseconds (we only need seconds)
-            }
-            Instant instantStart = Instant.ofEpochSecond(Long.parseLong(startDate));
-            localStartDay = instantStart.atZone(ZoneId.systemDefault()).toLocalDate();   // we only need the Day of the year, not the hours + minutes -> localDate() instead of LocalDateTime()
-            //2. local date + atStartOfDay() + default time zone + toInstant() = Date
-            startDay = Date.from(localStartDay.atStartOfDay(defaultZoneId).toInstant());
-        }
-        System.out.println(endDate);
-        LocalDate localEndDay = null;
-        if (endDate != null) {
-            Instant instantEnd = Instant.ofEpochSecond(Long.parseLong(endDate));
-            localEndDay = instantEnd.atZone(ZoneId.systemDefault()).toLocalDate();
-            //2. local date + atStartOfDay() + default time zone + toInstant() = Date
-            endDay = Date.from(localEndDay.atStartOfDay(defaultZoneId).toInstant());
-        }
+
+        Date startDay = productService.transformStringToDate(startDate);
+        Date endDay = productService.transformStringToDate(endDate);
 
         System.out.println(startDay);
         System.out.println(endDay);
@@ -152,18 +140,77 @@ public class ProductController {
         Product product = new ProductBuilder().withTitle(title).withDescription(description).withCategory(category)
                 .withPrice(price).withIsBeerOk(isBeerOk).withStartDay(startDay).withEndDay(endDay).withUser(productOwner)
                 .withPickUpTime(pickUpTime).withReturnTime(returnTime).withAvailable(true).withDorm(productOwner.getDorm().getName()).withCity(productOwner.getDorm().getCity()).build();
-        System.out.println(category);
-        if (category != null) {
-            product.setCategory(category);
-        }
+
+
         // save the product
-        productService.addProduct(product);
+        productService.saveOrUpdateProduct(product);
         // if there were product pics uploaded, we also save them
         Arrays.asList(imageFiles)
                 .stream()
-                .forEach(file -> imageService.saveProductPic(file, product.getId()));
+                .forEach(file -> imageService.saveProductPic(file, product));
         return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich angelegt.");
     }
+
+    @PutMapping(path = "/products")
+    @ApiOperation(value = "Edit an existing product")
+    public ResponseEntity<String> editProduct(Long id,
+                                             String description,
+                                             String title,
+                                             String category,
+                                             Long userId,
+                                             double price,
+                                             boolean isBeerOk,
+                                             String startDate,
+                                             String endDate,
+                                             String pickUpTime,
+                                             String returnTime,
+                                             MultipartFile[] imageFiles) {
+
+        System.out.println("---------------------");
+        System.out.println(imageFiles);
+        System.out.println(imageFiles.length);
+        System.out.println(imageFiles[0]);
+        System.out.println(imageFiles[imageFiles.length-1]);
+        System.out.println("--------------");
+
+      Date startDay = productService.transformStringToDate(startDate);
+      Date endDay = productService.transformStringToDate(endDate);
+
+        System.out.println(startDay);
+        System.out.println(endDay);
+
+        // if an id was provided this means we want to update the product, not make a new one.
+        Product product = null;
+        if (id != null) {
+            product = productService.getProductById(id).get();
+            product.setTitle(title);
+            product.setDescription(description);
+            if (category != null) {
+                product.setCategory(category);
+            }
+            product.setPrice(price);
+            product.setBeerOk(isBeerOk);
+            product.setStartDay(startDay);
+            product.setEndDay(endDay);
+            product.setPickUpTime(pickUpTime);
+            product.setReturnTime(returnTime);
+            product.setAvailable(true);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Zum Editieren muss eine Produkt Id angegben werden.");
+        }
+
+        // save the product
+        productService.saveOrUpdateProduct(product);
+        // if there were product pics uploaded, we also save them
+        Product finalProduct = product;   // variable in Lambda Expression should be final
+        Arrays.asList(imageFiles)
+                .stream()
+                .forEach(file -> imageService.saveProductPic(file, finalProduct));
+        return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich editiert.");
+    }
+
+
+
 
     @PostMapping(value = "/products/delete/{id}")
     @ApiOperation(value = "Deletes one product identified by its ID")
