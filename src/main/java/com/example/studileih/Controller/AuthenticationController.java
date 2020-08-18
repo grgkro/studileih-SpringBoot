@@ -1,5 +1,6 @@
 package com.example.studileih.Controller;
 
+import com.example.studileih.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +14,9 @@ import io.swagger.annotations.ApiOperation;
 import com.example.studileih.Security.AuthRequest;
 import com.example.studileih.Security.JwtUtil;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 @RestController
 @CrossOrigin
 @Api(tags = "Authentication API - controller methods for authenticating Users")
@@ -22,11 +26,22 @@ public class AuthenticationController {
     private JwtUtil jwtUtil;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/")
     @ApiOperation(value = "Dummy welcome message")
-    public String welcome() {
-        return "Welcome to StudiLeih !!!";
+    public String welcome(HttpServletRequest httpServletRequest) {
+        String autorizationHeader = httpServletRequest.getHeader("Authorization");
+        String token;
+        String userName;
+        if( autorizationHeader != null && autorizationHeader.startsWith("Bearer")) {
+            token = autorizationHeader.substring(7);
+            if (token != null) {
+                return "Welcome to StudiLeih !!!";
+            }
+        }
+        return "Access denied !!!";
     }
 
     @PostMapping("/authenticate")
