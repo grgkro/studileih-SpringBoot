@@ -166,18 +166,8 @@ public class ProductController {
                                              String returnTime,
                                              MultipartFile[] imageFiles) {
 
-        System.out.println("---------------------");
-        System.out.println(imageFiles);
-        System.out.println(imageFiles.length);
-        System.out.println(imageFiles[0]);
-        System.out.println(imageFiles[imageFiles.length-1]);
-        System.out.println("--------------");
-
       Date startDay = productService.transformStringToDate(startDate);
       Date endDay = productService.transformStringToDate(endDate);
-
-        System.out.println(startDay);
-        System.out.println(endDay);
 
         // if an id was provided this means we want to update the product, not make a new one.
         Product product = null;

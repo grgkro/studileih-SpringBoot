@@ -50,24 +50,25 @@ public class UserController {
      */
     @PostConstruct
     public void createBaseDataset() {
+        if (productService.listAllProducts().isEmpty()) {
 
-        Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
-        Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
-        Product product3 = new ProductBuilder().withTitle("Hartmuts Bohrmaschine").withDescription("Hartmuts Bohrmaschine").withPrice(5).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Anna-Herrigel-Haus").withCity(CityEnum.Stuttgart.toString()).build();
-        List<Product> haraldsList = new ArrayList<>();
-        List<Product> hartmutsList = new ArrayList<>();
-        haraldsList.add(product1);
-        haraldsList.add(product2);
-        hartmutsList.add(product3);
-        User harald = new User("Harald", "grg.kro@gmail.com", "2345", haraldsList, dormService.getDormById(1L).get());
-        User hartmut = new User("Hartmut", "georgkromer@pm.me", "5432", hartmutsList, dormService.getDormById(2L).get());
-        product1.setUser(harald);
-        product2.setUser(harald);
-        product3.setUser(hartmut);
+            Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
+            Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
+            Product product3 = new ProductBuilder().withTitle("Hartmuts Bohrmaschine").withDescription("Hartmuts Bohrmaschine").withPrice(5).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Anna-Herrigel-Haus").withCity(CityEnum.Stuttgart.toString()).build();
+            List<Product> haraldsList = new ArrayList<>();
+            List<Product> hartmutsList = new ArrayList<>();
+            haraldsList.add(product1);
+            haraldsList.add(product2);
+            hartmutsList.add(product3);
+            User harald = new User("Harald", "grg.kro@gmail.com", "2345", haraldsList, dormService.getDormById(1L).get());
+            User hartmut = new User("Hartmut", "georgkromer@pm.me", "5432", hartmutsList, dormService.getDormById(2L).get());
+            product1.setUser(harald);
+            product2.setUser(harald);
+            product3.setUser(hartmut);
 
-        // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
-        userService.saveOrUpdateUser(harald);
-        userService.saveOrUpdateUser(hartmut);
+            // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
+            userService.saveOrUpdateUser(harald);
+            userService.saveOrUpdateUser(hartmut);
 
 //        Chat chatHaraldHartmut = new Chat(harald, hartmut);
 //        chatService.saveOrUpdateChat(chatHaraldHartmut);
@@ -89,6 +90,7 @@ public class UserController {
 //        messageService.saveOrUpdateMessage(fromHaraldToHartmut);
 //        messageService.saveOrUpdateMessage(fromHaraldToHartmut2);
 //        messageService.saveOrUpdateMessage(fromHartmutToHarald);
+        }
 
     }
 
