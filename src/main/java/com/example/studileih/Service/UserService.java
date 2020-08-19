@@ -36,6 +36,12 @@ public class UserService {
     @Autowired
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
 
+//    public boolean usernameExists(String username) {
+//        return userRepository.existsByUsernameIgnoreCase(username);
+//    }
+
+
+
     public void saveOrUpdateUser(User user) {
         userRepository.save(user);
     }

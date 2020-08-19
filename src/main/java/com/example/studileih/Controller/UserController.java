@@ -10,6 +10,7 @@ import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.annotations.Api;
@@ -21,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @CrossOrigin
@@ -45,6 +48,9 @@ public class UserController {
     @Autowired
     private ChatService chatService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     /**
      * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielwohnheim/Adresse/2 Pro in die DB -> Kann später auskommentiert/gelöscht werden
      */
@@ -55,13 +61,12 @@ public class UserController {
             Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
             Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
             Product product3 = new ProductBuilder().withTitle("Hartmuts Bohrmaschine").withDescription("Hartmuts Bohrmaschine").withPrice(5).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Anna-Herrigel-Haus").withCity(CityEnum.Stuttgart.toString()).build();
-            List<Product> haraldsList = new ArrayList<>();
-            List<Product> hartmutsList = new ArrayList<>();
-            haraldsList.add(product1);
-            haraldsList.add(product2);
-            hartmutsList.add(product3);
-            User harald = new User("Harald", "grg.kro@gmail.com", "2345", haraldsList, dormService.getDormById(1L).get());
-            User hartmut = new User("Hartmut", "georgkromer@pm.me", "5432", hartmutsList, dormService.getDormById(2L).get());
+            List<Product> haraldsList = Stream.of(product1, product2).collect(Collectors.toList());
+            List<Product> hartmutsList = Stream.of(product3).collect(Collectors.toList());
+            String HaraldsEncodedPassword = passwordEncoder.encode("2345");
+            String HartmutsEncodedPassword = passwordEncoder.encode("5432");
+            User harald = new User("Harald", "grg.kro@gmail.com", HaraldsEncodedPassword, haraldsList, dormService.getDormById(1L).get());
+            User hartmut = new User("Hartmut", "georgkromer@pm.me", HartmutsEncodedPassword, hartmutsList, dormService.getDormById(2L).get());
             product1.setUser(harald);
             product2.setUser(harald);
             product3.setUser(hartmut);
@@ -127,11 +132,11 @@ public class UserController {
     }
 
     @PostMapping(path = "/users")
-    @ApiOperation(value = "Add new User as Entity")
-    public ResponseEntity<String> addUser(String name, String email, String password, String city, Long dormId, MultipartFile profilePic) {
+    @ApiOperation(value = "Resgisters/Adds a new User with encoded Password in DB")
+    public ResponseEntity<String> registerUser(String name, String email, String password, String city, Long dormId, MultipartFile profilePic) {
 
         Dorm dorm = dormService.getDormById(dormId).get();
-        User newUser = new User(name, email, password, city, dorm);
+        User newUser = new User(name, email, passwordEncoder.encode(password), city, dorm);
         userService.addUser(newUser);
         userService.saveUserPic(profilePic, newUser.getId() );
         return ResponseEntity.status(HttpStatus.OK).body("User erfolgreich angelegt.");

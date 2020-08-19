@@ -30,7 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
-
+        System.out.println("header:" + httpServletRequest.getHeader("Authorization"));
         //get Authorization information from the request itself
     	String authorizationHeader = httpServletRequest.getHeader("Authorization");
 
