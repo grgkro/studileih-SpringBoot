@@ -50,7 +50,7 @@ public class ProductService {
 
     public List<ProductDto> getProductsByDorm(String dorm) {
         List<Product> products = productRepository.findAll();
-        products.stream().filter(product -> product.getDorm().equals(dorm));
+        products = products.stream().filter(product -> product.getDorm().equals(dorm)).collect(Collectors.toList());
         return convertListToDtos(products);
     }
 

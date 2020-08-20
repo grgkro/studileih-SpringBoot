@@ -71,10 +71,21 @@ public class ProductController {
     /**
      * @return: all products of one dormitory from the repository
      */
-    @GetMapping("/productsByDorm")
+    @GetMapping("/productsByDorm/{id}")
     @ApiOperation(value = "Return all available products of one dorm converted to DTOs")
     public List<ProductDto> getProductsByDorm(@PathVariable Long id) {
         return productService.getProductsByDorm(dormService.getDormById(id).get().getName());
+    }
+
+    /**
+     * @return: all products except the ones from one dormitory from the repository
+     */
+    @GetMapping("/productsWithouthDormProducts/{id}")
+    @ApiOperation(value = "Return all the other available products that are not from that dorm")
+    public List<ProductDto> getProductsWithouthDormProducts(@PathVariable Long id) {
+        List<ProductDto> allProducts = productService.listAllProducts();
+        List<ProductDto> productsFromDorm = productService.getProductsByDorm(dormService.getDormById(id).get().getName());
+        return allProducts.stream().filter(productDto -> !productsFromDorm.contains(productDto)).collect(Collectors.toList());
     }
 
     @GetMapping("/products/{id}")

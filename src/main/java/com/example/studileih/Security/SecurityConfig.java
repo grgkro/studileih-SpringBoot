@@ -78,7 +78,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/authenticate",
                         "/products",
                         "/dorms",
-                        "/images/loadProductPicByFilename"
+                        "/images/loadProductPicByFilename",
+                "/productsByDorm/{id}",
+                "/productsWithouthDormProducts/{id}"
 
                 ).permitAll().anyRequest().authenticated().and().exceptionHandling().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
