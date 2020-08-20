@@ -74,7 +74,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		// took me half a day to find this line, which fixes the CORS preflight error: https://www.baeldung.com/spring-security-cors-preflight
 		http.cors();
 
-        http.csrf().disable().authorizeRequests().antMatchers("/authenticate").permitAll().anyRequest().authenticated();
+        http.csrf().disable().authorizeRequests()
+                .antMatchers("/authenticate",
+                        "/products",
+                        "/dorms",
+                        "/images/loadProductPicByFilename"
+
+                ).permitAll().anyRequest().authenticated().and().exceptionHandling().and().sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 //        http.csrf().disable().authorizeRequests().antMatchers("/authenticate",
 //        		"/",
 //        		"/images/loadProductPicByFilename",

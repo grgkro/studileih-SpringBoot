@@ -56,7 +56,7 @@ public class ImageController {
     @ApiOperation(value = "Loads and returns the image of a product by it's provided filename")
     public ResponseEntity loadProductPicByFilename(String filename, Long productId) {
         // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
-        Product product = imageService.getProduct(productId);
+        Product product = productService.getProductEntityById(productId);
         if (product == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
         // Then we load the picture from the local storage
@@ -81,7 +81,7 @@ public class ImageController {
         } else if (imgType.equals("productPic")) {
             // before we store the image, we need to check if the image is already in the archive. If so, we need to delete it there. Otherwise it would be in the archive and in the normal folder at the same time. If you then delete it (transfer it from normal folder to archive, or restore it (transfer it from archive to normal folder) you would get a fileAlreadyExists Exeption.
             if (imageService.checkIfPicIsAlreadyInArchive(file, productId)) imageService.deletePicFromArchive( file,  productId);
-            Product product = imageService.getProduct(productId);                                      // We first load the product, for which we wanna save the pic.
+            Product product = productService.getProductEntityById(productId);                                      // We first load the product, for which we wanna save the pic.
             return imageService.saveProductPic(file, product);
         } else if (imgType.equals("newProduct")) {
 
@@ -134,7 +134,7 @@ public class ImageController {
 
         // load product or user and readd the restored img to picPaths
         if (imgType.equals("product")) {
-            Product product = imageService.getProduct(productId);
+            Product product = productService.getProductEntityById(productId);
             if (product == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
             // Then we add the picture to the picPaths
@@ -189,8 +189,7 @@ public class ImageController {
         @ApiOperation(value = "Deletes a product image by filename")
         public ResponseEntity deleteProductPicByFilename (String filename, Long productId){
             // first remove the image from the databse
-            Optional<Product> optional = productService.getProductById((productId));   // the id always comes as a string from angular, even when you send it as a number in angular...
-            Product product = optional.get();
+            Product product = productService.getProductEntityById(productId);
             if (product != null && product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
                 product.getPicPaths().remove(filename);
                 productService.saveOrUpdateProduct(product);

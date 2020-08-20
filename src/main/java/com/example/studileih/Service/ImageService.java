@@ -250,14 +250,13 @@ public class ImageService {
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Foto mit selbem Namen wurde für gleiches Produkt schonmal hochgeladen.");
     }
 
-    public Product getProduct (Long productId){
-        try {
-            Optional<Product> optionalEntity = productService.getProductById(productId);
-            return optionalEntity.get();
-        } catch (NoSuchElementException e) {
-            return null;
-        }
-    }
+//    public Product getProduct (Long productId){
+//        try {
+//            return productService.getProductEntityById(productId);
+//        } catch (NoSuchElementException e) {
+//            return null;
+//        }
+//    }
 
     private boolean hasAlreadyThisFile (MultipartFile file, Product product){
         if (product.getPicPaths() != null) {

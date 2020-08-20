@@ -1,13 +1,10 @@
 package com.example.studileih.Controller;
 
 import com.example.studileih.Dto.ProductDto;
+import com.example.studileih.Entity.Dorm;
 import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
-import com.example.studileih.Service.ImageService;
-
-import com.example.studileih.Service.ProductBuilder;
-import com.example.studileih.Service.ProductService;
-import com.example.studileih.Service.UserService;
+import com.example.studileih.Service.*;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -53,54 +50,47 @@ public class ProductController {
     private ImageService imageService;
 
     @Autowired
+    private DormService dormService;
+
+    @Autowired
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
 
-    /**
-     * Converts a Product to a ProductDto. The createdAt and updatedAt Dates are converted to simple Strings, because Date is Java specific and can't be send to Angular.
-     *
-     * @param product
-     * @return productDto
-     */
-    private ProductDto convertToDto(Product product) {
-        ProductDto productDto = modelMapper.map(product, ProductDto.class);
-        // falls ein Product ein CreatedAt oder UpdatedAt Value hat, muss der zu einem String konvertiert werden. Falls nicht darf das Date nicht konvertiert werden, sonst gibts NullPointerExceptions.
-        if (product.getCreatedAt() != null)
-            productDto.setCreatedAt(product.getCreatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString()); //konvertiert Date zu String -> einfachhaltshaber nimmts immer die Zeitzone des Servers (ZoneId.systemdefault), vielleicht irgendwann mal durch die Zeitzone des Nutzers ersetzen.
-        if (product.getUpdatedAt() != null)
-            productDto.setUpdatedAt(product.getUpdatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString());
-        return productDto;
-    }
+
 
     /**
      * @return: all products from the repository
      */
-    @GetMapping("products")
+    @GetMapping("/products")
     @ApiOperation(value = "Return all available products converted to DTOs")
     public List<ProductDto> getAllProducts() {
-        List<Product> allProducts = productService.listAllProducts();
+        List<ProductDto> allProducts = productService.listAllProducts();
         //System.out.println(allProducts.get(0).toString());
-        return allProducts.stream()                 // List<Product> muss zu List<ProductDto> konvertiert werden. Hier tun wir zuerst die List<Product> in einen Stream umwandeln
-                .map(this::convertToDto)            // Dann jedes Product ausm Stream herausnehmen und zu ProductDto umwandeln
-                .collect(Collectors.toList());      // und dann den neuen Stream als List<ProductDto> einsammeln.
+        return allProducts;
+    }
+
+    /**
+     * @return: all products of one dormitory from the repository
+     */
+    @GetMapping("/productsByDorm")
+    @ApiOperation(value = "Return all available products of one dorm converted to DTOs")
+    public List<ProductDto> getProductsByDorm(@PathVariable Long id) {
+        return productService.getProductsByDorm(dormService.getDormById(id).get().getName());
     }
 
     @GetMapping("/products/{id}")
     @ApiOperation(value = "Returns a product entity by its ID. The result is not clean enough, be careful")
-
     public ProductDto getProduct(@PathVariable Long id) {
-        Optional<Product> optional = productService.getProductById(id);   // the id always comes as a string from angular, even when you send it as a number in angular...
-        Product product = optional.get();
-        return convertToDto(product);
+        return productService.getProductById(id);
     }
 
-    @GetMapping("/productsdto/{id}")
-    @ApiOperation(value = "Return one product by ID as DTO, in order to avoid Entity-related issues")
-    @ApiResponses(value = {@ApiResponse(code = SC_OK, message = "Everything OK"),
-            @ApiResponse(code = SC_BAD_REQUEST, message = "An unexpected error occurred")
-    })
-    public List<ProductDto> getProductDto(@PathVariable Long id) {
-        return productService.getProductDtoById(id);
-    }
+//    @GetMapping("/productsdto/{id}")
+//    @ApiOperation(value = "Return one product by ID as DTO, in order to avoid Entity-related issues")
+//    @ApiResponses(value = {@ApiResponse(code = SC_OK, message = "Everything OK"),
+//            @ApiResponse(code = SC_BAD_REQUEST, message = "An unexpected error occurred")
+//    })
+//    public List<ProductDto> getProductDto(@PathVariable Long id) {
+//        return productService.getProductById(id);
+//    }
 
     @PostMapping(path = "/products")
     @ApiOperation(value = "Add a new product to the database")
@@ -117,38 +107,7 @@ public class ProductController {
                                              String returnTime,
                                              MultipartFile[] imageFiles) {
 
-        System.out.println("---------------------");
-        System.out.println(imageFiles);
-        System.out.println(imageFiles.length);
-//        System.out.println(imageFiles[0]);
-//        System.out.println(imageFiles[imageFiles.length-1]);
-        System.out.println("--------------");
-
-        System.out.println(startDate);
-
-        Date startDay = productService.transformStringToDate(startDate);
-        Date endDay = productService.transformStringToDate(endDate);
-
-        System.out.println(startDay);
-        System.out.println(endDay);
-
-        // first we get the user who added the product
-        User productOwner = userService.getUserById(userId).get();
-        System.out.println(imageFiles);
-
-        // then we create the product
-        Product product = new ProductBuilder().withTitle(title).withDescription(description).withCategory(category)
-                .withPrice(price).withIsBeerOk(isBeerOk).withStartDay(startDay).withEndDay(endDay).withUser(productOwner)
-                .withPickUpTime(pickUpTime).withReturnTime(returnTime).withAvailable(true).withDorm(productOwner.getDorm().getName()).withCity(productOwner.getDorm().getCity()).build();
-
-
-        // save the product
-        productService.saveOrUpdateProduct(product);
-        // if there were product pics uploaded, we also save them
-        Arrays.asList(imageFiles)
-                .stream()
-                .forEach(file -> imageService.saveProductPic(file, product));
-        return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich angelegt.");
+        return productService.addProduct(id, description, title, category, userId, price, isBeerOk, startDate, endDate, pickUpTime, returnTime, imageFiles);
     }
 
     @PutMapping(path = "/products")
@@ -157,7 +116,6 @@ public class ProductController {
                                              String description,
                                              String title,
                                              String category,
-                                             Long userId,
                                              double price,
                                              boolean isBeerOk,
                                              String startDate,
@@ -166,37 +124,7 @@ public class ProductController {
                                              String returnTime,
                                              MultipartFile[] imageFiles) {
 
-      Date startDay = productService.transformStringToDate(startDate);
-      Date endDay = productService.transformStringToDate(endDate);
-
-        // if an id was provided this means we want to update the product, not make a new one.
-        Product product = null;
-        if (id != null) {
-            product = productService.getProductById(id).get();
-            product.setTitle(title);
-            product.setDescription(description);
-            if (category != null) {
-                product.setCategory(category);
-            }
-            product.setPrice(price);
-            product.setBeerOk(isBeerOk);
-            product.setStartDay(startDay);
-            product.setEndDay(endDay);
-            product.setPickUpTime(pickUpTime);
-            product.setReturnTime(returnTime);
-            product.setAvailable(true);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Zum Editieren muss eine Produkt Id angegben werden.");
-        }
-
-        // save the product
-        productService.saveOrUpdateProduct(product);
-        // if there were product pics uploaded, we also save them
-        Product finalProduct = product;   // variable in Lambda Expression should be final
-        Arrays.asList(imageFiles)
-                .stream()
-                .forEach(file -> imageService.saveProductPic(file, finalProduct));
-        return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich editiert.");
+      return productService.editProduct(id, description, title, category, price, isBeerOk, startDate, endDate, pickUpTime, returnTime, imageFiles);
     }
 
 
@@ -213,11 +141,11 @@ public class ProductController {
         }
     }
 
-    @PutMapping(value = "/products/{id}")
-    @ApiOperation(value = "Updates one product identified by its ID.")
-    public void updateProduct(Product product, @PathVariable Long id) {
-        productService.updateProduct(product, id);
-    }
+//    @PutMapping(value = "/products/{id}")
+//    @ApiOperation(value = "Updates one product identified by its ID.")
+//    public void updateProduct(Product product, @PathVariable Long id) {
+//        productService.updateProduct(product, id);
+//    }
 
 
 }

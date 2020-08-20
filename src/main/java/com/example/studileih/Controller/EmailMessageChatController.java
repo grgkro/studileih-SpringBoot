@@ -69,7 +69,7 @@ public class EmailMessageChatController {
             // get the two users and the product
             User userWhoWantsToRent = userService.getUserById(userId).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
             User owner = userService.getUserById(ownerId).get();
-            Product product = productService.getProductById(productId).get();
+            Product product = productService.getProductEntityById(productId);
             // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
             return emailService.sendEmailToOwner(startDate, endDate, pickUpTime, returnTime, product, userWhoWantsToRent, owner);
         } catch (NoSuchElementException e) {
@@ -88,7 +88,7 @@ public class EmailMessageChatController {
             // get the two users and the product
             User userWhoWantsToRent = userService.getUserById(userId).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
             User owner = userService.getUserById(ownerId).get();
-            Product product = productService.getProductById(productId).get();
+            Product product = productService.getProductEntityById(productId);
             // transfer the message to the messageService where it will be saved to the database
             return messageService.sendMessageToOwner(startDate, endDate, pickUpTime, returnTime, product, userWhoWantsToRent, owner);
         } catch (NoSuchElementException e) {
