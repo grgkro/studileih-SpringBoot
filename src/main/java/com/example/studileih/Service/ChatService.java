@@ -1,5 +1,6 @@
 package com.example.studileih.Service;
 
+import com.example.studileih.Dto.ChatDto;
 import com.example.studileih.Dto.MessageDto;
 import com.example.studileih.Entity.Chat;
 import com.example.studileih.Entity.Message;
@@ -30,11 +31,6 @@ public class ChatService {
     @Autowired
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
 
-    @Autowired
-    private JdbcOperations jdbcOperations;
-
-    private static String BASIC_QUERY = "SELECT * FROM chats";
-
     public void saveOrUpdateChat(Chat chat) {
         chatRepository.save(chat);
     }
@@ -46,10 +42,28 @@ public class ChatService {
         return chats;
     }
 
-    public List<Chat> findChatsByUserId(Long id) {
-        List<Chat> chats = chatRepository.findChatsByUserId(String.valueOf(id));
-        System.out.println(chats);
-        return chats;
+    /**
+     * Converts a Chat to a ChatDto.
+     *
+     * @param chat
+     * @return chatDto
+     */
+    private ChatDto convertChatToDto(Chat chat) {
+        ChatDto chatDto = modelMapper.map(chat, ChatDto.class);
+        return chatDto;
+    }
+
+    /**
+     * Converts many Chats to ChatDtos.
+     */
+    public List<ChatDto> convertChatsToDtos(List<Chat> chats) {
+       return chats.stream()
+               .map(this::convertChatToDto)
+               .collect(Collectors.toList());
+    }
+
+    public List<ChatDto> findChatsByUserId(Long id) {
+            return convertChatsToDtos(chatRepository.findChatsByUserId(String.valueOf(id)));
     }
 
     public Optional<Chat> getChatById(Long id) {

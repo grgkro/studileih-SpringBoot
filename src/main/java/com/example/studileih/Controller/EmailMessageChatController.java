@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
+import java.security.Principal;
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -64,14 +65,10 @@ public class EmailMessageChatController {
      */
     @PostMapping("/emails/sendEmail")
     @ApiOperation(value = "Sends an \"Ausleihanfrage\" Email from studileih@gmail.com to the owner of the product")
-    public ResponseEntity<String> sendEmailToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Long productId, Long userId, Long ownerId) {
+    public ResponseEntity<String> sendEmailToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Long productId, Principal user, Long ownerId) {
         try {
-            // get the two users and the product
-            User userWhoWantsToRent = userService.getUserById(userId).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
-            User owner = userService.getUserById(ownerId).get();
-            Product product = productService.getProductEntityById(productId);
-            // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-            return emailService.sendEmailToOwner(startDate, endDate, pickUpTime, returnTime, product, userWhoWantsToRent, owner);
+            // we don't send the info, which user is sending the request from the frontend anymore. Instead we always take the logged in user (principal) from spring security -> thus this can't be manipulated anymore.
+            return emailService.sendEmailToOwner(startDate, endDate, pickUpTime, returnTime, productService.getProductEntityById(productId), userService.getActiveUserByName(user.getName()), userService.getUserById(ownerId).get());
         } catch (NoSuchElementException e) {
             System.out.println(e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
@@ -82,15 +79,11 @@ public class EmailMessageChatController {
      * sends an "Ausleihanfrage" Message with the startdate, enddate, product, ausleihender user etc. to the product owner in Studileih (like a intern Facebook message from one user to another)
      */
     @PostMapping("/messages/sendMessage")
-    @ApiOperation(value = "Saves a message and connects it with the sending and the receiving user in the Database")
-    public ResponseEntity<String> saveMessage(String startDate, String endDate, String pickUpTime, String returnTime, Long productId, Long userId, Long ownerId) {
+    @ApiOperation(value = "sends an \"Ausleihanfrage\" Message with the startdate, enddate, product, ausleihender user etc. to the product owner in Studileih (like a intern Facebook message from one user to another)")
+    public ResponseEntity<String> sendMessageToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Long productId, Principal user, Long ownerId) {
         try {
-            // get the two users and the product
-            User userWhoWantsToRent = userService.getUserById(userId).get();   // the id always comes as a string from angular, even when you send it as a number in angular... getUserById returns an Optional<User> -> we immediately take the User from the Optional with with .get(). Maybe bad idea?
-            User owner = userService.getUserById(ownerId).get();
-            Product product = productService.getProductEntityById(productId);
-            // transfer the message to the messageService where it will be saved to the database
-            return messageService.sendMessageToOwner(startDate, endDate, pickUpTime, returnTime, product, userWhoWantsToRent, owner);
+            // transfer the message to the messageService where it will be saved to the database and send as email
+            return messageService.sendMessageToOwner(startDate, endDate, pickUpTime, returnTime, productService.getProductEntityById(productId), userService.getActiveUserByName(user.getName()), userService.getUserById(ownerId).get());
         } catch (NoSuchElementException e) {
             System.out.println(e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
@@ -102,23 +95,8 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/updateMessage")
     @ApiOperation(value = "Updates a Message with the receivedAt timestamp (gets called when the receiver opened the message in the frontend)")
-    public ResponseEntity<String> updateMessage(Long chatId, Long messageId, String receivedAt) {
-        Chat chat;
-        Message message;
-        try {
-            // get the chat and the message
-            chat = chatService.getChatById(chatId).get();
-            message = chat.getMessages().stream().filter(chatMessage -> chatMessage.getId() == messageId).collect(Collectors.toList()).get(0);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - die Nachricht konnte nicht geladen werden.");
-        }
-        // add the receivedAt to the message
-        message.setReceivedAt(receivedAt);
-        System.out.println(message.getReceivedAt());
-        // update the message in the database
-        messageService.saveOrUpdateMessage(message);
-
-        return ResponseEntity.status(HttpStatus.OK).body("ReceivedAt wurde zur Nachricht hinzugefügt.");
+    public ResponseEntity<String> updateMessageAsRead(Long chatId, Long messageId, String receivedAt) {
+       return messageService.updateMessageAsReceived(chatId, messageId, receivedAt);
     }
 
     /*
@@ -126,30 +104,8 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendReply")
     @ApiOperation(value = "Saves a reply message to a 'Ausleihanfrage' into the database at the specified chat, so that the other chat partner can see it next time on Studileih.de")
-    public ResponseEntity<String> sendReply(String subject, String messageText, String sendetAt, Long chatId, Long userId) {
-        Chat chat;
-        User sender;
-        User receiver;
-        try {
-            // get the chat
-            chat = chatService.getChatById(chatId).get();
-            sender = userService.getUserById(userId).get();
-            if (chat.getUser1().getId() == sender.getId()) {
-                receiver = chat.getUser2();
-            } else {
-                receiver = chat.getUser1();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Chat oder User konnten nicht geladen werden.");
-        }
-        // create the message String subject, String text, String sendetAt, User sender, User receiver, Chat chat
-        Message message = new Message(subject, messageText, sendetAt, sender, receiver, chat);
-
-        System.out.println("REPLY: " + message);
-        // update the message in the database
-        messageService.saveOrUpdateMessage(message);
-
-        return ResponseEntity.status(HttpStatus.OK).body("Neue Nachricht wurde zum Chat hinzugefügt.");
+    public ResponseEntity<String> sendReply(String subject, String messageText, String sendetAt, Long chatId, Principal user) {
+        return messageService.sendReply(subject, messageText, sendetAt, chatService.getChatById(chatId).get(), userService.getUserById(userService.getActiveUserByName(user.getName()).getId()).get());
     }
 
     /*
@@ -157,96 +113,29 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendEmailReply")
     @ApiOperation(value = "Sends the reply message with all previous messages as Email to the chat partner")
-    public ResponseEntity<String> sendEmailReply(String subject, String messageText, String sendetAt, Long chatId, Long userId) {
-        Chat chat;
-        User sender;
-        User receiver;
-        try {
-            // get the chat and the two users
-            chat = chatService.getChatById(chatId).get();
-            sender = userService.getUserById(userId).get();
-            if (chat.getUser1().getId() == sender.getId()) {
-                receiver = chat.getUser2();
-            } else {
-                receiver = chat.getUser1();
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Chat oder einer der User konnten nicht geladen werden.");
-        }
-        // create the message String subject, String text, String sendetAt, User sender, User receiver, Chat chat
-        Message message = new Message(subject, messageText, sendetAt, sender, receiver, chat);
-
-        // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-        try {
-            return emailService.sendEmailReply(message, chat, sender, receiver);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Interner Datenbankfehler beim Erstellen der Nachricht - Datum konnte nicht umgewandelt werden.");
-        }
+    public ResponseEntity<String> sendEmailReply(String subject, String messageText, String sendetAt, Long chatId, Principal user) {
+      return emailService.prepareEmailReply(subject, messageText, sendetAt, chatService.getChatById(chatId).get(), userService.getUserById(userService.getActiveUserByName(user.getName()).getId()).get());
     }
 
-    /*
-     * loads all messages as MessageDtos
-     */
-    @GetMapping("/messages/messages")
-    @ApiOperation(value = "Return all available messages converted to DTOs")
-    public List<MessageDto> loadMessages() {
-        List<Message> allMessages = messageService.listAllMessages();
-        System.out.println(allMessages.get(0).toString());
-        List<MessageDto> allMessagesDtos = allMessages.stream()                 // List<Message> muss zu List<MessageDto> konvertiert werden. Hier tun wir zuerst die List<Message> in einen Stream umwandeln
-                .map(this::convertMessageToDto)            // Dann jedes Message ausm Stream herausnehmen und zu MessageDto umwandeln
-                .collect(Collectors.toList());      // und dann den neuen Stream als List<MessageDto> einsammeln.
-        return allMessagesDtos;
-    }
-
-    /**
-     * Converts a Message to a MessageDto. The createdAt and updatedAt Dates are converted to simple Strings, because Date is Java specific and can't be send to Angular.
-     *
-     * @param message
-     * @return messageDto
-     */
-    private MessageDto convertMessageToDto(Message message) {
-        MessageDto messageDto = modelMapper.map(message, MessageDto.class);
-        return messageDto;
-    }
+//    /*
+//     * loads all messages as MessageDtos
+//     */
+//    @GetMapping("/messages/messages")
+//    @ApiOperation(value = "Return all available messages converted to DTOs")
+//    public List<MessageDto> loadMessages() {
+//        return messageService.loadAll();
+//    }
 
     /*
      * loads all chats as ChatDtos
      */
-    @GetMapping("/chats/chats")
-    @ApiOperation(value = "Return all available chats converted to DTOs")
-    public List<ChatDto> loadChats() {
-        List<Chat> allChats = chatService.loadAllChat();
-        List<ChatDto> allChatDtos = allChats.stream()
-                .map(this::convertChatToDto)
-                .collect(Collectors.toList());
-        return allChatDtos;
-    }
-
-    /*
-     * loads all chats as ChatDtos
-     */
-    @GetMapping("/chats/chatsByUser/{id}")
+    @GetMapping("/chats/")
     @ApiOperation(value = "Return all available chats of one User converted to DTOs")
-    public List<ChatDto> loadChatsByUser(@PathVariable("id") Long id) {
-        List<Chat> allChats = chatService.findChatsByUserId(id);
-        if (!allChats.isEmpty()) {
-            return allChats.stream()
-                    .map(this::convertChatToDto)
-                    .collect(Collectors.toList());
-        }
-        return null;  // if angular receives null from the backend, it will display: "Du hast noch keine Nachrichten. Stell eine Ausleihanfrage an einen anderen User, um hier deine Anfragen und Nachrichten zu sehen."
+    public List<ChatDto> loadChatsByUser(Principal user) {
+        // We don't send the userId as PathVariable anymore -> could get manipulated. Instead we always only get the logged in user from spring security and then get only his chats
+        return chatService.findChatsByUserId(userService.getActiveUserByName(user.getName()).getId());
     }
 
-    /**
-     * Converts a Chat to a ChatDto.
-     *
-     * @param chat
-     * @return chatDto
-     */
-    private ChatDto convertChatToDto(Chat chat) {
-        ChatDto chatDto = modelMapper.map(chat, ChatDto.class);
-        return chatDto;
-    }
+
 
 }

@@ -16,16 +16,14 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +34,9 @@ public class MessageService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private ProductService productService;
 
     @Autowired
     private ChatService chatService;
@@ -99,6 +100,44 @@ public class MessageService {
         return ResponseEntity.status(HttpStatus.OK).body(owner.getName() + " erhält auf Studileih.de eine Benachrichtigung über deine Anfrage.");
     }
 
+    public ResponseEntity updateMessageAsReceived(Long chatId, Long messageId, String receivedAt) {
+        Chat chat;
+        Message message;
+        try {
+            // get the chat and the message
+            chat = chatService.getChatById(chatId).get();
+            message = chat.getMessages().stream().filter(chatMessage -> chatMessage.getId() == messageId).collect(Collectors.toList()).get(0);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - die Nachricht konnte nicht geladen werden.");
+        }
+        // add the receivedAt to the message
+        message.setReceivedAt(receivedAt);
+        System.out.println(message.getReceivedAt());
+        // update the message in the database
+        saveOrUpdateMessage(message);
+        return ResponseEntity.status(HttpStatus.OK).body("ReceivedAt wurde zur Nachricht hinzugefügt.");
+    }
+
+    public ResponseEntity sendReply(String subject, String messageText, String sendetAt, Chat chat, User sender) {
+        User receiver;
+        try {
+            // get the other user
+            if (chat.getUser1().getId() == sender.getId()) {
+                receiver = chat.getUser2();
+            } else {
+                receiver = chat.getUser1();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Chat oder User konnten nicht geladen werden.");
+        }
+        // create the message
+        Message message = new Message(subject, messageText, sendetAt, sender, receiver, chat);
+        System.out.println("REPLY: " + message);
+        // update the message in the database
+        saveOrUpdateMessage(message);
+        return ResponseEntity.status(HttpStatus.OK).body("Neue Nachricht wurde zum Chat hinzugefügt.");
+    }
+
     //add message to the chat. If this is the first message in this chat previousChat.getMessages() would cause a NullPointerException, so we have to check if the messages != null first.
     private void addMessageToChat(Chat previousChat, Message message) {
         if (previousChat.getMessages() != null) {
@@ -145,8 +184,6 @@ public class MessageService {
         sb.append(System.lineSeparator());
         sb.append("Du kannst hier " + owner.getName() + " direkt antworten (" + owner.getName() + " erhält von uns eine Benachrichtigung auf Studileih, sowie eine Benachrichtigung per Email).");
         sb.append(System.lineSeparator());
-        sb.append("Oder sende " + userWhoWantsToRent.getName() + " direkt eine Nachricht an " + userWhoWantsToRent.getEmail() + ".");
-        sb.append(System.lineSeparator());
         sb.append(System.lineSeparator());
         sb.append("Gesendet um: " + DateFormat.getDateInstance(DateFormat.SHORT).format(new Date()) + " " + DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date()) );
         sb.append(System.lineSeparator());
@@ -166,13 +203,4 @@ public class MessageService {
         // if there was none, create a new chat with those two users.
         return new Chat(user1, user2);
     }
-
-    public List<Message> listAllMessages() {
-        List<Message> messages = new ArrayList<>();
-        messageRepository.findAll().forEach(messages::add);  // messages::add ist gleich wie: messages.add(message)
-        return messages;
-    }
-
-
-
 }

@@ -12,10 +12,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
+import java.security.Principal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.NoSuchElementException;
 
 @Component
 public class EmailService {
@@ -39,6 +41,16 @@ public class EmailService {
         message.setText(text);
         emailSender.send(message);
 
+    }
+
+    public ResponseEntity prepareSendingEmailToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Product product, User userWhoWantsToRent, User owner) {
+        try {
+            // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
+            return sendEmailToOwner(startDate, endDate, pickUpTime, returnTime, product, userWhoWantsToRent, owner);
+        } catch (NoSuchElementException e) {
+            System.out.println(e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
+        }
     }
 
     public ResponseEntity<String> sendEmailToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Product product, User userWhoWantsToRent, User owner) {
@@ -78,6 +90,30 @@ public class EmailService {
 
         }
 
+    }
+
+    public ResponseEntity prepareEmailReply(String subject, String messageText, String sendetAt, Chat chat, User sender) {
+        User receiver;
+        try {
+            // get the chat and the two users
+            if (chat.getUser1().getId() == sender.getId()) {
+                receiver = chat.getUser2();
+            } else {
+                receiver = chat.getUser1();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Chat oder einer der User konnten nicht geladen werden.");
+        }
+        // create the message String subject, String text, String sendetAt, User sender, User receiver, Chat chat
+        Message message = new Message(subject, messageText, sendetAt, sender, receiver, chat);
+
+        // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
+        try {
+            return sendEmailReply(message, chat, sender, receiver);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Interner Datenbankfehler beim Erstellen der Nachricht - Datum konnte nicht umgewandelt werden.");
+        }
     }
 
     public ResponseEntity<String> sendEmailReply(Message message, Chat chat, User sender, User receiver) throws ParseException {

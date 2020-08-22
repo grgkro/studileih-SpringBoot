@@ -1,5 +1,6 @@
 package com.example.studileih.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -18,6 +19,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_generator")
     @SequenceGenerator(name="user_generator", sequenceName = "user_seq", allocationSize=1)
     @Column(name = "id", updatable = false, nullable = false)
+    @JsonIgnore
     private Long id;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -34,6 +36,8 @@ public class User {
 
     private String name;
     private String email;
+
+    @JsonIgnore
     private String password;
 
     private String profilePic;

@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.Principal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -32,6 +33,12 @@ public class UserService {
 
     @Autowired
     private ImageService imageService;
+
+    @Autowired
+    private ProductService productService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
@@ -79,7 +86,7 @@ public class UserService {
      * @param user
      * @return userDto
      */
-    private UserDto convertUserToDto(User user) {
+    public UserDto convertUserToDto(User user) {
         UserDto userDto = modelMapper.map(user, UserDto.class);
         // falls ein User ein CreatedAt oder UpdatedAt Value hat, muss der zu einem String konvertiert werden. Falls nicht darf das Date nicht konvertiert werden, sonst gibts NullPointerExceptions.
         if (user.getCreatedAt() != null) userDto.setCreatedAt(user.getCreatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString()); //konvertiert Date zu String -> einfachhaltshaber nimmts immer die Zeitzone des Servers (ZoneId.systemdefault), vielleicht irgendwann mal durch die Zeitzone des Nutzers ersetzen.
@@ -150,9 +157,12 @@ public class UserService {
         }
     }
 
-    public UserDto getActiveUserByName (String name){
+    public User getActiveUserByName (String name){
             User user = userRepository.findByName(name);
-            return convertUserToDto(user);
+            return user;
     }
+
+
+
 
 }

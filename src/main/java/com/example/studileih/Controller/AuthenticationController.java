@@ -2,6 +2,7 @@ package com.example.studileih.Controller;
 
 import com.example.studileih.Dto.UserDto;
 import com.example.studileih.Service.UserService;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,9 +18,11 @@ import io.swagger.annotations.ApiOperation;
 
 import com.example.studileih.Security.AuthRequest;
 import com.example.studileih.Security.JwtUtil;
+import springfox.documentation.spring.web.json.Json;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.security.Principal;
 
 @RestController
 @CrossOrigin("http://localhost:4200")
@@ -35,8 +38,10 @@ public class AuthenticationController {
 
     @GetMapping("/")
     @ApiOperation(value = "Dummy welcome message")
-    public String welcome() {
-        return "Welcome to StudiLeih !!!";
+    public JSONObject welcome(Principal user) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("response", "Welcome To Studileih " + user.getName() + "!!!");
+        return jsonObject;
     }
 
     @PostMapping("/authenticate")
@@ -51,7 +56,7 @@ public class AuthenticationController {
             System.out.println(ex);
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
-        UserDto user = userService.getActiveUserByName(authRequest.getUserName());
+        UserDto user = userService.convertUserToDto(userService.getActiveUserByName(authRequest.getUserName()));
     	user.setToken(jwtUtil.generateToken(authRequest.getUserName()));
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
