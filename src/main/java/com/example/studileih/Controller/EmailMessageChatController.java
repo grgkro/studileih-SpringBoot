@@ -1,31 +1,21 @@
 package com.example.studileih.Controller;
 
 import com.example.studileih.Dto.ChatDto;
-import com.example.studileih.Dto.MessageDto;
-import com.example.studileih.Dto.UserDto;
-import com.example.studileih.Entity.Chat;
-import com.example.studileih.Entity.Message;
-import com.example.studileih.Entity.Product;
-import com.example.studileih.Entity.User;
-import com.example.studileih.Service.*;
+import com.example.studileih.Service.ChatService;
+import com.example.studileih.Service.EmailService;
+import com.example.studileih.Service.MessageService;
+import com.example.studileih.Service.ProductService;
+import com.example.studileih.Service.UserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import java.security.Principal;
-import java.text.ParseException;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -46,19 +36,6 @@ public class EmailMessageChatController {
 
     @Autowired
     private ChatService chatService;
-
-    @Autowired
-    private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
-
-
-    /**
-     * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielwohnheim/Adresse/2 Pro in die DB -> Kann später auskommentiert/gelöscht werden
-     */
-    @PostConstruct
-    public void createBaseDataset() {
-        // sends an email from studileih@gmail.com. I think you need to be on a Windows PC that this works! else go to the application.properties and uncomment your system password (Linux, Mac)... (https://www.baeldung.com/spring-email)
-        emailService.sendSimpleMessage("georgkromer@pm.me", "server started", "yolo");
-    }
 
     /*
      * sends an "Ausleihanfrage" Email with the startdate, enddate, product, ausleihender user etc. to the product owner`s email address

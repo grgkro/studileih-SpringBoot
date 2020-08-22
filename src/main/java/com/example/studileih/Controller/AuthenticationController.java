@@ -4,7 +4,6 @@ import com.example.studileih.Dto.UserDto;
 import com.example.studileih.Service.UserService;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,15 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-//import io.swagger.annotations.ApiResponses;
-//import io.swagger.annotations.ApiResponse;
 
 import com.example.studileih.Security.AuthRequest;
 import com.example.studileih.Security.JwtUtil;
-import springfox.documentation.spring.web.json.Json;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.security.Principal;
 
 @RestController
@@ -46,7 +39,7 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     @ApiOperation(value = "Authenticate user by username and password, return the JWT Token")
-    public ResponseEntity<UserDto> generateToken(@RequestBody AuthRequest authRequest) throws Exception {
+    public ResponseEntity<UserDto> generateToken(@RequestBody AuthRequest authRequest) {
     	System.out.println("Username: " + authRequest.getUserName() + ", Password: " + authRequest.getPassword());
     	try {
             authenticationManager.authenticate(

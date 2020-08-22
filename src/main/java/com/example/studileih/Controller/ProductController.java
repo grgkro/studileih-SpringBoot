@@ -1,37 +1,21 @@
 package com.example.studileih.Controller;
 
 import com.example.studileih.Dto.ProductDto;
-import com.example.studileih.Entity.Dorm;
-import com.example.studileih.Entity.Product;
-import com.example.studileih.Entity.User;
-import com.example.studileih.Service.*;
-
+import com.example.studileih.Service.DormService;
+import com.example.studileih.Service.ProductService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.ApiResponse;
-
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
-
-import javax.annotation.PostConstruct;
-
-import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
-import static javax.servlet.http.HttpServletResponse.SC_OK;
-
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.time.*;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 
@@ -41,21 +25,10 @@ import java.util.stream.Collectors;
 public class ProductController {
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private ProductService productService;
 
     @Autowired
-    private ImageService imageService;
-
-    @Autowired
     private DormService dormService;
-
-    @Autowired
-    private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
-
-
 
     /**
      * @return: all products from the repository
@@ -151,12 +124,4 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Produkt existiert nicht mehr in der Datenbank.");
         }
     }
-
-//    @PutMapping(value = "/products/{id}")
-//    @ApiOperation(value = "Updates one product identified by its ID.")
-//    public void updateProduct(Product product, @PathVariable Long id) {
-//        productService.updateProduct(product, id);
-//    }
-
-
 }

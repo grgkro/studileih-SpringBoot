@@ -34,6 +34,9 @@ public class ImageService {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private UserService userService;
+
     // nach diesem Tutorial erstellt: https://grokonez.com/spring-framework/spring-boot/angular-6-upload-get-multipartfile-spring-boot-example
 
     // Logger is similar to system.out.println, but you can also see the outprint on a server-log (was useful for running on AWS Cloud)
@@ -58,6 +61,99 @@ public class ImageService {
 
     }
 
+    public ResponseEntity loadProductPicByFilename(String filename, Long productId) {
+        // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
+        Product product = productService.getProductEntityById(productId);
+        if (product == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
+        // Then we load the picture from the local storage
+        if (product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
+            Resource file = loadProductPic(filename, productId);  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
+            System.out.println(file);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
+                    .body(file);  // the response body now contains the profile pic
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with userId = " + productId + "has no pictures yet or no picture with the given filename");  // Returns a status = 404 response
+        }
+    }
+
+    public ResponseEntity handleFileUpload (MultipartFile file, Long userId, Long productId, String imgType){
+        // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
+        if (imgType.equals("userPic")) {
+            return userService.saveUserPic(file, userId);
+        } else if (imgType.equals("productPic")) {
+            // before we store the image, we need to check if the image is already in the archive. If so, we need to delete it there. Otherwise it would be in the archive and in the normal folder at the same time. If you then delete it (transfer it from normal folder to archive, or restore it (transfer it from archive to normal folder) you would get a fileAlreadyExists Exeption.
+            if (checkIfPicIsAlreadyInArchive(file, productId)) deletePicFromArchive( file,  productId);
+            Product product = productService.getProductEntityById(productId);                                      // We first load the product, for which we wanna save the pic.
+            return saveProductPic(file, product);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Der imgType im Angular Code war falsch...");
+    }
+
+    public ResponseEntity archiveProductPicByFilename( String filename, String imgType, String productId) throws IOException {
+        // find correct paths
+        String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
+        String archiveFolderLocation = parentFolderLocation + "/archive/" + imgType + "s/" + imgType + productId;
+        // create archive folder + sub folders (if doesn't exist yet)
+        createFolder(Paths.get(parentFolderLocation));   // falls "images" folder fehlt, erzeugen wir den:
+        createFolder(Paths.get(parentFolderLocation + "/archive"));  // falls "archive" folder fehlt, erzeugen wir den:
+        createFolder(Paths.get(parentFolderLocation + "/archive/" + imgType + "s"));  // falls "users" oder "products" folder fehlt, erzeugen wir den:
+        createFolder(Paths.get(archiveFolderLocation));  // falls der jeweilige User oder Product folder ("product1", "product2", ...) fehlt, erzeugen wir den:
+        // copy the file to the archive folder
+        copyFile(parentFolderLocation + "/" + imgType + "s/" + imgType + productId + "/" + filename, archiveFolderLocation + "/" + filename);
+        // return success entity (OK - 200)
+        return ResponseEntity.status(HttpStatus.OK).body(imgType + " erfolgreich archiviert");
+    }
+
+    public ResponseEntity restorePicByFilename(String filename, String imgType, Long productId) throws IOException {
+        // find correct paths
+        String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
+        String targetFolderLocation = parentFolderLocation + "/" + imgType + "s/" + imgType + productId + "/";
+        String archiveFolderLocation = parentFolderLocation + "/archive/" + imgType + "s/" + imgType + productId + "/";
+        // copy the file from the archive folder to the parent folder
+
+        copyFile(archiveFolderLocation + filename, targetFolderLocation + filename);
+
+        // load product or user and readd the restored img to picPaths
+        if (imgType.equals("product")) {
+            Product product = productService.getProductEntityById(productId);
+            if (product == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
+            // Then we add the picture to the picPaths
+            if (!product.getPicPaths().contains(filename)) {
+                ArrayList<String> picPaths = product.getPicPaths();
+                picPaths.add(filename);
+                product.setPicPaths(picPaths);
+                productService.saveOrUpdateProduct(product);
+            }
+            // delete restored img from archive
+            deleteImageByFilename(filename, "archiveProductPic", productId);  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+        }
+        // return success entity (OK - 200)
+        return ResponseEntity.status(HttpStatus.OK).body(imgType + " erfolgreich wiederhergestellt");
+    }
+
+    public static void copyFile(String from, String to) throws IOException {
+        Path src = Paths.get(from);
+        Path dest = Paths.get(to);
+        Files.copy(src, dest);
+    }
+
+    public ResponseEntity deleteProductPicByFilename (String filename, Long productId){
+        // first remove the image from the databse
+        Product product = productService.getProductEntityById(productId);
+        if (product != null && product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
+            product.getPicPaths().remove(filename);
+            productService.saveOrUpdateProduct(product);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ProductPic konnte in Datenbank nicht gefunden werden.");
+        }
+        // if the image was removed from DB, remove the image from the local storage, too:
+        return deleteImageByFilename(filename, "productPic", productId);  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+
+    }
+
     public ResponseEntity storeImage(MultipartFile file, String type, Path imageFolderLocation) {
         if (type.equals("userPic")) {
             try {
@@ -79,26 +175,22 @@ public class ImageService {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unerwarteter Fehler");
     }
 
-//    public ResponseEntity storeFile(File file, String type, Path imageFolderLocation) {
-//        if (type.equals("userPic")) {
-//            try {
-//                Files.copy(file.getInputStream(), imageFolderLocation.resolve(file.getOriginalFilename()));  // this line saves the image at the provided path (not in the database)
-//            } catch (Exception e) {
-//                System.out.println("Error at imageService:" + e);
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("a) user image with same name was already uploaded - b) uploaded file was not an image - c) file size > 500KBs");
-//            }
-//            return ResponseEntity.status(HttpStatus.OK).body("Dein Profilfoto wurde gespeichert.");
-//        } else if (type.equals(("productPic"))) {
-//            try {
-//                Files.copy(file.getInputStream(), imageFolderLocation.resolve(file.getOriginalFilename())); // this line saves the image at the provided path (not in the database)
-//            } catch (Exception e) {
-//                System.out.println("Error at imageService:" + e);
-//                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("a) Product image with same name was already uploaded - b) uploaded file was not an image - c) file size > 500KBs");
-//            }
-//            return ResponseEntity.status(HttpStatus.OK).body("Das Foto wurde zu deinem Produkt gespeichert.");
-//        }
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unerwarteter Fehler");
-//    }
+    public ResponseEntity getImageByUserId(Long userId) {
+        // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
+        User user = userService.getActiveUser(userId);
+        if (user == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
+        // Then we load the picture from the local storage
+        if (user.getProfilePic() != null) {
+            Resource file = loadUserProfilePic(user.getProfilePic(), user);  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
+            System.out.println(file);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
+                    .body(file);  // the response body now contains the profile pic
+        } else {
+            return ResponseEntity.status(HttpStatus.OK).body("User with userId = " + userId + "has no profilePic yet (user.getProfilePic() = null)");  // Returns a status = 404 response
+        }
+    }
 
     public Resource loadUserProfilePic(String filename, User user) {
         Resource resource = loadImageByFilenameAsResource(filename, "userPic", user.getId());
@@ -108,7 +200,6 @@ public class ImageService {
             throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
         }
     }
-
 
     /*
      * returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
@@ -186,12 +277,6 @@ public class ImageService {
         }
     }
 
-    // wird noch nicht benutzt
-//    public void deleteAll() {
-//        FileSystemUtils.deleteRecursively(imageFolderLocation.toFile());
-//    }
-
-
     public void createFolder(Path FolderLocation) {
         if (Files.notExists(FolderLocation)) {
             try {
@@ -249,14 +334,6 @@ public class ImageService {
         }
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Foto mit selbem Namen wurde für gleiches Produkt schonmal hochgeladen.");
     }
-
-//    public Product getProduct (Long productId){
-//        try {
-//            return productService.getProductEntityById(productId);
-//        } catch (NoSuchElementException e) {
-//            return null;
-//        }
-//    }
 
     private boolean hasAlreadyThisFile (MultipartFile file, Product product){
         if (product.getPicPaths() != null) {
