@@ -150,4 +150,9 @@ public class UserService {
         }
     }
 
+    public UserDto getActiveUserByName (String name){
+            User user = userRepository.findByName(name);
+            return convertUserToDto(user);
+    }
+
 }

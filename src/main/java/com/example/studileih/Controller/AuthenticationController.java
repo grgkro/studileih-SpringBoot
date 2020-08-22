@@ -1,5 +1,6 @@
 package com.example.studileih.Controller;
 
+import com.example.studileih.Dto.UserDto;
 import com.example.studileih.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +30,8 @@ public class AuthenticationController {
     private JwtUtil jwtUtil;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private UserService userService;
 
     @GetMapping("/")
     @ApiOperation(value = "Dummy welcome message")
@@ -38,19 +41,19 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     @ApiOperation(value = "Authenticate user by username and password, return the JWT Token")
-    public ResponseEntity<String> generateToken(@RequestBody AuthRequest authRequest) throws Exception {
+    public ResponseEntity<UserDto> generateToken(@RequestBody AuthRequest authRequest) throws Exception {
     	System.out.println("Username: " + authRequest.getUserName() + ", Password: " + authRequest.getPassword());
-
     	try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getUserName(), authRequest.getPassword())
             );
         } catch (Exception ex) {
             System.out.println(ex);
-            return new ResponseEntity<>("Invalid Username / password", HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
-
-        return new ResponseEntity<>(jwtUtil.generateToken(authRequest.getUserName()), HttpStatus.OK);
+        UserDto user = userService.getActiveUserByName(authRequest.getUserName());
+    	user.setToken(jwtUtil.generateToken(authRequest.getUserName()));
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 }
 

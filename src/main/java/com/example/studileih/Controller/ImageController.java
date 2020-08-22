@@ -220,7 +220,7 @@ public class ImageController {
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
                     .body(file);  // the response body now contains the profile pic
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User with userId = " + userId + "has no profilePic yet (user.getProfilePic() = null)");  // Returns a status = 404 response
+            return ResponseEntity.status(HttpStatus.OK).body("User with userId = " + userId + "has no profilePic yet (user.getProfilePic() = null)");  // Returns a status = 404 response
         }
 
     }

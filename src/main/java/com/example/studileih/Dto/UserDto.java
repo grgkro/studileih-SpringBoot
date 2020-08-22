@@ -27,6 +27,7 @@ public class UserDto {
     private List<ProductDto> products;
     private Long dormId;
     private String city;
+    private String token; //JWT login token of that user
 
     public Date getCreatedAtConverted(String timezone) throws ParseException {
         dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
