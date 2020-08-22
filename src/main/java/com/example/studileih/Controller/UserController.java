@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import javax.annotation.PostConstruct;
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -101,12 +102,22 @@ public class UserController {
 
 
     /**
-     * @return: all users from the repository
+     * @return: all users of one dorm from the repository
      */
-    @GetMapping("users")
-    @ApiOperation(value = "Return all available users as Entities")
-    public List<UserDto> getAllUsers() {
-        return userService.listAllUser();
+    @GetMapping("users/usersByDorm")
+    @ApiOperation(value = "Return all available users from one dorm as Entities")
+    public List<UserDto> getAllUsersOfOneDorm(Principal user) {
+        List<UserDto> allUsers = userService.listAllUser();
+        return allUsers.stream().filter(userDto -> userDto.getDormId() == userService.getActiveUserByName(user.getName()).getDorm().getId()).collect(Collectors.toList());
+    }
+
+    /**
+     * @return: the user who ownes the product
+     */
+    @GetMapping("users/owner/{productId}")
+    @ApiOperation(value = "Return the user who ownes the product")
+    public UserDto getOwner(@PathVariable Long productId) {
+        return userService.getOwner(productId);
     }
 
     @GetMapping("/usersdto/{id}")

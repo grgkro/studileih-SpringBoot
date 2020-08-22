@@ -163,6 +163,8 @@ public class UserService {
     }
 
 
-
-
+    public UserDto getOwner(Long productId) {
+        ProductDto product = productService.getProductById(productId);
+        return getUserDtoById(product.getUserId());
+    }
 }
