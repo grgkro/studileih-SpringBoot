@@ -78,20 +78,20 @@ public class ImageService {
         }
     }
 
-    public ResponseEntity handleFileUpload (MultipartFile file, Long userId, Long productId, String imgType){
+    public ResponseEntity handleFileUpload(MultipartFile file, Long userId, Long productId, String imgType) {
         // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
         if (imgType.equals("userPic")) {
             return userService.saveUserPic(file, userId);
         } else if (imgType.equals("productPic")) {
             // before we store the image, we need to check if the image is already in the archive. If so, we need to delete it there. Otherwise it would be in the archive and in the normal folder at the same time. If you then delete it (transfer it from normal folder to archive, or restore it (transfer it from archive to normal folder) you would get a fileAlreadyExists Exeption.
-            if (checkIfPicIsAlreadyInArchive(file, productId)) deletePicFromArchive( file,  productId);
+            if (checkIfPicIsAlreadyInArchive(file, productId)) deletePicFromArchive(file, productId);
             Product product = productService.getProductEntityById(productId);                                      // We first load the product, for which we wanna save the pic.
             return saveProductPic(file, product);
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Der imgType im Angular Code war falsch...");
     }
 
-    public ResponseEntity archiveProductPicByFilename( String filename, String imgType, String productId) throws IOException {
+    public ResponseEntity archiveProductPicByFilename(String filename, String imgType, String productId) throws IOException {
         // find correct paths
         String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
         String archiveFolderLocation = parentFolderLocation + "/archive/" + imgType + "s/" + imgType + productId;
@@ -140,7 +140,7 @@ public class ImageService {
         Files.copy(src, dest);
     }
 
-    public ResponseEntity deleteProductPicByFilename (String filename, Long productId){
+    public ResponseEntity deleteProductPicByFilename(String filename, Long productId) {
         // first remove the image from the databse
         Product product = productService.getProductEntityById(productId);
         if (product != null && product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
@@ -310,7 +310,7 @@ public class ImageService {
         }
     }
 
-    public ResponseEntity saveProductPic (MultipartFile file, Product product) {
+    public ResponseEntity saveProductPic(MultipartFile file, Product product) {
 
         if (product == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + product.getId() + " doesn't exist in db.");    // Returns a status = 404 response
@@ -335,7 +335,7 @@ public class ImageService {
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Foto mit selbem Namen wurde für gleiches Produkt schonmal hochgeladen.");
     }
 
-    private boolean hasAlreadyThisFile (MultipartFile file, Product product){
+    private boolean hasAlreadyThisFile(MultipartFile file, Product product) {
         if (product.getPicPaths() != null) {
             Path path = Paths.get(file.getOriginalFilename());
             System.out.println("Path: " + path);
@@ -346,8 +346,13 @@ public class ImageService {
 
 
     // delete img from archive
-    public ResponseEntity deletePicFromArchive(MultipartFile file,  Long id) {
+    public ResponseEntity deletePicFromArchive(MultipartFile file, Long id) {
         return deleteImageByFilename(file.getOriginalFilename(), "archiveProductPic", id);  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+    }
+
+    public Boolean checkContentType(MultipartFile profilePic) {
+        String contentType = profilePic.getContentType();
+        return contentType.equals("image/png") || contentType.equals("image/jpg") || contentType.equals("image/jpeg") || contentType.equals("image/bmp") || contentType.equals("image/gif");
     }
 }
 

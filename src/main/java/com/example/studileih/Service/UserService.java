@@ -132,9 +132,10 @@ public class UserService {
         return true;
     }
 
-    public ResponseEntity registerUser(String name, String email, String password, String city, Long dormId, MultipartFile profilePic) {
+    public ResponseEntity registerUser(String name, String email, String password, Long dormId, MultipartFile profilePic) {
+
         Dorm dorm = dormService.getDormById(dormId).get();
-        User newUser = new User(name, email, passwordEncoder.encode(password), city, dorm);
+        User newUser = new User(name, email, passwordEncoder.encode(password), dorm.getCity(), dorm);
         addUser(newUser);
         saveUserPic(profilePic, newUser.getId() );
         return ResponseEntity.status(HttpStatus.OK).body("User erfolgreich angelegt.");
@@ -206,5 +207,28 @@ public class UserService {
     public UserDto getOwner(Long productId) {
         ProductDto product = productService.getProductById(productId);
         return getUserDtoById(product.getUserId());
+    }
+
+    public ResponseEntity validateRegistration(String name, String email, String password, Long dormId, MultipartFile profilePic) {
+        if (name == null || name == "") {
+            return new ResponseEntity("Username darf nicht leer sein.", HttpStatus.BAD_REQUEST);
+        } else if (userRepository.existsByName(name)) {
+            return new ResponseEntity("Username " + name + " bereits vergeben.", HttpStatus.BAD_REQUEST);
+        } else if (email == null || email == "") {
+            return new ResponseEntity("Email darf nicht leer sein.", HttpStatus.BAD_REQUEST);
+        } else if (userRepository.existsByEmail(email)) {
+            return new ResponseEntity("Email " + email + " bereits verwendet.", HttpStatus.BAD_REQUEST);
+        } else if (password == null || password == "") {
+            return new ResponseEntity("Passwort darf nicht leer sein.", HttpStatus.BAD_REQUEST);
+        } else if (dormId == null) {
+            return new ResponseEntity("Bitte ein Wohnheim auswählen.", HttpStatus.BAD_REQUEST);
+        } else if (!dormService.existsById(dormId)) {
+            return new ResponseEntity("Das ausgewählte Wohnheim existiert nicht in der Datenbank.", HttpStatus.BAD_REQUEST);
+        } else if (!imageService.checkContentType(profilePic)) {
+            return new ResponseEntity("Das Profilfoto muss vom Typ png, jpg, jpeg, bmp oder gif sein.", HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity(HttpStatus.OK);
+        }
+
     }
 }

@@ -42,10 +42,10 @@ public class EmailMessageChatController {
      */
     @PostMapping("/emails/sendEmail")
     @ApiOperation(value = "Sends an \"Ausleihanfrage\" Email from studileih@gmail.com to the owner of the product")
-    public ResponseEntity<String> sendEmailToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Long productId, Principal user, Long ownerId) {
+    public ResponseEntity<String> sendEmailToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Long productId, Principal user) {
         try {
             // we don't send the info, which user is sending the request from the frontend anymore. Instead we always take the logged in user (principal) from spring security -> thus this can't be manipulated anymore.
-            return emailService.sendEmailToOwner(startDate, endDate, pickUpTime, returnTime, productService.getProductEntityById(productId), userService.getActiveUserByName(user.getName()), userService.getUserById(ownerId).get());
+            return emailService.sendEmailToOwner(startDate, endDate, pickUpTime, returnTime, productService.getProductEntityById(productId), userService.getActiveUserByName(user.getName()), productService.getProductEntityById(productId).getUser());
         } catch (NoSuchElementException e) {
             System.out.println(e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
@@ -57,10 +57,10 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendMessage")
     @ApiOperation(value = "sends an \"Ausleihanfrage\" Message with the startdate, enddate, product, ausleihender user etc. to the product owner in Studileih (like a intern Facebook message from one user to another)")
-    public ResponseEntity<String> sendMessageToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Long productId, Principal user, Long ownerId) {
+    public ResponseEntity<String> sendMessageToOwner(String startDate, String endDate, String pickUpTime, String returnTime, Long productId, Principal user) {
         try {
             // transfer the message to the messageService where it will be saved to the database and send as email
-            return messageService.sendMessageToOwner(startDate, endDate, pickUpTime, returnTime, productService.getProductEntityById(productId), userService.getActiveUserByName(user.getName()), userService.getUserById(ownerId).get());
+            return messageService.sendMessageToOwner(startDate, endDate, pickUpTime, returnTime, productService.getProductEntityById(productId), userService.getActiveUserByName(user.getName()), productService.getProductEntityById(productId).getUser());
         } catch (NoSuchElementException e) {
             System.out.println(e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");

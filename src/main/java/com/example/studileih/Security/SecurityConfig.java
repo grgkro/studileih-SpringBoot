@@ -76,7 +76,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.csrf().disable().authorizeRequests()
                 .antMatchers("/authenticate",
+                        "/users/register",   //without this you would need to be logged in for being able to register...
                         "/products",
+                        "/products/{id}",
                         "/dorms",
                         "/images/loadProductPicByFilename",
                 "/productsByDorm/{id}",

@@ -162,4 +162,8 @@ public class DormService {
         return dormDto;
     }
 
+    public Boolean existsById(Long dormId) {
+        return dormRepository.existsById(dormId);
+    }
+
 }

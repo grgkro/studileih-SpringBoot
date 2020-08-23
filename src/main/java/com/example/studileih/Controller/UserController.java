@@ -6,11 +6,15 @@ import com.example.studileih.Entity.User;
 import com.example.studileih.Service.MessageService;
 import com.example.studileih.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.constraints.NotEmpty;
 import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +29,7 @@ public class UserController {
 
     @Autowired
     private MessageService messageService;
-
+    private MultipartFile profilePic;
 
 
     /**
@@ -57,10 +61,14 @@ public class UserController {
         return true;
     }
 
-    @PostMapping(path = "/users")
+    @PostMapping(path = "/users/register")
     @ApiOperation(value = "Resgisters/Adds a new User with encoded Password in DB")
-    public ResponseEntity<String> registerUser(String name, String email, String password, String city, Long dormId, MultipartFile profilePic) {
-        return userService.registerUser(name, email, password, city, dormId, profilePic);
+    public ResponseEntity<String> registerUser(@NonNull @NotEmpty String name, @NonNull @NotEmpty String email, @NonNull @NotEmpty String password, @NonNull @NotEmpty Long dormId, MultipartFile profilePic) {
+        ResponseEntity response = userService.validateRegistration(name, email, password, dormId, profilePic);
+        if (response.getStatusCodeValue() != 200) {
+            return response;
+        }
+        return userService.registerUser(name, email, password, dormId, profilePic);
     }
 
     @DeleteMapping(value = "/users/{id}")
