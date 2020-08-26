@@ -8,13 +8,11 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.validation.constraints.NotNull;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,11 +76,10 @@ public class ProductController {
 
     @PostMapping(path = "/products")
     @ApiOperation(value = "Add a new product to the database")
-    public ResponseEntity<String> addProduct(Long id,
-                                             String description,
+    public ResponseEntity<String> addProduct(String description,
                                              String title,
                                              String category,
-                                             Long userId,
+                                             Principal userDetails,
                                              double price,
                                              boolean isBeerOk,
                                              String startDate,
@@ -91,7 +88,11 @@ public class ProductController {
                                              String returnTime,
                                              MultipartFile[] imageFiles) {
 
-        return productService.addProduct(id, description, title, category, userId, price, isBeerOk, startDate, endDate, pickUpTime, returnTime, imageFiles);
+        ResponseEntity response = productService.validateInput(null, description, title, category, userDetails, price, startDate, endDate, pickUpTime, returnTime, imageFiles);
+        if (response.getStatusCodeValue() != 200) {
+            return response;
+        }
+        return productService.addProduct(description, title, category, userDetails, price, isBeerOk, startDate, endDate, pickUpTime, returnTime, imageFiles);
     }
 
     @PutMapping(path = "/products")
@@ -107,7 +108,10 @@ public class ProductController {
                                              String pickUpTime,
                                              String returnTime,
                                              MultipartFile[] imageFiles) {
-
+        ResponseEntity response = productService.validateInput(id, description, title, category, null, price, startDate, endDate, pickUpTime, returnTime, imageFiles);
+        if (response.getStatusCodeValue() != 200) {
+            return response;
+        }
       return productService.editProduct(id, description, title, category, price, isBeerOk, startDate, endDate, pickUpTime, returnTime, imageFiles);
     }
 

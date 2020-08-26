@@ -51,7 +51,7 @@ public class AuthenticationController {
         }
         UserDto user = userService.convertUserToDto(userService.getActiveUserByName(authRequest.getUserName()));
     	user.setToken(jwtUtil.generateToken(authRequest.getUserName()));
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);  //we dont really have to send back the user...
     }
 }
 

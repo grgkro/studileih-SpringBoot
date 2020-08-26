@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -24,7 +26,7 @@ public class ProductDto {
     private static final SimpleDateFormat dateFormat
             = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-
+//    @NotNull
     private Long id;
     private Long userId;
     private String description;
@@ -35,6 +37,7 @@ public class ProductDto {
     private String createdAt;
     private String updatedAt;
     private ArrayList<String> picPaths;
+    private MultipartFile[] imageFiles;
     private String category;
 
     private boolean isBeerOk;  // when creating a new product, the user can chose that instead of a price, the renter can also give one beer.

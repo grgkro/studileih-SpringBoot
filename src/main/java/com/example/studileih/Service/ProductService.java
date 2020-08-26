@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.security.Principal;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -126,12 +128,12 @@ public class ProductService {
         return productDto;
     }
 
-    public ResponseEntity<String> addProduct(Long id, String description, String title, String category, Long userId, double price, boolean isBeerOk, String startDate, String endDate, String pickUpTime, String returnTime, MultipartFile[] imageFiles) {
+    public ResponseEntity<String> addProduct(String description, String title, String category, Principal user, double price, boolean isBeerOk, String startDate, String endDate, String pickUpTime, String returnTime, MultipartFile[] imageFiles) {
         Date startDay = transformStringToDate(startDate);
         Date endDay = transformStringToDate(endDate);
 
         // first we get the user who added the product
-        User productOwner = userService.getUserById(userId).get();
+        User productOwner = userService.getActiveUserByName(user.getName());
 
         // then we create the product
         Product product = new ProductBuilder().withTitle(title).withDescription(description).withCategory(category)
@@ -189,4 +191,110 @@ public class ProductService {
         }
         return responseEntity;
     }
+
+    public ResponseEntity validateInput(Long productId,
+                                        String description,
+                                        String title,
+                                        String category,
+                                        Principal userDetails,
+                                        double price,
+                                        String startDate,
+                                        String endDate,
+                                        String pickUpTime,
+                                        String returnTime,
+                                        MultipartFile[] imageFiles) {
+
+ String allowedRegex = "[a-zA-Z0-9._äöüÄÖÜß \\-+]*";
+
+        if (productId != null) {
+            if (!productRepository.existsById(productId)) {
+                return new ResponseEntity("Unerwarteter Datenbankfehler: Das Produkt mit Id " + productId + " existiert nicht.", HttpStatus.BAD_REQUEST);
+            }
+        }
+        if (userDetails != null) {
+            if (userService.getActiveUserByName(userDetails.getName()) == null) {
+                return new ResponseEntity("Unerwarteter Datenbankfehler (Principal existiert nicht).", HttpStatus.BAD_REQUEST);
+            } else if (productId != null) {
+                Boolean userOwnsProduct = false;
+                for (Product product: userService.getActiveUserByName(userDetails.getName()).getProducts()) {
+                    if (product.getId() == productId) userOwnsProduct = true;
+                }
+                if (!userOwnsProduct) {
+                    return new ResponseEntity("Nur der Ersteller kann das Produkt bearbeiten.", HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+        if (description == null || description == "" || description.trim().isEmpty()) {
+            return new ResponseEntity("Produktbeschreibung darf nicht leer sein.", HttpStatus.BAD_REQUEST);
+        } else {
+            if (!description.matches(allowedRegex)) {
+                return new ResponseEntity("Ungültiges Zeichen in Produktbeschreibung eingegeben.", HttpStatus.BAD_REQUEST);
+            }
+        }
+        if (title == null || title.isEmpty() || title.trim().isEmpty()) {
+            return new ResponseEntity("Bitte einen knackigen Titel eingeben.", HttpStatus.BAD_REQUEST);
+        } else {
+            if (!title.matches(allowedRegex)) {
+                return new ResponseEntity("Ungültiges Zeichen im knackigen Titel eingegeben.", HttpStatus.BAD_REQUEST);
+            }
+        }
+        if (category != null) {
+            if (category.isEmpty() || category.trim().isEmpty()) {
+                return new ResponseEntity("Ungültiges Zeichen in Kategorie eingegeben.", HttpStatus.BAD_REQUEST);
+            } else if (!category.matches(allowedRegex)) {
+                return new ResponseEntity("Ungültiges Zeichen in Kategorie eingegeben.", HttpStatus.BAD_REQUEST);
+            }
+        }
+        if (price < 0) {
+            return new ResponseEntity("Preis darf nicht negativ sein.", HttpStatus.BAD_REQUEST);
+        } else if (price > 100) {
+            return new ResponseEntity("Preis darf nicht größer 100 € sein.", HttpStatus.BAD_REQUEST);
+        }
+        if (startDate != null) {
+            Long yesterday = (System.currentTimeMillis() - 86400000) / 1000;
+            if (Long.parseLong(startDate) < yesterday) {
+                return new ResponseEntity("Anfangsdatum darf nicht in der Vergangenheit liegen.", HttpStatus.BAD_REQUEST);
+            }
+        }
+        if (pickUpTime != null) {
+            if (startDate == null) {
+                return new ResponseEntity("Wenn bei \"Abholbar ab\" eine Uhrzeit eingegeben wird, muss auch ein Anfangsdatum eingegeben werden.", HttpStatus.BAD_REQUEST);
+            } else {
+                Long today = (System.currentTimeMillis()) / 1000;
+                Long hh_mm_InMilliseconds = convertHoursMinutesInMilliseconds(pickUpTime);
+                if ((Long.parseLong(startDate) + (hh_mm_InMilliseconds / 1000)) < today) {
+                    return new ResponseEntity("\"Abholbar ab\" darf nicht in der Vergangenheit liegen.", HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+        if (endDate != null) {
+            if (startDate == null) {
+                return new ResponseEntity("Wenn ein Enddatum eingegeben wird, muss auch ein Anfangsdatum eingegeben werden.", HttpStatus.BAD_REQUEST);
+            } else if (Long.parseLong(endDate) < Long.parseLong(startDate)) {
+                //sollte nur auftreten können, wenn der Request vom Nutzer in Konsole manipuliert wird.
+                return new ResponseEntity("Enddatum darf nicht vor Anfangsdatum liegen.", HttpStatus.BAD_REQUEST);
+            }
+            if (pickUpTime != null && returnTime != null) {
+                if (Long.parseLong(endDate) == Long.parseLong(startDate) && convertHoursMinutesInMilliseconds(pickUpTime) > convertHoursMinutesInMilliseconds(returnTime)) {
+                    return new ResponseEntity("Bei gleichem Anfang- und Enddatum darf die Rückgabezeit nicht vor der frühesten Abholzeit liegen.", HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+        if (imageFiles != null) {
+            for (MultipartFile file : imageFiles) {
+                if (!imageService.checkContentType(file)) {
+                    return new ResponseEntity("Fotos müssen vom Typ png, jpg, jpeg, bmp oder gif sein.", HttpStatus.BAD_REQUEST);
+                }
+            }
+        }
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
+    public Long convertHoursMinutesInMilliseconds(String time) {
+        String[] split = time.split(":");
+        Long hours = Long.parseLong(split[0]);
+        Long mins = Long.parseLong(split[1]);
+        return hours * 3_600_000 + mins * 60_000;
+    }
+
 }

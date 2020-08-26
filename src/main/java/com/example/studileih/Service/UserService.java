@@ -79,7 +79,6 @@ public class UserService {
     }
 
 
-
     public void saveOrUpdateUser(User user) {
         userRepository.save(user);
     }
@@ -87,13 +86,13 @@ public class UserService {
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
-    
+
     //Wir wollen ein DTO zurückbekommen, damit keine unendliche Rekursion entsteht
     public UserDto getUserDtoById(Long id) {
-    	User user= userRepository.findById(id).get();
-    		UserDto userDto = modelMapper.map(user, UserDto.class);
+        User user = userRepository.findById(id).get();
+        UserDto userDto = modelMapper.map(user, UserDto.class);
         System.out.println(userDto);
-    	return userDto;
+        return userDto;
     }
 
     public void deleteUser(Long id) {
@@ -112,19 +111,22 @@ public class UserService {
     }
 
     // -----------Funktioniert nicht!------------
+
     /**
      * Converts a User to a UserDto. The createdAt and updatedAt Dates are converted to simple Strings, because Date is Java specific and can't be send to Angular.
+     *
      * @param user
      * @return userDto
      */
     public UserDto convertUserToDto(User user) {
         UserDto userDto = modelMapper.map(user, UserDto.class);
         // falls ein User ein CreatedAt oder UpdatedAt Value hat, muss der zu einem String konvertiert werden. Falls nicht darf das Date nicht konvertiert werden, sonst gibts NullPointerExceptions.
-        if (user.getCreatedAt() != null) userDto.setCreatedAt(user.getCreatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString()); //konvertiert Date zu String -> einfachhaltshaber nimmts immer die Zeitzone des Servers (ZoneId.systemdefault), vielleicht irgendwann mal durch die Zeitzone des Nutzers ersetzen.
-        if (user.getUpdatedAt() != null) userDto.setUpdatedAt(user.getUpdatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString());
+        if (user.getCreatedAt() != null)
+            userDto.setCreatedAt(user.getCreatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString()); //konvertiert Date zu String -> einfachhaltshaber nimmts immer die Zeitzone des Servers (ZoneId.systemdefault), vielleicht irgendwann mal durch die Zeitzone des Nutzers ersetzen.
+        if (user.getUpdatedAt() != null)
+            userDto.setUpdatedAt(user.getUpdatedAt(), ZonedDateTime.now(ZoneId.systemDefault()).toString());
         return userDto;
     }
-
 
 
     public boolean addUser(User user) {
@@ -137,7 +139,7 @@ public class UserService {
         Dorm dorm = dormService.getDormById(dormId).get();
         User newUser = new User(name, email, passwordEncoder.encode(password), dorm.getCity(), dorm);
         addUser(newUser);
-        saveUserPic(profilePic, newUser.getId() );
+        saveUserPic(profilePic, newUser.getId());
         return ResponseEntity.status(HttpStatus.OK).body("User erfolgreich angelegt.");
     }
 
@@ -145,7 +147,7 @@ public class UserService {
     public User updateUser(User newUser, Long id) {
         User oldUser = null;
 
-        if(getUserById(id).isPresent()){
+        if (getUserById(id).isPresent()) {
             assert false; //assert oldUser != null;
             oldUser.setName(newUser.getName());
             oldUser.setName(newUser.getName());
@@ -165,7 +167,7 @@ public class UserService {
         return oldUser;
     }
 
-    public ResponseEntity saveUserPic(MultipartFile file, Long userId){
+    public ResponseEntity saveUserPic(MultipartFile file, Long userId) {
         User user = getActiveUser(userId);                                      // We first load the user, for whom we wanna save the profile pic.
         if (user == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
@@ -180,7 +182,7 @@ public class UserService {
         return response;
     }
 
-    private void deleteOldProfilePic (User user){
+    private void deleteOldProfilePic(User user) {
         try {
             Resource resource = imageService.loadUserProfilePic(user.getProfilePic(), user);
             new File(resource.getURI()).delete();
@@ -189,7 +191,7 @@ public class UserService {
         }
     }
 
-    public User getActiveUser (Long userId){
+    public User getActiveUser(Long userId) {
         try {
             Optional<User> optionalEntity = getUserById(userId);
             return optionalEntity.get();
@@ -198,9 +200,9 @@ public class UserService {
         }
     }
 
-    public User getActiveUserByName (String name){
-            User user = userRepository.findByName(name);
-            return user;
+    public User getActiveUserByName(String name) {
+        User user = userRepository.findByName(name);
+        return user;
     }
 
 
@@ -224,11 +226,15 @@ public class UserService {
             return new ResponseEntity("Bitte ein Wohnheim auswählen.", HttpStatus.BAD_REQUEST);
         } else if (!dormService.existsById(dormId)) {
             return new ResponseEntity("Das ausgewählte Wohnheim existiert nicht in der Datenbank.", HttpStatus.BAD_REQUEST);
-        } else if (!imageService.checkContentType(profilePic)) {
-            return new ResponseEntity("Das Profilfoto muss vom Typ png, jpg, jpeg, bmp oder gif sein.", HttpStatus.BAD_REQUEST);
-        } else {
-            return new ResponseEntity(HttpStatus.OK);
+        } else if (profilePic != null) {
+            if (!imageService.checkContentType(profilePic)) {
+                return new ResponseEntity("Das Profilfoto muss vom Typ png, jpg, jpeg, bmp oder gif sein.", HttpStatus.BAD_REQUEST);
+            }
         }
+        return new ResponseEntity(HttpStatus.OK);
 
     }
+
+
+
 }
