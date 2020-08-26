@@ -1,6 +1,10 @@
 package com.example.studileih.Controller;
 
 import com.example.studileih.Dto.ChatDto;
+import com.example.studileih.Dto.ChatDtoForResponding;
+import com.example.studileih.Dto.MessageDtoForReceiving;
+import com.example.studileih.Dto.MessageDtoForResponding;
+import com.example.studileih.Entity.Chat;
 import com.example.studileih.Service.ChatService;
 import com.example.studileih.Service.EmailService;
 import com.example.studileih.Service.MessageService;
@@ -14,8 +18,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin
@@ -81,8 +87,8 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendReply")
     @ApiOperation(value = "Saves a reply message to a 'Ausleihanfrage' into the database at the specified chat, so that the other chat partner can see it next time on Studileih.de")
-    public ResponseEntity<String> sendReply(String subject, String messageText, String sendetAt, Long chatId, Principal user) {
-        return messageService.sendReply(subject, messageText, sendetAt, chatService.getChatById(chatId).get(), userService.getUserById(userService.getActiveUserByName(user.getName()).getId()).get());
+    public ResponseEntity<String> sendReply(@RequestBody MessageDtoForReceiving message, Principal user) {
+        return messageService.sendReply(message.getSubject(), message.getText(), message.getSendetAt(), chatService.getChatById(message.getChatId()).get(), userService.getUserById(userService.getActiveUserByName(user.getName()).getId()).get());
     }
 
     /*
@@ -90,8 +96,8 @@ public class EmailMessageChatController {
      */
     @PostMapping("/messages/sendEmailReply")
     @ApiOperation(value = "Sends the reply message with all previous messages as Email to the chat partner")
-    public ResponseEntity<String> sendEmailReply(String subject, String messageText, String sendetAt, Long chatId, Principal user) {
-      return emailService.prepareEmailReply(subject, messageText, sendetAt, chatService.getChatById(chatId).get(), userService.getUserById(userService.getActiveUserByName(user.getName()).getId()).get());
+    public ResponseEntity<String> sendEmailReply(@RequestBody MessageDtoForReceiving message, Principal user) {
+      return emailService.prepareEmailReply(message.getSubject(), message.getText(), message.getSendetAt(), chatService.getChatById(message.getChatId()).get(), userService.getUserById(userService.getActiveUserByName(user.getName()).getId()).get());
     }
 
 //    /*
@@ -104,13 +110,44 @@ public class EmailMessageChatController {
 //    }
 
     /*
-     * loads all chats as ChatDtos
+     * loads all chats as ChatDtos TODO: Security Risk -> sends too much info
      */
     @GetMapping("/chats/")
     @ApiOperation(value = "Return all available chats of one User converted to DTOs")
-    public List<ChatDto> loadChatsByUser(Principal user) {
-        // We don't send the userId as PathVariable anymore -> could get manipulated. Instead we always only get the logged in user from spring security and then get only his chats
-        return chatService.findChatsByUserId(userService.getActiveUserByName(user.getName()).getId());
+    public List<ChatDtoForResponding> loadChatsByUser(Principal user) {
+        List<ChatDto> chats = chatService.findChatsByUserId(userService.getActiveUserByName(user.getName()).getId());
+        //we don't send the full chat with all detail info, but only a much smaller version
+        List<ChatDtoForResponding> chatDtosForResponding = new ArrayList<>();
+        for (ChatDto chat: chats) {
+            List<MessageDtoForResponding> dtos = chatService.getAllMessagesByChatId(chat.getId());
+            ChatDtoForResponding chatDto = new ChatDtoForResponding(chat.getId(), chat.getUser1().getName(), chat.getUser2().getName(), dtos);
+            chatDtosForResponding.add(chatDto);
+        }
+        System.out.println("chats" + chatDtosForResponding);
+        return chatDtosForResponding;
+    }
+
+    /*
+     * loads one chat as ChatDtoForResponding
+     */
+    @GetMapping("/chats/{id}")
+    @ApiOperation(value = "Return one chat by Id converted to secure ChatDtoForResponding")
+    public ChatDtoForResponding getChatById(@PathVariable Long id) {
+        return chatService.getChatDtoForRespondingById(id);
+    }
+
+    /*
+     * loads all messages of one chat
+     */
+    @GetMapping("/chats/messagesByChatId/{id}")
+    @ApiOperation(value = "Return all available messages of one Chat converted to secure MessageDtosForResponding")
+    public ResponseEntity loadMessagesByChatId(@PathVariable Long id) {
+// We don't send the userId as PathVariable anymore -> could get manipulated. Instead we always only get the logged in user from spring security and then get only his chats
+        List<MessageDtoForResponding> dtos = chatService.getAllMessagesByChatId(id);
+        if (dtos == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Chat mit Id " + id + " konnte nicht gefunden werden.");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(dtos);
     }
 
 

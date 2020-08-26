@@ -47,11 +47,11 @@ public class AuthenticationController {
             );
         } catch (Exception ex) {
             System.out.println(ex);
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity("User " + authRequest.getUserName() + " oder Passwort nicht bekannt.", HttpStatus.UNAUTHORIZED);
         }
         UserDto user = userService.convertUserToDto(userService.getActiveUserByName(authRequest.getUserName()));
     	user.setToken(jwtUtil.generateToken(authRequest.getUserName()));
-        return new ResponseEntity<>(user, HttpStatus.OK);  //we dont really have to send back the user...
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 }
 

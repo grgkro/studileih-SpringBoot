@@ -1,7 +1,9 @@
 package com.example.studileih.Service;
 
 import com.example.studileih.Dto.ChatDto;
+import com.example.studileih.Dto.ChatDtoForResponding;
 import com.example.studileih.Dto.MessageDto;
+import com.example.studileih.Dto.MessageDtoForResponding;
 import com.example.studileih.Entity.Chat;
 import com.example.studileih.Entity.Message;
 import com.example.studileih.Entity.Product;
@@ -62,11 +64,51 @@ public class ChatService {
                .collect(Collectors.toList());
     }
 
+    /**
+     * Converts many Messages to MessageDtos.
+     */
+    public List<MessageDtoForResponding> convertMessagesToDtos(List<Message> messages) {
+        return messages.stream()
+                .map(this::convertMessageToDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Converts a Messages to a MessagesDto.
+     */
+    private MessageDtoForResponding convertMessageToDto(Message message) {
+        MessageDtoForResponding messageDto = modelMapper.map(message, MessageDtoForResponding.class);
+        // modelmapper uses the toString method for the two convertion from User to String -> we have to overwrite the User strings, otherwise the encrypted passwords would be in that strings.
+        messageDto.setSender(message.getSender().getName());
+        messageDto.setReceiver(message.getReceiver().getName());
+        return messageDto;
+    }
+
+
     public List<ChatDto> findChatsByUserId(Long id) {
             return convertChatsToDtos(chatRepository.findChatsByUserId(String.valueOf(id)));
+    }
+
+    public List<MessageDtoForResponding> getAllMessagesByChatId( Long chatId) {
+        Optional<Chat> chat = chatRepository.findById(chatId);
+        if (chat.isPresent()) {
+            Chat chat1 = chat.get();
+            return convertMessagesToDtos(chat1.getMessages());
+        }
+        return null;
     }
 
     public Optional<Chat> getChatById(Long id) {
         return chatRepository.findById(id);
     }
+
+    public ChatDtoForResponding getChatDtoForRespondingById(Long id) {
+        Optional<Chat> chat = getChatById(id);
+        if (chat.isPresent()) {
+            Chat chat1 = chat.get();
+            return new ChatDtoForResponding(chat1.getId(), chat1.getUser1().getName(), chat1.getUser2().getName(), getAllMessagesByChatId(chat1.getId()));
+        }
+        return null;
+    }
+
 }

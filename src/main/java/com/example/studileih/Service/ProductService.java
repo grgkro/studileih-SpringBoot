@@ -7,6 +7,7 @@ import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
 import com.example.studileih.Repository.ProductRepository;
 
+import org.json.simple.JSONObject;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -128,7 +129,7 @@ public class ProductService {
         return productDto;
     }
 
-    public ResponseEntity<String> addProduct(String description, String title, String category, Principal user, double price, boolean isBeerOk, String startDate, String endDate, String pickUpTime, String returnTime, MultipartFile[] imageFiles) {
+    public ResponseEntity addProduct(String description, String title, String category, Principal user, double price, boolean isBeerOk, String startDate, String endDate, String pickUpTime, String returnTime, MultipartFile[] imageFiles) {
         Date startDay = transformStringToDate(startDate);
         Date endDay = transformStringToDate(endDate);
 
@@ -145,10 +146,13 @@ public class ProductService {
         // if there were product pics uploaded, we also save them
         saveImageFilesToProduct(imageFiles, product);
         //TODO: We need more checks here
-        return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich angelegt.");
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("response", "Produkt " + product.getTitle() + " erfolgreich angelegt.");
+        jsonObject.put("productId", product.getId());
+        return ResponseEntity.status(HttpStatus.OK).body(jsonObject);
     }
 
-    public ResponseEntity<String> editProduct(Long id, String description, String title, String category, double price, boolean isBeerOk, String startDate, String endDate, String pickUpTime, String returnTime, MultipartFile[] imageFiles) {
+    public ResponseEntity editProduct(Long id, String description, String title, String category, double price, boolean isBeerOk, String startDate, String endDate, String pickUpTime, String returnTime, MultipartFile[] imageFiles) {
         Date startDay = transformStringToDate(startDate);
         Date endDay = transformStringToDate(endDate);
 
@@ -204,7 +208,7 @@ public class ProductService {
                                         String returnTime,
                                         MultipartFile[] imageFiles) {
 
-        String allowedRegex = "[a-zA-Z0-9._äöüÄÖÜß \\-+]*";
+        String allowedRegex = "[a-zA-Z0-9.,_äöüÄÖÜß \\-+]*";
         startDate = startDate.substring(0, startDate.indexOf("."));    //the date comes from the FE in format: "1598439940.666" or "1598439940.66", so we have to remove the "." and everything after.
 
         if (productId != null) {

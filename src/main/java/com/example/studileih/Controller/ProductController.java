@@ -76,7 +76,7 @@ public class ProductController {
 
     @PostMapping(path = "/products")
     @ApiOperation(value = "Add a new product to the database")
-    public ResponseEntity<String> addProduct(String description,
+    public ResponseEntity addProduct(String description,
                                              String title,
                                              String category,
                                              Principal userDetails,
@@ -97,7 +97,7 @@ public class ProductController {
 
     @PutMapping(path = "/products")
     @ApiOperation(value = "Edit an existing product")
-    public ResponseEntity<String> editProduct(Long id,
+    public ResponseEntity editProduct(Long id,
                                              String description,
                                              String title,
                                              String category,
