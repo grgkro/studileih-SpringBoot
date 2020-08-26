@@ -204,7 +204,8 @@ public class ProductService {
                                         String returnTime,
                                         MultipartFile[] imageFiles) {
 
- String allowedRegex = "[a-zA-Z0-9._äöüÄÖÜß \\-+]*";
+        String allowedRegex = "[a-zA-Z0-9._äöüÄÖÜß \\-+]*";
+        startDate = startDate.substring(0, startDate.indexOf("."));    //the date comes from the FE in format: "1598439940.666" or "1598439940.66", so we have to remove the "." and everything after.
 
         if (productId != null) {
             if (!productRepository.existsById(productId)) {
@@ -216,7 +217,7 @@ public class ProductService {
                 return new ResponseEntity("Unerwarteter Datenbankfehler (Principal existiert nicht).", HttpStatus.BAD_REQUEST);
             } else if (productId != null) {
                 Boolean userOwnsProduct = false;
-                for (Product product: userService.getActiveUserByName(userDetails.getName()).getProducts()) {
+                for (Product product : userService.getActiveUserByName(userDetails.getName()).getProducts()) {
                     if (product.getId() == productId) userOwnsProduct = true;
                 }
                 if (!userOwnsProduct) {
