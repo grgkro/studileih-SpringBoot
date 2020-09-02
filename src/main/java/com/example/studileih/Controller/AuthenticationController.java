@@ -37,6 +37,12 @@ public class AuthenticationController {
         return jsonObject;
     }
 
+    @GetMapping("/noAuthNeeded")
+    @ApiOperation(value = "For testing if server is up")
+    public String noAuthNeeded() {
+        return "Hello Fresh";
+    }
+
     @PostMapping("/authenticate")
     @ApiOperation(value = "Authenticate user by username and password, return the JWT Token")
     public ResponseEntity<UserDto> generateToken(@RequestBody AuthRequest authRequest) {
