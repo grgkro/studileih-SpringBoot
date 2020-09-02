@@ -56,7 +56,7 @@ public class UserService {
      */
     @PostConstruct
     public void createBaseDataset() {
-        if (productService.listAllProducts().isEmpty()) {
+//        if (productService.listAllProducts().isEmpty()) {
 
             Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
             Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
@@ -65,7 +65,7 @@ public class UserService {
             List<Product> hartmutsList = Stream.of(product3).collect(Collectors.toList());
             String HaraldsEncodedPassword = passwordEncoder.encode("2345");
             String HartmutsEncodedPassword = passwordEncoder.encode("5432");
-            User harald = new User("Harald", "grg.kro@gmail.com", HaraldsEncodedPassword, haraldsList, dormService.getDormById(1L).get());
+            User harald = new User("Harald3000", "grg.kro@gmail.com", HaraldsEncodedPassword, haraldsList, dormService.getDormById(1L).get());
             User hartmut = new User("Hartmut", "georgkromer@pm.me", HartmutsEncodedPassword, hartmutsList, dormService.getDormById(2L).get());
             product1.setUser(harald);
             product2.setUser(harald);
@@ -74,7 +74,7 @@ public class UserService {
             // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
             saveOrUpdateUser(harald);
             saveOrUpdateUser(hartmut);
-        }
+//        }
 
     }
 
