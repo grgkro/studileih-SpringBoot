@@ -82,7 +82,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/dorms",
                         "/images/loadProductPicByFilename",
                 "/productsByDorm/{id}",
-                "/productsWithouthDormProducts/{id}"
+                "/productsWithouthDormProducts/{id}",
+                        "/noAuthNeeded"
 
                 ).permitAll().anyRequest().authenticated().and().exceptionHandling().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
