@@ -1,8 +1,10 @@
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Entity\Chat.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Entity\User.java
+C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Dto\MessageDtoForReceiving.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Service\ProductBuilder.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Service\ProductService.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Service\ImageService.java
+C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Dto\MessageDtoForResponding.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\StudileihApplication.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Dto\CityEnum.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Controller\UserController.java
@@ -10,6 +12,7 @@ C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\ma
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Entity\Dorm.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Repository\DormRepository.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Repository\MessageRepository.java
+C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Dto\ChatDtoForResponding.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Security\SecurityConfig.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Repository\ProductRepository.java
 C:\Users\Boommeister69\workspace\StudileihGergelyUsh\studileih-SpringBoot\src\main\java\com\example\studileih\Controller\DormController.java

@@ -1,4 +1,64 @@
 -------------------------------------------------------------------------------
 Test set: com.example.studileih.StudileihApplicationTests
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.585 s - in com.example.studileih.StudileihApplicationTests
+Tests run: 18, Failures: 0, Errors: 15, Skipped: 0, Time elapsed: 11.534 s <<< FAILURE! - in com.example.studileih.StudileihApplicationTests
+whenDescriptionContainsForbiddenChars_thenReturn400  Time elapsed: 0.013 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.example.studileih.StudileihApplicationTests.whenDescriptionContainsForbiddenChars_thenReturn400(StudileihApplicationTests.java:165)
+
+whenCategoryContainsForbiddenChars_thenReturn400  Time elapsed: 0.004 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.example.studileih.StudileihApplicationTests.whenCategoryContainsForbiddenChars_thenReturn400(StudileihApplicationTests.java:216)
+
+whenStartDateIsNullButEndDateIsProvided_thenReturn400  Time elapsed: 0.003 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.example.studileih.StudileihApplicationTests.whenStartDateIsNullButEndDateIsProvided_thenReturn400(StudileihApplicationTests.java:338)
+
+whenPriceIsNegative_thenReturn400  Time elapsed: 0.004 s  <<< ERROR!
+java.lang.StringIndexOutOfBoundsException: begin 0, end -1, length 10
+	at com.example.studileih.StudileihApplicationTests.whenPriceIsNegative_thenReturn400(StudileihApplicationTests.java:250)
+
+whenPriceIsTooHigh_thenReturn200  Time elapsed: 0.003 s  <<< ERROR!
+java.lang.StringIndexOutOfBoundsException: begin 0, end -1, length 10
+	at com.example.studileih.StudileihApplicationTests.whenPriceIsTooHigh_thenReturn200(StudileihApplicationTests.java:267)
+
+whenStartDateIsBeforeCurrentDate_thenReturn400  Time elapsed: 0.004 s  <<< ERROR!
+java.lang.StringIndexOutOfBoundsException: begin 0, end -1, length 9
+	at com.example.studileih.StudileihApplicationTests.whenStartDateIsBeforeCurrentDate_thenReturn400(StudileihApplicationTests.java:284)
+
+whenTitleIsEmpty_thenReturn400  Time elapsed: 0.004 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.example.studileih.StudileihApplicationTests.whenTitleIsEmpty_thenReturn400(StudileihApplicationTests.java:148)
+
+whenStartDateIsNull_PickUpTimeMustAlsoBeNull_thenReturn400  Time elapsed: 0.003 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.example.studileih.StudileihApplicationTests.whenStartDateIsNull_PickUpTimeMustAlsoBeNull_thenReturn400(StudileihApplicationTests.java:302)
+
+whenCategoryContainsNoForbiddenChars_thenReturn200  Time elapsed: 0.003 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.example.studileih.StudileihApplicationTests.whenCategoryContainsNoForbiddenChars_thenReturn200(StudileihApplicationTests.java:233)
+
+whenTitleContainsForbiddenChars2_thenReturn400  Time elapsed: 0.004 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.example.studileih.StudileihApplicationTests.whenTitleContainsForbiddenChars2_thenReturn400(StudileihApplicationTests.java:199)
+
+whenInputIsValid_thenReturn200  Time elapsed: 0.003 s  <<< ERROR!
+java.lang.StringIndexOutOfBoundsException: begin 0, end -1, length 10
+	at com.example.studileih.StudileihApplicationTests.whenInputIsValid_thenReturn200(StudileihApplicationTests.java:114)
+
+whenStartDateIsEqualToEndDateAndPickUpTimeIsAfterReturnTime_thenReturn400  Time elapsed: 0.003 s  <<< ERROR!
+java.lang.StringIndexOutOfBoundsException: begin 0, end -1, length 10
+	at com.example.studileih.StudileihApplicationTests.whenStartDateIsEqualToEndDateAndPickUpTimeIsAfterReturnTime_thenReturn400(StudileihApplicationTests.java:356)
+
+whenDescriptionIsEmpty_thenReturn400  Time elapsed: 0.003 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.example.studileih.StudileihApplicationTests.whenDescriptionIsEmpty_thenReturn400(StudileihApplicationTests.java:131)
+
+whenStartDateIsBeforeEndDate_thenReturn400  Time elapsed: 0.002 s  <<< ERROR!
+java.lang.StringIndexOutOfBoundsException: begin 0, end -1, length 10
+	at com.example.studileih.StudileihApplicationTests.whenStartDateIsBeforeEndDate_thenReturn400(StudileihApplicationTests.java:320)
+
+whenTitleContainsForbiddenChars_thenReturn400  Time elapsed: 0.003 s  <<< ERROR!
+java.lang.NullPointerException
+	at com.example.studileih.StudileihApplicationTests.whenTitleContainsForbiddenChars_thenReturn400(StudileihApplicationTests.java:182)
+
