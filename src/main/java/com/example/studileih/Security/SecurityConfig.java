@@ -26,10 +26,6 @@ import com.example.studileih.Security.JwtFilter;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    // Roles for users
-    private static final String ROLE_1 = "ADMIN";
-    private static final String ROLE_2 = "USER";
-
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
@@ -83,8 +79,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/noAuthNeeded",
                         "/v2/api-docs", "/configuration/**", "/swagger*/**", "/webjars/**"  //needed for swagger
                 ).permitAll()
-                .antMatchers("/admin").hasRole(ROLE_1)
-                .antMatchers("/user").hasAnyRole(ROLE_2, ROLE_1)
                 .anyRequest().authenticated().and().exceptionHandling().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 

@@ -88,19 +88,19 @@ public class Product {
     @Override
     public String toString() {
         return "Product{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", description='" + description + '\'' +
-                ", title='" + title + '\'' +
-                ", type='" + type + '\'' +
-                ", price=" + price +
-                ", views=" + views +
-                ", available=" + available +
-                ", picPaths=" + picPaths +
-                ", user=" + "" +          // the user String has to be empty, otherwise when loading a product, hibernate calls the toString of Product, which calls the User toString method, which calls the Product toString method ... https://stackoverflow.com/questions/40266770/spring-jpa-bi-directional-cannot-evaluate-tostring
-                ", dorm=" + dorm +
-                ", city=" + city +
-                '}';
+                "id=" + id;
+//                ", createdAt=" + createdAt +
+//                ", updatedAt=" + updatedAt +
+//                ", description='" + description + '\'' +
+//                ", title='" + title + '\'' +
+//                ", type='" + type + '\'' +
+//                ", price=" + price +
+//                ", views=" + views +
+//                ", available=" + available +
+//                ", picPaths=" + picPaths +
+//                ", user=" + "" +          // the user String has to be empty, otherwise when loading a product, hibernate calls the toString of Product, which calls the User toString method, which calls the Product toString method ... https://stackoverflow.com/questions/40266770/spring-jpa-bi-directional-cannot-evaluate-tostring
+//                ", dorm=" + dorm +
+//                ", city=" + city +
+//                '}';
     }
 }

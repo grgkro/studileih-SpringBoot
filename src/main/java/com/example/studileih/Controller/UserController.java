@@ -63,7 +63,7 @@ public class UserController {
 
     @PostMapping(path = "/users/register")
     @ApiOperation(value = "Resgisters/Adds a new User with encoded Password in DB")
-    public ResponseEntity<String> registerUser(@NonNull @NotEmpty String name, @NonNull @NotEmpty String email, @NonNull @NotEmpty String password, @NonNull @NotEmpty Long dormId, MultipartFile profilePic) {
+    public ResponseEntity<String> registerNewUserAccount(@NonNull @NotEmpty String name, @NonNull @NotEmpty String email, @NonNull @NotEmpty String password, @NonNull @NotEmpty Long dormId, MultipartFile profilePic) {
         ResponseEntity response = userService.validateRegistration(name, email, password, dormId, profilePic);
         if (response.getStatusCodeValue() != 200) {
             return response;

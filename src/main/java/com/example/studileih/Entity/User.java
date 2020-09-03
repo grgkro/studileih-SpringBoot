@@ -9,6 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -65,6 +66,18 @@ public class User {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "receiver", cascade = {CascadeType.ALL})
     private List<Message> receivedMessages;
 
+    private boolean enabled;
+    private boolean tokenExpired;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "users_roles",
+            joinColumns = @JoinColumn(
+                    name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(
+                    name = "role_id", referencedColumnName = "id"))
+    private Collection<Role> roles;
+
 
 
 
@@ -103,4 +116,25 @@ public class User {
         this.dorm = dorm;
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id;
+//                ", createdAt=" + createdAt +
+//                ", updatedAt=" + updatedAt +
+//                ", name='" + name + '\'' +
+//                ", email='" + email + '\'' +
+//                ", password='" + password + '\'' +
+//                ", profilePic='" + profilePic + '\'' +
+//                ", products=" + products.size() +
+//                ", dorm=" + dorm +
+//                ", room='" + room + '\'' +
+//                ", city='" + city + '\'' +
+//                ", sentMessages=" + sentMessages.size() +
+//                ", receivedMessages=" + receivedMessages.size() +
+//                ", enabled=" + enabled +
+//                ", tokenExpired=" + tokenExpired +
+//                ", roles=" + roles.size() +
+//                '}';
+    }
 }
