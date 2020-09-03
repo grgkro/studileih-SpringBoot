@@ -26,6 +26,9 @@ import com.example.studileih.Security.JwtFilter;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    // Roles for users
+    private static final String ROLE_1 = "ADMIN";
+    private static final String ROLE_2 = "USER";
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
@@ -37,12 +40,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService);
     }
-//    @SuppressWarnings("deprecation")
-//	@Bean
-//    public PasswordEncoder passwordEncoder(){
-//        return NoOpPasswordEncoder.getInstance();
-//    }
-
 
     @Bean
 	public PasswordEncoder passwordEncoder() {
@@ -83,49 +80,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                         "/images/loadProductPicByFilename",
                 "/productsByDorm/{id}",
                 "/productsWithouthDormProducts/{id}",
-                        "/noAuthNeeded"
-
-                ).permitAll().anyRequest().authenticated().and().exceptionHandling().and().sessionManagement()
+                        "/noAuthNeeded",
+                        "/v2/api-docs", "/configuration/**", "/swagger*/**", "/webjars/**"  //needed for swagger
+                ).permitAll()
+                .antMatchers("/admin").hasRole(ROLE_1)
+                .antMatchers("/user").hasAnyRole(ROLE_2, ROLE_1)
+                .anyRequest().authenticated().and().exceptionHandling().and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-//        http.csrf().disable().authorizeRequests().antMatchers("/authenticate",
-//        		"/",
-//        		"/images/loadProductPicByFilename",
-//        		"/postImage",
-//        		"/images/archivePicByFilename",
-//        		"/images/restorePicByFilename",
-//        		"/images/deleteArchive",
-//        		"/images/deleteImageFolder",
-//        		"/images/deleteProductPicByFilename",
-//        		"/loadProfilePicByUserId",
-//        		"/emails/sendEmail",
-//        		"/messages/sendMessage",
-//        		"/messages/updateMessage",
-//        		"/messages/sendReply",
-//        		"/messages/sendEmailReply",
-//        		"/messages/messages",
-//        		"/chats/chats",
-//        		"/chats/chatsByUser/{id}",
-//        		"/products",
-//        		"/products/{id}",
-//        		"/productsdto/{id}",
-//        		"/products",
-//        		"/products/delete/{id}",
-//        		"/products/{id}",
-//        		"/dorms",
-//        		"/users",
-//        		"/users/{id}",
-//        		"/usersdto/*",
-//        		"/saveUser",
-//        		"/users",
-//        		"/users/{id}",
-//        		"/users/*",
-//        		"/swagger-ui.html") //for the start, we free up everything, so the application won't break
-//        //this part gives permission without authentication
-//                .permitAll()
-//                //from here on all the rest must be authenticated
-//                .anyRequest().authenticated()
-//                .and().exceptionHandling().and().sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);;
     }
 }

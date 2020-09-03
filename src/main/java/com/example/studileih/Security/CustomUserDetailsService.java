@@ -21,4 +21,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByName(username);
         return new org.springframework.security.core.userdetails.User(user.getName(), user.getPassword(), new ArrayList<>());
     }
+
+
+    public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email);
+        return new org.springframework.security.core.userdetails.User(user.getName(), user.getPassword(), new ArrayList<>());
+    }
 }

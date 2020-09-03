@@ -43,6 +43,16 @@ public class AuthenticationController {
         return "Hello Fresh";
     }
 
+    @GetMapping("/admin")
+    public String admin() {
+        return "<h2>Welcome Admin!</h2>";
+    }
+
+    @GetMapping("/user")
+    public String user() {
+        return "<h2>Welcome!</h2>";
+    }
+
     @PostMapping("/authenticate")
     @ApiOperation(value = "Authenticate user by username and password, return the JWT Token")
     public ResponseEntity<UserDto> generateToken(@RequestBody AuthRequest authRequest) {
