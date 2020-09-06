@@ -103,12 +103,15 @@ public class SetupDataLoader implements
             // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
             userService.saveOrUpdateUser(harald);
             userService.saveOrUpdateUser(hartmut);
+            productService.saveOrUpdateProduct(product1);
+            productService.saveOrUpdateProduct(product2);
+            productService.saveOrUpdateProduct(product3);
         }
 
         alreadySetup = true;
     }
 
-//    @Transactional
+    @Transactional
     Privilege createPrivilegeIfNotFound(String name) {
 
         Privilege privilege = privilegeRepository.findByName(name);
@@ -119,7 +122,7 @@ public class SetupDataLoader implements
         return privilege;
     }
 
-//    @Transactional
+    @Transactional
     Role createRoleIfNotFound(
             String name, Collection<Privilege> privileges) {
 

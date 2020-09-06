@@ -18,8 +18,8 @@ public class Privilege {
 
     private String name;
 
-    @ManyToMany(mappedBy = "privileges", fetch = FetchType.LAZY)
-    private Collection<Role> roles;
+//    @ManyToMany(mappedBy = "privileges", fetch = FetchType.LAZY)
+//    private Collection<Role> roles;
 
     public Privilege(String name) {
         this.name = name;
@@ -29,7 +29,7 @@ public class Privilege {
     public String toString() {
         return "Privilege{" +
                 "id=" + id +
-//                ", name='" + name + '\'' +
+                ", name='" + name + '\'' +
 //                ", roles=" + roles.size() +
                 '}';
     }

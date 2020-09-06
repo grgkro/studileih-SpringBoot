@@ -221,9 +221,9 @@ public class ProductService {
                 return new ResponseEntity("Unerwarteter Datenbankfehler (Principal existiert nicht).", HttpStatus.BAD_REQUEST);
             } else if (productId != null) {
                 Boolean userOwnsProduct = false;
-                for (Product product : userService.getActiveUserByName(userDetails.getName()).getProducts()) {
-                    if (product.getId() == productId) userOwnsProduct = true;
-                }
+//                for (Product product : userService.getActiveUserByName(userDetails.getName()).getProducts()) {
+//                    if (product.getId() == productId) userOwnsProduct = true;
+//                }
                 if (!userOwnsProduct) {
                     return new ResponseEntity("Nur der Ersteller kann das Produkt bearbeiten.", HttpStatus.BAD_REQUEST);
                 }

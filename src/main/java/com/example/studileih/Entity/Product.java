@@ -53,7 +53,7 @@ public class Product {
     // wir sagen der DB, dass sie diese Spalte als Datentyp LongText (Large Object = lob) anlegen soll, damit auch längere Texte rein gehen. Sonst legt sie es automatich als TINYBLOB an und das ist schnell zu klein.
     private ArrayList<String> picPaths;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 

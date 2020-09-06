@@ -23,8 +23,8 @@ public class Dorm {
     private Long id;
 
     private String name;
-    @OneToMany(mappedBy = "dorm")
-    private List<User> users;
+//    @OneToMany(mappedBy = "dorm")
+//    private List<User> users;
 
     private Double lat;
     private Double lng;

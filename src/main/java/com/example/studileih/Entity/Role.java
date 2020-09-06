@@ -22,10 +22,8 @@ public class Role {
     private Long id;
 
     private String name;
-    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
-    private Collection<User> users;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "roles_privileges",
             joinColumns = @JoinColumn(
@@ -42,7 +40,7 @@ public class Role {
     public String toString() {
         return "Role{" +
                 "id=" + id +
-//                ", name='" + name + '\'' +
+                ", name='" + name + '\'' +
 //                ", users=" + users.size() +
 //                ", privileges=" + privileges.size() +
                 '}';
