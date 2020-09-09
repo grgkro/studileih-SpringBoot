@@ -18,7 +18,7 @@ import com.example.studileih.Security.JwtUtil;
 import java.security.Principal;
 
 @RestController
-@CrossOrigin("http://localhost:4200")
+@CrossOrigin
 @Api(tags = "Authentication API - controller methods for authenticating Users")
 public class AuthenticationController {
 
@@ -29,7 +29,7 @@ public class AuthenticationController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/")
+    @GetMapping("/welcome")
     @ApiOperation(value = "Dummy welcome message")
     public JSONObject welcome(Principal user) {
         JSONObject jsonObject = new JSONObject();

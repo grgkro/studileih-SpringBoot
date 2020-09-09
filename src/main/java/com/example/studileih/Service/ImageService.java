@@ -5,6 +5,7 @@ import com.example.studileih.Entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +15,8 @@ import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -37,6 +40,17 @@ public class ImageService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    S3Services s3Services;
+
+//    @Value("${file.location}")
+//    private String location;
+
+//    @PostConstruct
+//    public void testString() {
+//        System.out.println(location);
+//    }
+
     // nach diesem Tutorial erstellt: https://grokonez.com/spring-framework/spring-boot/angular-6-upload-get-multipartfile-spring-boot-example
 
     // Logger is similar to system.out.println, but you can also see the outprint on a server-log (was useful for running on AWS Cloud)
@@ -46,20 +60,79 @@ public class ImageService {
     private final String basePath = new File("").getAbsolutePath();
     private String parentFolderLocation = basePath + "/src/main/resources/images";
 
+    /* --------------------- use this to store images in AWS S3 ---------------------- */
+    public ResponseEntity storeImageS3(String keyName, MultipartFile file, String type, Long id) {
+        s3Services.uploadFile(type + "s/" + type + id + "/" + keyName, file);
+        return ResponseEntity.status(HttpStatus.OK).body("Bild " + keyName + " erfolgreich hochgeladen.");
+    }
+
+
+    /* --------------------- use this to store images locally -------------------------- */
     /**
      * The image gets send from the frontend as a Multipartfile. Here we save it.
      * There can't be two images in the image folder with the same name, so we return an error response if that happens.
      *
-     * @param file, type, id -> type can here either be "user" or "product". Depending on the type the photo will be saved as user profile pic or product pic
+     * @param , type, id -> type can here either be "user" or "product". Depending on the type the photo will be saved as user profile pic or product pic
      * @return ResponseEntity
      */
-    public ResponseEntity storeImage(MultipartFile file, String type, Long id) {
-        createFolder(Paths.get(parentFolderLocation));   // falls "images" folder fehlt, erzeugen wir den:
-        createFolder(Paths.get(parentFolderLocation + "/" + type + "s"));  // falls "users" oder "products" folder fehlt, erzeugen wir den:
-        createFolder(Paths.get(parentFolderLocation + "/" + type + "s/" + type + id)); //creates a folder named "user + userId" oder "product" + productId. Only if folder doesn't already exists.
-        return storeImage(file, type + "Pic", Paths.get(parentFolderLocation + "/" + type + "s/" + type + id));   // jetzt können wir das Foto in den user1, user2, bzw. product1, product2,... folder speichern:
+//    public ResponseEntity storeImage(MultipartFile file, String type, Long id) {
+//        createFolder(Paths.get(parentFolderLocation));   // falls "images" folder fehlt, erzeugen wir den:
+//        createFolder(Paths.get(parentFolderLocation + "/" + type + "s"));  // falls "users" oder "products" folder fehlt, erzeugen wir den:
+//        createFolder(Paths.get(parentFolderLocation + "/" + type + "s/" + type + id)); //creates a folder named "user + userId" oder "product" + productId. Only if folder doesn't already exists.
+//
+//        return storeImage(file, type + "Pic", Paths.get(parentFolderLocation + "/" + type + "s/" + type + id));   // jetzt können wir das Foto in den user1, user2, bzw. product1, product2,... folder speichern:
+//
+//    }
 
+    public ResponseEntity loadProductPicByFilenameS3(String filename, Long productId) {
+        // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
+        Product product = productService.getProductEntityById(productId);
+        if (product == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
+        // Then we load the picture from S3
+        if (product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
+            Resource file = loadProductPicS3(filename, productId);  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
+            System.out.println(file);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
+                    .body(file);  // the response body now contains the profile pic
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with userId = " + productId + "has no pictures yet or no picture with the given filename");  // Returns a status = 404 response
+        }
     }
+
+    public Resource loadProductPicS3(String filename, Long productId) {
+        Resource resource = loadProductPicByFilenameAsResourceS3(filename, productId);
+        if (resource.exists() || resource.isReadable()) {
+            return resource;
+        } else {
+            throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
+        }
+    }
+
+    /*
+     * returns a resource with the product pic.
+     */
+    public Resource loadProductPicByFilenameAsResourceS3(String filename, Long id) {
+
+
+            try {
+                ByteArrayOutputStream baos = s3Services.downloadFile("products/product" + id + "/" + filename);
+                System.out.println(baos);
+                Resource resource = null;
+                if (resource.exists() || resource.isReadable()) {
+                    return resource;
+                } else {
+                    throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
+            }
+
+//        throw new RuntimeException("Unexpected error when loading the image in backend");
+    }
+
+
 
     public ResponseEntity loadProductPicByFilename(String filename, Long productId) {
         // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
@@ -315,9 +388,9 @@ public class ImageService {
         if (product == null)
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + product.getId() + " doesn't exist in db.");    // Returns a status = 404 response
         if (!hasAlreadyThisFile(file, product)) {                         // checks, if the Productalready has a Photo with exact same name.
-            ResponseEntity response = storeImage(file, "product", product.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
+            ResponseEntity response = storeImageS3(file.getOriginalFilename(), file, "product", product.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
             if (response.getStatusCodeValue() == 200) {
-                System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename()); // if saving Pfoto was successfull => response status = 200...
+                System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename()); // if saving photo was successfull => response status = 200...
                 if (product.getPicPaths() == null) {                                   // we only saved the pic in the pic folder until now, not in the database. A Product can have multiple images, so the pic needs to get stored in a List
                     ArrayList<String> arr = new ArrayList<>();
                     //add the new picPath

@@ -17,13 +17,15 @@ public class Message {
     @SequenceGenerator(name = "message_generator", sequenceName = "message_seq", allocationSize = 1)
     @Column(name = "message_id", updatable = false, nullable = false)
     private Long id;
-
+    @Column(name = "subject")
     private String subject;
-    @Column
+    @Column(name = "text")
     @Lob
     // wir sagen der DB, dass sie diese Spalte als Datentyp LongText (Large Object = lob) anlegen soll, damit auch längere Texte rein gehen. Sonst legt sie es automatich als VARCHAR an und das ist schnell zu klein.
     private String text;
+    @Column(name = "sendetAt")
     private String sendetAt;   // = createdAt, can be later changed to a Date type instead of String
+    @Column(name = "receivedAt")
     private String receivedAt; // = updatedAt
 
 

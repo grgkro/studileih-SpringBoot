@@ -1,15 +1,17 @@
 package com.example.studileih.Controller;
 
 import com.example.studileih.Service.ImageService;
+import com.example.studileih.Service.S3Services;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import io.swagger.annotations.Api;
@@ -23,13 +25,47 @@ public class ImageController {
     @Autowired
     private ImageService imageService;
 
+    @Autowired
+    S3Services s3Services;
+
+    @PostMapping("/api/file/upload")
+    public String uploadMultipartFile(@RequestParam("keyname") String keyName, @RequestParam("uploadfile") MultipartFile file) {
+        s3Services.uploadFile(keyName, file);
+        return "Upload Successfully. -> KeyName = " + keyName;
+    }
+
+    /*
+     * Download Files
+     */
+    @GetMapping("/api/file/{keyname}")
+    public ResponseEntity<byte[]> downloadFile(@PathVariable String keyname) {
+        ByteArrayOutputStream downloadInputStream = s3Services.downloadFile(keyname);
+
+        return ResponseEntity.ok()
+                .contentType(contentType(keyname))
+                .header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + keyname + "\"")
+                .body(downloadInputStream.toByteArray());
+    }
+
+    private MediaType contentType(String keyname) {
+        String[] arr = keyname.split("\\.");
+        String type = arr[arr.length-1];
+        switch(type) {
+            case "txt": return MediaType.TEXT_PLAIN;
+            case "png": return MediaType.IMAGE_PNG;
+            case "jpg": return MediaType.IMAGE_JPEG;
+            default: return MediaType.APPLICATION_OCTET_STREAM;
+        }
+    }
+
     /*
      * loads a product pic
      */
     @PostMapping("/images/loadProductPicByFilename")    //https://bezkoder.com/spring-boot-upload-multiple-files/
     @ApiOperation(value = "Loads and returns the image of a product by it's provided filename")
     public ResponseEntity loadProductPicByFilename(String filename, Long productId) {
-      return imageService.loadProductPicByFilename( filename, productId);
+      return imageService.loadProductPicByFilenameS3( filename, productId);
+//      return imageService.loadProductPicByFilename( filename, productId);
     }
 
     @PostMapping("/postImage")

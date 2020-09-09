@@ -72,7 +72,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.cors();
 
         http.csrf().disable().authorizeRequests()
-                .antMatchers("/authenticate",
+                .antMatchers("/",
+                "/authenticate",
                         "/users/register",   //without this you would need to be logged in for being able to register...
                         "/products",
                         "/products/{id}",
