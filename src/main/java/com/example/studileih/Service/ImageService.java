@@ -91,40 +91,41 @@ public class ImageService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
         // Then we load the picture from S3
         if (product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
-            Resource file = loadProductPicS3(filename, productId);  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
-            System.out.println(file);
+            byte[] bytearray = loadProductPicS3(filename, productId);  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
+            System.out.println(bytearray);
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getFilename() + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
-                    .body(file);  // the response body now contains the profile pic
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
+                    .body(bytearray);  // the response body now contains the profile pic
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with userId = " + productId + "has no pictures yet or no picture with the given filename");  // Returns a status = 404 response
         }
     }
 
-    public Resource loadProductPicS3(String filename, Long productId) {
-        Resource resource = loadProductPicByFilenameAsResourceS3(filename, productId);
-        if (resource.exists() || resource.isReadable()) {
-            return resource;
-        } else {
-            throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
-        }
+    public byte[] loadProductPicS3(String filename, Long productId) {
+        byte[] bytearray = loadProductPicByFilenameAsResourceS3(filename, productId);
+//        if (bytearray.exists() || bytearray.isReadable()) {
+            return bytearray;
+//        } else {
+//            throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
+//        }
     }
 
     /*
      * returns a resource with the product pic.
      */
-    public Resource loadProductPicByFilenameAsResourceS3(String filename, Long id) {
+    public byte[] loadProductPicByFilenameAsResourceS3(String filename, Long id) {
 
 
             try {
                 ByteArrayOutputStream baos = s3Services.downloadFile("products/product" + id + "/" + filename);
                 System.out.println(baos);
-                Resource resource = null;
-                if (resource.exists() || resource.isReadable()) {
-                    return resource;
-                } else {
-                    throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
-                }
+                return baos.toByteArray();
+//                Resource resource = null;
+//                if (resource.exists() || resource.isReadable()) {
+//                    return resource;
+//                } else {
+//                    throw new RuntimeException("It seems like you deleted the images on the server, without also deleting them in the database ");
+//                }
             } catch (Exception e) {
                 throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
             }
