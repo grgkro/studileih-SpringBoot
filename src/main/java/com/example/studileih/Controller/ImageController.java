@@ -78,8 +78,8 @@ public class ImageController {
 
     @PostMapping("/postImage")
     @ApiOperation(value = "Add new Image")
-    public ResponseEntity handleFileUpload (MultipartFile file, Long userId, Long productId, String imgType){
-       return imageService.handleFileUpload(file, userId, productId, imgType);
+    public ResponseEntity handleFileUpload (MultipartFile file, Long id, String imgType){
+       return s3imageService.handleFileUpload(file, id, imgType);
     }
 
 
@@ -89,7 +89,7 @@ public class ImageController {
      */
     @PostMapping("/images/archivePicByFilename")
     @ApiOperation(value = "Transfers an deleted image from the user or product folder to the archive folder, so that it can be restored later.")
-    public ResponseEntity archiveProductPicByFilename( String filename, String imgType, String productId) throws IOException {
+    public ResponseEntity archiveProductPicByFilename( String filename, String imgType, String productId) {
         return s3ImageArchiveAndDeleteService.archivePicByFilename(filename, imgType, productId);
     }
 
@@ -99,7 +99,7 @@ public class ImageController {
     @PostMapping("/images/restorePicByFilename")
     @ApiOperation(value = "Restores a deleted image from the archive to the user or product folder")
     public ResponseEntity restorePicByFilename(String filename, String imgType, Long productId) throws IOException {
-       return imageService.restorePicByFilename(filename, imgType, productId);
+       return s3ImageArchiveAndDeleteService.restorePicByFilename(filename, imgType, productId);
     }
 
     /*
@@ -107,13 +107,8 @@ public class ImageController {
      */
     @PostMapping("/images/deleteArchive")
     @ApiOperation(value = "Deletes the archive folder of one user or product")
-    public ResponseEntity deleteArchive(String archiveType, String id) throws IOException {
-        String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
-        String archiveFolderLocation = parentFolderLocation + "/archive/" + archiveType + "s/" + archiveType + id;
-        File file = new File(archiveFolderLocation);
-        FileUtils.deleteDirectory(file);
-        // return success entity (OK - 200)
-        return ResponseEntity.status(HttpStatus.OK).body(archiveType + " Archiv erfolgreich gelöscht");
+    public ResponseEntity deleteArchive(String archiveType, String id)  {
+        return s3ImageArchiveAndDeleteService.deleteArchive(archiveType, id);
     }
 
     /*
@@ -122,12 +117,7 @@ public class ImageController {
     @PostMapping("/images/deleteImageFolder")
     @ApiOperation(value = "Deletes the imageFolder of one product or user (depending on the provided folderType)")
     public ResponseEntity deleteImageFolder(String folderType, String id) throws IOException {
-        String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
-        String archiveFolderLocation = parentFolderLocation + "/" + folderType + "s/" + folderType + id;
-        File file = new File(archiveFolderLocation);
-        FileUtils.deleteDirectory(file);
-        // return success entity (OK - 200)
-        return ResponseEntity.status(HttpStatus.OK).body(folderType + " Bilder erfolgreich gelöscht");
+        return s3ImageArchiveAndDeleteService.deleteImageFolder(folderType, id);
     }
 
         /*

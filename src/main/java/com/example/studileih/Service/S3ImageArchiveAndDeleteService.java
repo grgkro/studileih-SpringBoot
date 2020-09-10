@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 @Service
 public class S3ImageArchiveAndDeleteService {
@@ -55,6 +56,37 @@ public class S3ImageArchiveAndDeleteService {
         return ResponseEntity.status(HttpStatus.OK).body(filename + " erfolgreich archiviert.");
     }
 
+    // not tested yet
+    public ResponseEntity restorePicByFilename(String filename, String imgType, Long id) {
+        // create correct paths
+        String to = imgType + "s/" + imgType + id + "/" + filename ;
+        String from = "archive/" + imgType + "s/" + imgType + id + "/" + filename;
+        //check if "from" file exists
+        if (!hasFile(from)) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(filename + " konnte nicht gefunden werden.");
+        //check if "to" file exists
+        if (hasFile(to)) return ResponseEntity.status(HttpStatus.CONFLICT).body(filename + " existiert bereits.");
+        // then copy the file
+        s3Services.copyFile(from, to);
+
+        // load product or user and readd the restored img to picPaths
+        if (imgType.equals("product")) {
+            Product product = productService.getProductEntityById(id);
+            if (product == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + id + " doesn't exist in db.");    // Returns a status = 404 response
+            // Then we add the picture to the picPaths
+            if (!product.getPicPaths().contains(filename)) {
+                ArrayList<String> picPaths = product.getPicPaths();
+                picPaths.add(filename);
+                product.setPicPaths(picPaths);
+                productService.saveOrUpdateProduct(product);
+            }
+            // delete restored img from archive
+            s3Services.deleteFile(from);  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+        }
+        // return success entity (OK - 200)
+        return ResponseEntity.status(HttpStatus.OK).body(filename + " erfolgreich wiederhergestellt");
+    }
+
     public boolean hasFile(String keyName) {
         ObjectListing objectListing = s3Services.listObjects();
         for(S3ObjectSummary os : objectListing.getObjectSummaries()) {
@@ -63,66 +95,6 @@ public class S3ImageArchiveAndDeleteService {
         return false;
     }
 
-
-    public ResponseEntity storeImageS3(String keyName, MultipartFile file, String type, Long id) {
-        s3Services.uploadFile(type + "s/" + type + id + "/" + keyName, file);
-        return ResponseEntity.status(HttpStatus.OK).body("Bild " + keyName + " erfolgreich hochgeladen.");
-    }
-
-    public ResponseEntity loadProductPicByFilenameS3(String filename, Long productId) {
-        // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
-        Product product = productService.getProductEntityById(productId);
-        if (product == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
-        // Then we load the picture from S3
-        if (product.getPicPaths() != null && product.getPicPaths().contains(filename)) {
-            byte[] bytearray = loadProductPicS3(filename, productId);  // Somehow you can't store the file directly in a variable of type File, instead you need to use a variable of type Resource.
-            System.out.println(bytearray);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
-                    .body(bytearray);  // the response body now contains the profile pic
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with userId = " + productId + "has no pictures yet or no picture with the given filename");  // Returns a status = 404 response
-        }
-    }
-
-    public byte[] loadProductPicS3(String filename, Long id) {
-        try {
-            ByteArrayOutputStream baos = s3Services.downloadFile("products/product" + id + "/" + filename);
-            System.out.println(baos);
-            return baos.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
-        }
-    }
-
-    public byte[] loadUserPicFilenameS3(String filename, Long id) {
-        try {
-            ByteArrayOutputStream baos = s3Services.downloadFile("users/user" + id + "/" + filename);
-            System.out.println(baos);
-            return baos.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException("It seems like you deleted the images on the server, without deleting them in the database ");
-        }
-
-    }
-
-    public ResponseEntity getImageByUserId(Long userId) {
-        // The file Names of the ProfilePics are saved in the user entities, so we first need to load the user from the user database table
-        User user = userService.getActiveUser(userId);
-        if (user == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + userId + " doesn't exist in db.");    // Returns a status = 404 response
-        // Then we load the picture from the local storage
-        if (user.getProfilePic() != null) {
-            byte[] bytearray = loadUserPicFilenameS3(user.getProfilePic(), user.getId());
-            System.out.println(bytearray);
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + "\"")  //the Content-Disposition response header is a header indicating if the content is expected to be displayed inline in the browser, that is, as a Web page or as part of a Web page, or as an attachment, that is downloaded and saved locally.
-                    .body(bytearray);  // the response body now contains the profile pic
-        } else {
-            return ResponseEntity.status(HttpStatus.OK).body("User with userId = " + userId + "has no profilePic yet (user.getProfilePic() = null)");  // Returns a status = 404 response
-        }
-    }
 
     public ResponseEntity deleteProductPicByFilename(String filename, Long productId) {
         // first remove the image from the databse
@@ -136,6 +108,34 @@ public class S3ImageArchiveAndDeleteService {
         // if the image was removed from DB, remove the image from the local storage, too:
         s3Services.deleteFile("products/product" + productId + "/" + filename);
         return ResponseEntity.status(HttpStatus.OK).body(filename + " erfolgreich gelöscht.");  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+    }
+
+    public ResponseEntity deleteArchivePicByFilename(String keyName) {
+        s3Services.deleteFile(keyName);
+        return ResponseEntity.status(HttpStatus.OK).body(keyName + " erfolgreich gelöscht.");  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
+    }
+
+
+    // not tested yet
+    public ResponseEntity deleteArchive(String archiveType, String id) {
+            if (!hasFile("archive/" + archiveType + "s/" + archiveType + id)) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(archiveType + id + " Archiv konnte nicht gefunden werden.");
+            s3Services.deleteFile("archive/" + archiveType + "s/" + archiveType + id);
+            if (!hasFile("archive/" + archiveType + "s/" + archiveType + id)) {
+                return ResponseEntity.status(HttpStatus.OK).body(archiveType + id + " Archiv erfolgreich gelöscht");
+            } else {
+                return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(archiveType + id + " Archiv konnte gefunden, aber nicht gelöscht werden.");
+            }
+        }
+
+    // not tested yet
+    public ResponseEntity deleteImageFolder(String folderType, String id) {
+        if (!hasFile(folderType + "s/" + folderType + id)) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bilder von " + folderType + id + "  konnte nicht gefunden werden.");
+        s3Services.deleteFile(folderType + "s/" + folderType + id);
+        if (!hasFile(folderType + "s/" + folderType + id)) {
+            return ResponseEntity.status(HttpStatus.OK).body("Alle Bilder von " + folderType + id + " erfolgreich gelöscht");
+        } else {
+            return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body("Bilder von " + folderType + id + " konnte gefunden, aber nicht gelöscht werden.");
+        }
     }
 }
 
@@ -158,33 +158,7 @@ public class S3ImageArchiveAndDeleteService {
 //
 //
 //
-//    public ResponseEntity restorePicByFilename(String filename, String imgType, Long productId) throws IOException {
-//        // find correct paths
-//        String parentFolderLocation = new File("").getAbsolutePath() + "/src/main/resources/images";
-//        String targetFolderLocation = parentFolderLocation + "/" + imgType + "s/" + imgType + productId + "/";
-//        String archiveFolderLocation = parentFolderLocation + "/archive/" + imgType + "s/" + imgType + productId + "/";
-//        // copy the file from the archive folder to the parent folder
 //
-//        copyFile(archiveFolderLocation + filename, targetFolderLocation + filename);
-//
-//        // load product or user and readd the restored img to picPaths
-//        if (imgType.equals("product")) {
-//            Product product = productService.getProductEntityById(productId);
-//            if (product == null)
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + productId + " doesn't exist in db.");    // Returns a status = 404 response
-//            // Then we add the picture to the picPaths
-//            if (!product.getPicPaths().contains(filename)) {
-//                ArrayList<String> picPaths = product.getPicPaths();
-//                picPaths.add(filename);
-//                product.setPicPaths(picPaths);
-//                productService.saveOrUpdateProduct(product);
-//            }
-//            // delete restored img from archive
-//            deleteImageByFilename(filename, "archiveProductPic", productId);  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
-//        }
-//        // return success entity (OK - 200)
-//        return ResponseEntity.status(HttpStatus.OK).body(imgType + " erfolgreich wiederhergestellt");
-//    }
 //
 //    public static void copyFile(String from, String to) throws IOException {
 //        Path src = Paths.get(from);

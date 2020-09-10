@@ -1,5 +1,7 @@
 package com.example.studileih.Service;
 
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
 import org.slf4j.Logger;
@@ -33,6 +35,9 @@ public class S3ImageService {
 
     @Autowired
     S3Services s3Services;
+
+    @Autowired
+    S3ImageArchiveAndDeleteService s3ImageArchiveAndDeleteService;
 
 //    @Value("${file.location}")
 //    private String location;
@@ -107,6 +112,53 @@ public class S3ImageService {
         }
     }
 
+    public ResponseEntity handleFileUpload(MultipartFile file, Long id, String imgType) {
+        String keyName = imgType + "s/" + imgType + id + "/" + file.getOriginalFilename();
+        // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
+        //userPic doesn't work yet!
+        if (imgType.equals("userPic")) {
+            return userService.saveUserPic(file, id);
+        } else if (imgType.equals("productPic")) {
+            // before we store the image, we need to check if the image is already in the archive. If so, we need to delete it there. Otherwise it would be in the archive and in the normal folder at the same time. If you then delete it (transfer it from normal folder to archive, or restore it (transfer it from archive to normal folder) you would get a fileAlreadyExists Exeption.
+            if (s3ImageArchiveAndDeleteService.hasFile("archive/" + keyName)) s3ImageArchiveAndDeleteService.deleteArchivePicByFilename("archive/" + keyName);
+            Product product = productService.getProductEntityById(id);                                      // We first load the product, for which we wanna save the pic.
+            return saveProductPic(file, product);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Der imgType im Angular Code war falsch...");
+    }
+
+    public ResponseEntity saveProductPic(MultipartFile file, Product product) {
+        if (product == null)
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + product.getId() + " doesn't exist in db.");    // Returns a status = 404 response
+        if (!hasAlreadyThisFile(file, product)) {                         // checks, if the Productalready has a Photo with exact same name.
+            ResponseEntity response = storeImageS3(file.getOriginalFilename(), file, "product", product.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
+            if (response.getStatusCodeValue() == 200) {
+                System.out.println("Unter folgendem Namen wurde das Foto in S3 gespeichert: " + file.getOriginalFilename()); // if saving photo was successfull => response status = 200...
+                if (product.getPicPaths() == null) {                                   // we only saved the pic in the pic folder until now, not in the database. A Product can have multiple images, so the pic needs to get stored in a List
+                    ArrayList<String> arr = new ArrayList<>();
+                    //add the new picPath
+                    arr.add(file.getOriginalFilename());
+                    product.setPicPaths(arr);
+                } else {
+                    product.getPicPaths().add(file.getOriginalFilename());
+                    product.setPicPaths(product.getPicPaths());
+                }
+                System.out.println(product.getPicPaths());
+                productService.saveOrUpdateProduct(product);                             //updated das Product in der datenbank, damit der Fotoname da auch gespeichert ist.
+            }
+            return response;
+        }
+        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Foto mit selbem Namen wurde für gleiches Produkt schonmal hochgeladen.");
+    }
+
+    private boolean hasAlreadyThisFile(MultipartFile file, Product product) {
+        if (product.getPicPaths() != null) {
+            Path path = Paths.get(file.getOriginalFilename());
+            System.out.println("Path: " + path);
+            if (product.getPicPaths().contains(path)) return true;
+        }
+        return false;
+    }
 }
 
 
@@ -286,39 +338,8 @@ public class S3ImageService {
 //        }
 //    }
 //
-//    public ResponseEntity saveProductPic(MultipartFile file, Product product) {
 //
-//        if (product == null)
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("product with Id" + product.getId() + " doesn't exist in db.");    // Returns a status = 404 response
-//        if (!hasAlreadyThisFile(file, product)) {                         // checks, if the Productalready has a Photo with exact same name.
-//            ResponseEntity response = storeImageS3(file.getOriginalFilename(), file, "product", product.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
-//            if (response.getStatusCodeValue() == 200) {
-//                System.out.println("Unter folgendem Namen wurde das Foto lokal (src -> main -> resources -> images) gespeichert: " + file.getOriginalFilename()); // if saving photo was successfull => response status = 200...
-//                if (product.getPicPaths() == null) {                                   // we only saved the pic in the pic folder until now, not in the database. A Product can have multiple images, so the pic needs to get stored in a List
-//                    ArrayList<String> arr = new ArrayList<>();
-//                    //add the new picPath
-//                    arr.add(file.getOriginalFilename());
-//                    product.setPicPaths(arr);
-//                } else {
-//                    product.getPicPaths().add(file.getOriginalFilename());
-//                    product.setPicPaths(product.getPicPaths());
-//                }
-//                System.out.println(product.getPicPaths());
-//                productService.saveOrUpdateProduct(product);                             //updated das Product in der datenbank, damit der Fotoname da auch gespeichert ist.
-//            }
-//            return response;
-//        }
-//        return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Foto mit selbem Namen wurde für gleiches Produkt schonmal hochgeladen.");
-//    }
 //
-//    private boolean hasAlreadyThisFile(MultipartFile file, Product product) {
-//        if (product.getPicPaths() != null) {
-//            Path path = Paths.get(file.getOriginalFilename());
-//            System.out.println("Path: " + path);
-//            if (product.getPicPaths().contains(path)) return true;
-//        }
-//        return false;
-//    }
 //
 //
 //    // delete img from archive

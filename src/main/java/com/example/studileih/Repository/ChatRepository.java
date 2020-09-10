@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
     //dangerous because of SQL Injection?
-    @Query(value = "SELECT * FROM Chats WHERE user1_id = ?1 OR user2_id = ?1", nativeQuery = true)
+    @Query(value = "SELECT * FROM chats WHERE user1_id = ?1 OR user2_id = ?1", nativeQuery = true)
     List<Chat> findChatsByUserId(String id);
 
 }
