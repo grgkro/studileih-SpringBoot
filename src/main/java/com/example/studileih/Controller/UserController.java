@@ -42,6 +42,12 @@ public class UserController {
         return allUsers.stream().filter(userDto -> userDto.getDormId() == userService.getActiveUserByName(user.getName()).getDorm().getId()).collect(Collectors.toList());
     }
 
+    @GetMapping("/users/dto/{id}")
+    @ApiOperation(value = "Return one User identified by ID as DTO")
+    public UserDto getUserDto(@PathVariable Long id) {
+        return userService.getUserDtoById(id);
+    }
+
     /**
      * @return: the user who ownes the product
      */

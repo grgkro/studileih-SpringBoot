@@ -29,7 +29,6 @@ public class S3Config {
                 .withRegion(Regions.fromName(region))
                 .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
                 .build();
-//        System.out.println(s3Client.listBuckets());
 
         return s3Client;
     }

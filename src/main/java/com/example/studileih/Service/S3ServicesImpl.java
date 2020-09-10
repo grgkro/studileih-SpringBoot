@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.amazonaws.services.s3.model.ObjectListing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,4 +86,21 @@ public class S3ServicesImpl implements S3Services {
             throw ace;
         }
     }
+
+    @Override
+    public void copyFile(String fromKeyName, String toKeyName) {
+        s3client.copyObject(bucketName, fromKeyName, bucketName, toKeyName);
+    }
+
+    @Override
+    public ObjectListing listObjects() {
+        return s3client.listObjects(bucketName);
+    }
+
+    @Override
+    public void deleteFile(String keyName) {
+        s3client.deleteObject(bucketName, keyName);
+    }
+
+
 }

@@ -1,6 +1,8 @@
 package com.example.studileih.Controller;
 
 import com.example.studileih.Service.ImageService;
+import com.example.studileih.Service.S3ImageArchiveAndDeleteService;
+import com.example.studileih.Service.S3ImageService;
 import com.example.studileih.Service.S3Services;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,12 @@ public class ImageController {
 
     @Autowired
     private ImageService imageService;
+
+    @Autowired
+    private S3ImageService s3imageService;
+
+    @Autowired
+    private S3ImageArchiveAndDeleteService s3ImageArchiveAndDeleteService;
 
     @Autowired
     S3Services s3Services;
@@ -64,7 +72,7 @@ public class ImageController {
     @PostMapping("/images/loadProductPicByFilename")    //https://bezkoder.com/spring-boot-upload-multiple-files/
     @ApiOperation(value = "Loads and returns the image of a product by it's provided filename")
     public ResponseEntity loadProductPicByFilename(String filename, Long productId) {
-      return imageService.loadProductPicByFilenameS3( filename, productId);
+      return s3imageService.loadProductPicByFilenameS3( filename, productId);
 //      return imageService.loadProductPicByFilename( filename, productId);
     }
 
@@ -82,7 +90,7 @@ public class ImageController {
     @PostMapping("/images/archivePicByFilename")
     @ApiOperation(value = "Transfers an deleted image from the user or product folder to the archive folder, so that it can be restored later.")
     public ResponseEntity archiveProductPicByFilename( String filename, String imgType, String productId) throws IOException {
-        return imageService.archiveProductPicByFilename(filename, imgType, productId);
+        return s3ImageArchiveAndDeleteService.archivePicByFilename(filename, imgType, productId);
     }
 
     /*
@@ -128,18 +136,12 @@ public class ImageController {
         @PostMapping("/images/deleteProductPicByFilename")
         @ApiOperation(value = "Deletes a product image by filename")
         public ResponseEntity deleteProductPicByFilename (String filename, Long productId){
-           return imageService.deleteProductPicByFilename (filename, productId);
+           return s3ImageArchiveAndDeleteService.deleteProductPicByFilename (filename, productId);
         }
 
     @PostMapping("/loadProfilePicByUserId")
     @ApiOperation(value = "Add new Profile Image to User identified by ID")
     public ResponseEntity getImageByUserId (@RequestBody Long userId){
-          return imageService.getImageByUserId(userId);
+          return s3imageService.getImageByUserId(userId);
      }
-
-
-
-
-
-
     }
