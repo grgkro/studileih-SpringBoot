@@ -167,11 +167,9 @@ public class UserService {
             if (newUser.getName() != null) oldUser.setName(newUser.getName());
             if (newUser.getEmail() != null) oldUser.setEmail(newUser.getEmail());
             if (newUser.getPassword() != null) oldUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-            if (newUser.getProfilePic() != null) oldUser.setProfilePic(newUser.getProfilePic());
+
             if (newUser.getProducts() != null) oldUser.setProducts(newUser.getProducts());
             if (newUser.getDorm() != null) oldUser.setDorm(newUser.getDorm());
-            if (newUser.getCity() != null) oldUser.setCity(newUser.getCity());
-
 
             userRepository.save(oldUser);
             System.out.println(oldUser);

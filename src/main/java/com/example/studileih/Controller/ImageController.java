@@ -16,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.security.Principal;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -78,8 +80,8 @@ public class ImageController {
 
     @PostMapping("/postImage")
     @ApiOperation(value = "Add new Image")
-    public ResponseEntity handleFileUpload (MultipartFile file, Long id, String imgType){
-       return s3imageService.handleFileUpload(file, id, imgType);
+    public ResponseEntity handleFileUpload (Principal userDetails, MultipartFile file, Long id, String imgType){
+       return s3imageService.handleFileUpload(userDetails.getName(), file, id, imgType);
     }
 
 

@@ -1,14 +1,10 @@
 package com.example.studileih.Service;
 
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -112,15 +104,19 @@ public class S3ImageService {
         }
     }
 
-    public ResponseEntity handleFileUpload(MultipartFile file, Long id, String imgType) {
+    public ResponseEntity handleFileUpload(String userName, MultipartFile file, Long id, String imgType) {
+        User user = userService.getActiveUserByName(userName);
         String keyName = imgType + "s/" + imgType + id + "/" + file.getOriginalFilename();
+        String keyNameOldProfilePic = imgType + "s/" + imgType + id + "/" + user.getProfilePic();
+
         // -> if the image is a userPic -> update the user who posted it with the newly generated photo filePath of the just saved photo
         //userPic doesn't work yet!
-        if (imgType.equals("userPic")) {
-            return userService.saveUserPic(file, id);
-        } else if (imgType.equals("productPic")) {
+        if (imgType.equals("user")) {
+            if (s3ImageArchiveAndDeleteService.hasFile( keyNameOldProfilePic)) s3ImageArchiveAndDeleteService.deletePicByFilename(keyNameOldProfilePic);
+            return saveProfilePic(file, user);
+        } else if (imgType.equals("product")) {
             // before we store the image, we need to check if the image is already in the archive. If so, we need to delete it there. Otherwise it would be in the archive and in the normal folder at the same time. If you then delete it (transfer it from normal folder to archive, or restore it (transfer it from archive to normal folder) you would get a fileAlreadyExists Exeption.
-            if (s3ImageArchiveAndDeleteService.hasFile("archive/" + keyName)) s3ImageArchiveAndDeleteService.deleteArchivePicByFilename("archive/" + keyName);
+            if (s3ImageArchiveAndDeleteService.hasFile("archive/" + keyName)) s3ImageArchiveAndDeleteService.deletePicByFilename("archive/" + keyName);
             Product product = productService.getProductEntityById(id);                                      // We first load the product, for which we wanna save the pic.
             return saveProductPic(file, product);
         }
@@ -149,6 +145,20 @@ public class S3ImageService {
             return response;
         }
         return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body("Foto mit selbem Namen wurde für gleiches Produkt schonmal hochgeladen.");
+    }
+
+    public ResponseEntity saveProfilePic(MultipartFile file, User user) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user with Id" + user.getId() + " doesn't exist in db.");    // Returns a status = 404 response
+        }
+            ResponseEntity response = storeImageS3(file.getOriginalFilename(), file, "user", user.getId());  //übergibt das Foto zum Speichern an imageService und gibt den Namen des Fotos zum gerade gespeicherten Foto zurück als Response Body. falls Speichern nicht geklappt hat kommt response mit Fehlercode zurück (400 oder ähnliches)
+            if (response.getStatusCodeValue() == 200) {
+                System.out.println("Unter folgendem Namen wurde das Foto in S3 gespeichert: " + file.getOriginalFilename()); // if saving photo was successfull => response status = 200...
+                user.setProfilePic(file.getOriginalFilename());
+                userService.saveOrUpdateUser(user);                             //updated das Product in der datenbank, damit der Fotoname da auch gespeichert ist.
+            }
+            return response;
+
     }
 
     private boolean hasAlreadyThisFile(MultipartFile file, Product product) {

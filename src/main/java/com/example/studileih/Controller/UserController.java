@@ -114,12 +114,9 @@ public class UserController {
         if (updatedUser != null) {
             UserDto dto = userService.convertUserToDto(updatedUser);
             dto.setToken(jwtUtil.generateToken(user.getName()));
-            System.out.println(dto);
-            dto.setCity("Hamburg");
-
-            return new ResponseEntity<>(dto, HttpStatus.OK);
+            return new ResponseEntity(dto, HttpStatus.OK);
         } else {
-            return new ResponseEntity("Benutzer konnte nicht gefunden werden.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
         }
     }
 

@@ -90,7 +90,7 @@ public class S3ImageArchiveAndDeleteService {
     public boolean hasFile(String keyName) {
         ObjectListing objectListing = s3Services.listObjects();
         for(S3ObjectSummary os : objectListing.getObjectSummaries()) {
-            if (os.getKey().toString().equals(keyName)) return true;
+            if (os.getKey().equals(keyName)) return true;
         }
         return false;
     }
@@ -110,7 +110,7 @@ public class S3ImageArchiveAndDeleteService {
         return ResponseEntity.status(HttpStatus.OK).body(filename + " erfolgreich gelöscht.");  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
     }
 
-    public ResponseEntity deleteArchivePicByFilename(String keyName) {
+    public ResponseEntity deletePicByFilename(String keyName) {
         s3Services.deleteFile(keyName);
         return ResponseEntity.status(HttpStatus.OK).body(keyName + " erfolgreich gelöscht.");  // loadImageByFilename() returns a response with the product pic. If the image couldn't be loaded, the response will contain an error message
     }
