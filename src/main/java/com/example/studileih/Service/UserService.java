@@ -3,16 +3,19 @@ package com.example.studileih.Service;
 import com.example.studileih.Dto.CityEnum;
 import com.example.studileih.Dto.ProductDto;
 import com.example.studileih.Dto.UserDto;
+import com.example.studileih.Dto.UserDtoForEditing;
 import com.example.studileih.Entity.Dorm;
 import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
 import com.example.studileih.Repository.UserRepository;
 
+import com.example.studileih.Security.JwtUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,6 +53,9 @@ public class UserService {
 
     @Autowired
     private ModelMapper modelMapper;  //modelMapper konvertiert Entities in DTOs (modelMapper Dependency muss in pom.xml drin sein)
+
+
+
 
     /**
      * Die Funktion wird direkt nach Start aufgerufen und speichert 1 Beispielwohnheim/Adresse/2 Pro in die DB -> Kann später auskommentiert/gelöscht werden
@@ -94,6 +100,15 @@ public class UserService {
         System.out.println(userDto);
         return userDto;
     }
+
+    public UserDtoForEditing getUserDtoForEditing(Principal userDetails) {
+        User user = getActiveUserByName(userDetails.getName());
+        UserDtoForEditing userDto = modelMapper.map(user, UserDtoForEditing.class);
+        System.out.println(userDto);
+        return userDto;
+    }
+
+
 
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
@@ -145,26 +160,24 @@ public class UserService {
 
 
     public User updateUser(User newUser, Long id) {
-        User oldUser = null;
+        Optional optional = userRepository.findById(id);
 
-        if (getUserById(id).isPresent()) {
-            assert false; //assert oldUser != null;
-            oldUser.setName(newUser.getName());
-            oldUser.setName(newUser.getName());
+        if (optional.isPresent()) {
+            User oldUser = (User) optional.get();
+            if (newUser.getName() != null) oldUser.setName(newUser.getName());
+            if (newUser.getEmail() != null) oldUser.setEmail(newUser.getEmail());
+            if (newUser.getPassword() != null) oldUser.setPassword(newUser.getPassword());
+            if (newUser.getProfilePic() != null) oldUser.setProfilePic(newUser.getProfilePic());
+            if (newUser.getProducts() != null) oldUser.setProducts(newUser.getProducts());
+            if (newUser.getDorm() != null) oldUser.setDorm(newUser.getDorm());
+            if (newUser.getCity() != null) oldUser.setCity(newUser.getCity());
 
-            oldUser.setEmail(newUser.getEmail());
-            oldUser.setPassword(newUser.getPassword());
-            oldUser.setRoom(newUser.getRoom());
-            oldUser.setProfilePic(newUser.getProfilePic());
-//            oldUser.setDorm(newUser.getDorm());
-            oldUser.setCity(newUser.getCity());
 
             userRepository.save(oldUser);
             System.out.println(oldUser);
             return oldUser;
         }
-
-        return oldUser;
+        return null;
     }
 
     public ResponseEntity saveUserPic(MultipartFile file, Long userId) {
@@ -201,8 +214,7 @@ public class UserService {
     }
 
     public User getActiveUserByName(String name) {
-        User user = userRepository.findByName(name);
-        return user;
+        return userRepository.findByName(name);
     }
 
 

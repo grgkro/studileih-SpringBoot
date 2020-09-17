@@ -2,13 +2,18 @@ package com.example.studileih.Controller;
 
 import com.example.studileih.Dto.MessageDto;
 import com.example.studileih.Dto.UserDto;
+import com.example.studileih.Dto.UserDtoForEditing;
 import com.example.studileih.Entity.User;
+import com.example.studileih.Security.JwtUtil;
 import com.example.studileih.Service.MessageService;
 import com.example.studileih.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -29,6 +34,10 @@ public class UserController {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     private MultipartFile profilePic;
 
 
@@ -46,6 +55,12 @@ public class UserController {
     @ApiOperation(value = "Return one User identified by ID as DTO")
     public UserDto getUserDto(@PathVariable Long id) {
         return userService.getUserDtoById(id);
+    }
+
+    @GetMapping("/users/editing")
+    @ApiOperation(value = "Return the logged in user as DTO for editing (with email address)")
+    public UserDtoForEditing getUserForEditing(Principal user) {
+        return userService.getUserDtoForEditing(user);
     }
 
     /**
@@ -93,8 +108,19 @@ public class UserController {
 
     @PutMapping(value = "/users/{id}")
     @ApiOperation(value = "Update User identified by ID")
-    public void updateUser(@RequestBody User user, @PathVariable Long id) {
-        userService.updateUser(user, id);
+    public ResponseEntity updateUser(@RequestBody User user, @PathVariable Long id) {
+        // the userId can't be set, so we have to send it extra as the path variable along with the user
+        User updatedUser = userService.updateUser(user, id);
+        if (updatedUser != null) {
+            UserDto dto = userService.convertUserToDto(updatedUser);
+            dto.setToken(jwtUtil.generateToken(user.getName()));
+            System.out.println(dto);
+            dto.setCity("Hamburg");
+
+            return new ResponseEntity<>(dto, HttpStatus.OK);
+        } else {
+            return new ResponseEntity("Benutzer konnte nicht gefunden werden.", HttpStatus.BAD_REQUEST);
+        }
     }
 
 }
