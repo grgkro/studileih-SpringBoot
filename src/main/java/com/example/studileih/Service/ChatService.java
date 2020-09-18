@@ -111,4 +111,11 @@ public class ChatService {
         return null;
     }
 
+    public ResponseEntity deleteChat(Long id) {
+        if (chatRepository.existsById(id)) {
+            chatRepository.deleteById(id);
+            return ResponseEntity.status(HttpStatus.OK).body("Chat gelöscht.");
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Chat konnte nicht gefunden werden.");
+    }
 }

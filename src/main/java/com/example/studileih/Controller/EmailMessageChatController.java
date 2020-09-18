@@ -160,6 +160,11 @@ public class EmailMessageChatController {
         return ResponseEntity.status(HttpStatus.OK).body(dtos);
     }
 
+@DeleteMapping("/delete/chat/{id}")
+@ApiOperation(value = "Delete Chat by id")
+public ResponseEntity deleteChat(@PathVariable Long id) {
+    return chatService.deleteChat(id);
+}
 
 
 }

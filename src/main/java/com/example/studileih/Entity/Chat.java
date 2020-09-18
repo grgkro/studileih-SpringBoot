@@ -23,7 +23,7 @@ public class Chat {
 @ManyToOne
     private User user2;
 
-@OneToMany(mappedBy="chat")
+@OneToMany(mappedBy="chat", orphanRemoval = true, cascade = CascadeType.PERSIST)
 private List<Message> messages;
 
     public Chat(User user1, User user2) {
