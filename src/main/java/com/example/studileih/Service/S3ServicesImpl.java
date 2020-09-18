@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
 
 
 @Service
@@ -100,6 +97,14 @@ public class S3ServicesImpl implements S3Services {
     @Override
     public void deleteFile(String keyName) {
         s3client.deleteObject(bucketName, keyName);
+    }
+
+    @Override
+    public void deleteFolder(String folderName) {
+        ObjectListing objectListing = listObjects();
+        for(S3ObjectSummary os : objectListing.getObjectSummaries()) {
+            if (os.getKey().contains(folderName)) deleteFile(os.getKey());
+        }
     }
 
 

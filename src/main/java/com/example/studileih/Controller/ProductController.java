@@ -2,7 +2,9 @@ package com.example.studileih.Controller;
 
 import com.example.studileih.Dto.ProductDto;
 import com.example.studileih.Service.DormService;
+import com.example.studileih.Service.ImageService;
 import com.example.studileih.Service.ProductService;
+import com.example.studileih.Service.S3ImageArchiveAndDeleteService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,9 @@ public class ProductController {
 
     @Autowired
     private DormService dormService;
+
+    @Autowired
+    private S3ImageArchiveAndDeleteService s3ImageArchiveAndDeleteService;
 
     /**
      * @return: all products from the repository
@@ -122,6 +127,7 @@ public class ProductController {
     @ApiOperation(value = "Deletes one product identified by its ID")
     public ResponseEntity<String> deleteProduct(Long id) {
         try {
+            s3ImageArchiveAndDeleteService.deleteImageFolder("product", id.toString());
             productService.deleteProduct(id);
             return ResponseEntity.status(HttpStatus.OK).body("Produkt erfolgreich gelöscht.");
         } catch (Exception e) {

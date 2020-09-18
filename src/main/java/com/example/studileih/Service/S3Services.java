@@ -11,5 +11,6 @@ public interface S3Services {
     public void copyFile(String fromKeyName, String toKeyName);
     public ObjectListing listObjects();
     public void deleteFile(String keyName);
+    public void deleteFolder(String folderName);
 //    public void deleteFiles(String keyName);
 }

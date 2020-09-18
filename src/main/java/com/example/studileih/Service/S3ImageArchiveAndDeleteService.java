@@ -95,6 +95,14 @@ public class S3ImageArchiveAndDeleteService {
         return false;
     }
 
+    public boolean hasFolder(String folderName) {
+        ObjectListing objectListing = s3Services.listObjects();
+        for(S3ObjectSummary os : objectListing.getObjectSummaries()) {
+            if (os.getKey().contains(folderName)) return true;
+        }
+        return false;
+    }
+
 
     public ResponseEntity deleteProductPicByFilename(String filename, Long productId) {
         // first remove the image from the databse
@@ -118,20 +126,22 @@ public class S3ImageArchiveAndDeleteService {
 
     // not tested yet
     public ResponseEntity deleteArchive(String archiveType, String id) {
-            if (!hasFile("archive/" + archiveType + "s/" + archiveType + id)) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(archiveType + id + " Archiv konnte nicht gefunden werden.");
-            s3Services.deleteFile("archive/" + archiveType + "s/" + archiveType + id);
-            if (!hasFile("archive/" + archiveType + "s/" + archiveType + id)) {
+            if (!hasFolder("archive/" + archiveType + "s/" + archiveType + id)) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(archiveType + id + " Archiv konnte nicht gefunden werden.");
+            s3Services.deleteFolder("archive/" + archiveType + "s/" + archiveType + id);
+            if (!hasFolder("archive/" + archiveType + "s/" + archiveType + id)) {
                 return ResponseEntity.status(HttpStatus.OK).body(archiveType + id + " Archiv erfolgreich gelöscht");
             } else {
                 return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(archiveType + id + " Archiv konnte gefunden, aber nicht gelöscht werden.");
             }
         }
 
+
+
     // not tested yet
     public ResponseEntity deleteImageFolder(String folderType, String id) {
-        if (!hasFile(folderType + "s/" + folderType + id)) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bilder von " + folderType + id + "  konnte nicht gefunden werden.");
-        s3Services.deleteFile(folderType + "s/" + folderType + id);
-        if (!hasFile(folderType + "s/" + folderType + id)) {
+        if (!hasFolder(folderType + "s/" + folderType + id)) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Bilder von " + folderType + id + "  konnte nicht gefunden werden.");
+        s3Services.deleteFolder(folderType + "s/" + folderType + id);
+        if (!hasFolder(folderType + "s/" + folderType + id)) {
             return ResponseEntity.status(HttpStatus.OK).body("Alle Bilder von " + folderType + id + " erfolgreich gelöscht");
         } else {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body("Bilder von " + folderType + id + " konnte gefunden, aber nicht gelöscht werden.");
