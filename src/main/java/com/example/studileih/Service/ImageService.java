@@ -425,8 +425,9 @@ public class ImageService {
     }
 
     public Boolean checkContentType(MultipartFile profilePic) {
-        String contentType = profilePic.getContentType();
-        return contentType.equals("image/png") || contentType.equals("image/jpg") || contentType.equals("image/jpeg") || contentType.equals("image/bmp") || contentType.equals("image/gif");
+        String contentType = profilePic.getContentType().split("/")[0];
+//        return contentType.equals("image/png") || contentType.equals("image/jpg") || contentType.equals("image/jpeg") || contentType.equals("image/bmp") || contentType.equals("image/gif");
+        return contentType.equals("image");
     }
 }
 

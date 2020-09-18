@@ -288,7 +288,7 @@ public class ProductService {
         if (imageFiles != null) {
             for (MultipartFile file : imageFiles) {
                 if (!imageService.checkContentType(file)) {
-                    return new ResponseEntity("Fotos müssen vom Typ png, jpg, jpeg, bmp oder gif sein.", HttpStatus.BAD_REQUEST);
+                    return new ResponseEntity("Es können nur Bilddateien hochgeladen werden.", HttpStatus.BAD_REQUEST);
                 }
             }
         }

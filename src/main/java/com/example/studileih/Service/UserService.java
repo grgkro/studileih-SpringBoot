@@ -24,12 +24,11 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -170,6 +169,8 @@ public class UserService {
 
             if (newUser.getProducts() != null) oldUser.setProducts(newUser.getProducts());
             if (newUser.getDorm() != null) oldUser.setDorm(newUser.getDorm());
+            if (oldUser.getCreatedAt() == null) newUser.setCreatedAt(new Date());
+            newUser.setUpdatedAt(new Date());
 
             userRepository.save(oldUser);
             System.out.println(oldUser);
