@@ -1,10 +1,6 @@
 package com.example.studileih.Controller;
 
-import com.example.studileih.Dto.ChatDto;
-import com.example.studileih.Dto.ChatDtoForResponding;
-import com.example.studileih.Dto.MessageDtoForReceiving;
-import com.example.studileih.Dto.MessageDtoForResponding;
-import com.example.studileih.Entity.Chat;
+import com.example.studileih.Dto.*;
 import com.example.studileih.Service.ChatService;
 import com.example.studileih.Service.EmailService;
 import com.example.studileih.Service.MessageService;
@@ -21,7 +17,6 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @RestController
 @CrossOrigin
@@ -57,6 +52,21 @@ public class EmailMessageChatController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Produkt, Produktbesitzer oder Anfragender User konnte nicht geladen werden.");
         }
     }
+
+    /*
+     * sends an "Wohnheim hinzufügen" Email to the admin
+     */
+    @PostMapping("/emails/sendEmail/admin")
+    @ApiOperation(value = "Sends an \"Wohnheim hinzufügen\" Email to the admin")
+    public ResponseEntity<String> sendEmailToAdmin(@RequestBody NewDormRequest newDorm, Principal userDetails) {
+        try {
+            return emailService.sendEmailToAdmin(newDorm.getName(), newDorm.getCity(), newDorm.getStreet(), newDorm.getHouseNumber(), userDetails);
+        } catch (NoSuchElementException e) {
+            System.out.println(e);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Interner Datenbankfehler - Wohnheim Anfrage konnte nicht verarbeitet werden.");
+        }
+    }
+
 
     /*
      * sends an "Ausleihanfrage" Message with the startdate, enddate, product, ausleihender user etc. to the product owner in Studileih (like a intern Facebook message from one user to another)

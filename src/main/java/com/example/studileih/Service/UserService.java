@@ -61,25 +61,31 @@ public class UserService {
      */
     @PostConstruct
     public void createBaseDataset() {
-        if (productService.listAllProducts().isEmpty()) {
+        try {
+            if (productService.listAllProducts().isEmpty()) {
 
-            Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
-            Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
-            Product product3 = new ProductBuilder().withTitle("Hartmuts Bohrmaschine").withDescription("Hartmuts Bohrmaschine").withPrice(5).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Anna-Herrigel-Haus").withCity(CityEnum.Stuttgart.toString()).build();
-            List<Product> haraldsList = Stream.of(product1, product2).collect(Collectors.toList());
-            List<Product> hartmutsList = Stream.of(product3).collect(Collectors.toList());
-            String HaraldsEncodedPassword = passwordEncoder.encode("2345");
-            String HartmutsEncodedPassword = passwordEncoder.encode("5432");
-            User harald = new User("Harald", "grg.kro@gmail.com", HaraldsEncodedPassword, haraldsList, dormService.getDormById(1L).get());
-            User hartmut = new User("Hartmut", "georgkromer@pm.me", HartmutsEncodedPassword, hartmutsList, dormService.getDormById(2L).get());
-            product1.setUser(harald);
-            product2.setUser(harald);
-            product3.setUser(hartmut);
+                Product product1 = new ProductBuilder().withTitle("VW 3er Golf, BJ. 1998, 100.000km").withDescription("Mein VW Golf zum Ausleihen, wiedersehen macht Freude höhö").withPrice(30).withAvailable(false).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
+                Product product2 = new ProductBuilder().withTitle("Bosch Bohrmaschine").withDescription("Haralds Bohrmaschine").withPrice(0).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Alexanderstraße").withCity(CityEnum.Stuttgart.toString()).build();
+                Product product3 = new ProductBuilder().withTitle("Hartmuts Bohrmaschine").withDescription("Hartmuts Bohrmaschine").withPrice(5).withIsBeerOk(true).withCategory("Werkzeug").withAvailable(true).withDorm("Anna-Herrigel-Haus").withCity(CityEnum.Stuttgart.toString()).build();
+                List<Product> haraldsList = Stream.of(product1, product2).collect(Collectors.toList());
+                List<Product> hartmutsList = Stream.of(product3).collect(Collectors.toList());
+                String HaraldsEncodedPassword = passwordEncoder.encode("2345");
+                String HartmutsEncodedPassword = passwordEncoder.encode("5432");
+                User harald = new User("Harald", "grg.kro@gmail.com", HaraldsEncodedPassword, haraldsList, dormService.getDormById(1L).get());
+                User hartmut = new User("Hartmut", "georgkromer@pm.me", HartmutsEncodedPassword, hartmutsList, dormService.getDormById(2L).get());
+                product1.setUser(harald);
+                product2.setUser(harald);
+                product3.setUser(hartmut);
 
-            // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
-            saveOrUpdateUser(harald);
-            saveOrUpdateUser(hartmut);
+                // durch das Speichern der user werden die verknüpften Produkte auch gespeichert. Es ist also unnötig die Produkte mit productService.saveProduct() nochmal zu speichern.
+                saveOrUpdateUser(harald);
+                saveOrUpdateUser(hartmut);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+
         }
+
 
     }
 
@@ -149,11 +155,17 @@ public class UserService {
     }
 
     public ResponseEntity registerUser(String name, String email, String password, Long dormId, MultipartFile profilePic) {
+        User newUser = new User(name,email, passwordEncoder.encode(password));;
+        if(dormId != 0) {
+            Dorm dorm = dormService.getDormById(dormId).get();
+            newUser.setDorm(dorm);
+            newUser.setCity(dorm.getCity());
+        }
 
-        Dorm dorm = dormService.getDormById(dormId).get();
-        User newUser = new User(name, email, passwordEncoder.encode(password), dorm.getCity(), dorm);
         addUser(newUser);
-        saveUserPic(profilePic, newUser.getId());
+        if (profilePic != null) {
+            saveUserPic(profilePic, newUser.getId());
+        }
         return ResponseEntity.status(HttpStatus.OK).body("User erfolgreich angelegt.");
     }
 
@@ -225,9 +237,11 @@ public class UserService {
     public ResponseEntity validateRegistration(String name, String email, String password, Long dormId, MultipartFile profilePic) {
         if (name == null || name == "") {
             return new ResponseEntity("Username darf nicht leer sein.", HttpStatus.BAD_REQUEST);
-        } else if (userRepository.existsByName(name)) {
-            return new ResponseEntity("Username " + name + " bereits vergeben.", HttpStatus.BAD_REQUEST);
-        } else if (email == null || email == "") {
+        }
+//        else if (userRepository.existsByName(name)) {
+//            return new ResponseEntity("Username " + name + " bereits vergeben.", HttpStatus.BAD_REQUEST);
+//        }
+        else if (email == null || email == "") {
             return new ResponseEntity("Email darf nicht leer sein.", HttpStatus.BAD_REQUEST);
         } else if (userRepository.existsByEmail(email)) {
             return new ResponseEntity("Email " + email + " bereits verwendet.", HttpStatus.BAD_REQUEST);
@@ -235,7 +249,7 @@ public class UserService {
             return new ResponseEntity("Passwort darf nicht leer sein.", HttpStatus.BAD_REQUEST);
         } else if (dormId == null) {
             return new ResponseEntity("Bitte ein Wohnheim auswählen.", HttpStatus.BAD_REQUEST);
-        } else if (!dormService.existsById(dormId)) {
+        } else if (dormId != 0 && !dormService.existsById(dormId)) {
             return new ResponseEntity("Das ausgewählte Wohnheim existiert nicht in der Datenbank.", HttpStatus.BAD_REQUEST);
         } else if (profilePic != null) {
             if (!imageService.checkContentType(profilePic)) {

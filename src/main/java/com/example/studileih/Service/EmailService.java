@@ -5,6 +5,7 @@ import com.example.studileih.Entity.Message;
 import com.example.studileih.Entity.Product;
 import com.example.studileih.Entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
@@ -28,6 +29,12 @@ public class EmailService {
 
     @Autowired
     private MessageService messageService;
+
+    @Autowired
+    private UserService userService;
+
+    @Value("${spring.mail.username}")
+    private String studiEmail;
 
     private SimpleDateFormat inputDateFormatter =new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");  // this is the format the dates are saved in the database eg. 2020-07-17T17:51:19.349Z
     private SimpleDateFormat finalDateFormat =new SimpleDateFormat("dd.MM.yy HH:mm"); // this is the format, we want to present the dates to the user (without milliseconds etc.) eg. 17.07.20 19:42
@@ -193,6 +200,48 @@ public class EmailService {
         } catch (MailException e){
             System.out.println(e);
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body("Unerwarteter Fehler beim Senden der Antwort per Email an " + receiver.getName());
+        }
+    }
+
+    public ResponseEntity<String> sendEmailToAdmin(String name, String city, String street, String houseNumber, Principal userDetails) {
+        User user = userService.getActiveUserByName(userDetails.getName());
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo("grg.kro@gmail.com");
+        mail.setCc(user.getEmail());
+        mail.setReplyTo(user.getEmail());
+        mail.setFrom(studiEmail);
+        mail.setSubject("Bitte neues Wohnheim " + name + " prüfen");
+        StringBuilder sb = new StringBuilder();
+        sb.append(System.lineSeparator()); // https://stackoverflow.com/questions/14534767/how-to-append-a-newline-to-stringbuilder
+        sb.append(System.lineSeparator());
+        sb.append("Hallo Adi,");
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("der Nutzer " + user.getName() + " mit ID: " + user.getId());
+        if (user.getCity() != null) sb.append(" aus " + user.getCity());
+        sb.append(" möchte gern folgendes Wohnheim in die Liste aufnehmen: ");
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("Name: " + name);
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("Stadt: " + city);
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("Straße: " + street);
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("Hausnummer: " + houseNumber);
+        sb.append(System.lineSeparator());
+        sb.append(System.lineSeparator());
+        sb.append("Beste Grüße, dein Server xoxo");
+        mail.setText(sb.toString());
+        try {
+            emailSender.send(mail);
+            return ResponseEntity.status(HttpStatus.OK).body("Dein Wohnheim wird in den nächsten Tagen von unserem Admin hinzugefügt.");
+        } catch (MailException e){
+            System.out.println(e);
+            return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body("Unerwarteter Fehler, deine Wohnheim Anfrage konnte nicht verarbeitet werden.");
         }
     }
 }

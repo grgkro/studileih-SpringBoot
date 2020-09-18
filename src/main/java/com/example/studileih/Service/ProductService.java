@@ -53,7 +53,16 @@ public class ProductService {
 
     public List<ProductDto> getProductsByDorm(String dorm) {
         List<Product> products = productRepository.findAll();
-        products = products.stream().filter(product -> product.getDorm().equals(dorm)).collect(Collectors.toList());
+        if (dorm != null) {
+            products = products.stream().filter(product -> {
+                if (product.getDorm() != null) {
+                    if (product.getDorm().equals(dorm)) {
+                        return true;
+                    }
+                }
+                return false;
+            }).collect(Collectors.toList());
+        }
         return convertListToDtos(products);
     }
 
@@ -63,9 +72,15 @@ public class ProductService {
     }
 
     public List<ProductDto> listAllProducts() {
-        List<Product> products = new ArrayList<>();
-        productRepository.findAll().forEach(products::add);  // products::add ist gleich wie: products.add(product)
-        return convertListToDtos(products);
+        try {
+            List<Product> products = new ArrayList<>();
+            productRepository.findAll().forEach(products::add);  // products::add ist gleich wie: products.add(product)
+            return convertListToDtos(products);
+        } catch (NullPointerException e) {
+            System.out.println(e);
+            return null;
+        }
+
     }
 
     public Date transformStringToDate(String stringDate) {
@@ -135,11 +150,18 @@ public class ProductService {
 
         // first we get the user who added the product
         User productOwner = userService.getActiveUserByName(user.getName());
+        Product product = null;
+        if (productOwner.getDorm() != null) {  //the dorm == null when the user added a new dorm at registration and has no dorm yet. His products get added but not shown to other users until he has a dorm.
+            // then we create the product
+            product = new ProductBuilder().withTitle(title).withDescription(description).withCategory(category)
+                    .withPrice(price).withIsBeerOk(isBeerOk).withStartDay(startDay).withEndDay(endDay).withUser(productOwner)
+                    .withPickUpTime(pickUpTime).withReturnTime(returnTime).withAvailable(true).withDorm(productOwner.getDorm().getName()).withCity(productOwner.getDorm().getCity()).build();
 
-        // then we create the product
-        Product product = new ProductBuilder().withTitle(title).withDescription(description).withCategory(category)
-                .withPrice(price).withIsBeerOk(isBeerOk).withStartDay(startDay).withEndDay(endDay).withUser(productOwner)
-                .withPickUpTime(pickUpTime).withReturnTime(returnTime).withAvailable(true).withDorm(productOwner.getDorm().getName()).withCity(productOwner.getDorm().getCity()).build();
+        } else {
+            product = new ProductBuilder().withTitle(title).withDescription(description).withCategory(category)
+                    .withPrice(price).withIsBeerOk(isBeerOk).withStartDay(startDay).withEndDay(endDay).withUser(productOwner)
+                    .withPickUpTime(pickUpTime).withReturnTime(returnTime).withAvailable(true).build();
+        }
 
         // save the product
         saveOrUpdateProduct(product);
