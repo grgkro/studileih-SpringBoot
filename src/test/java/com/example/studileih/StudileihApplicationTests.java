@@ -3,49 +3,30 @@ package com.example.studileih;
 import com.example.studileih.Entity.Message;
 import com.example.studileih.Entity.User;
 import com.example.studileih.Repository.ProductRepository;
-import com.example.studileih.Repository.UserRepository;
-import com.example.studileih.Security.CustomUserDetailsService;
-import com.example.studileih.Service.*;
-//import javafx.application.Application;
+import com.example.studileih.Service.ProductService;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.util.password.BasicPasswordEncryptor;
 import org.jasypt.util.text.BasicTextEncryptor;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.context.support.WithUserDetails;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.validation.constraints.AssertTrue;
-import java.security.Principal;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+//import javafx.application.Application;
 
 @ExtendWith(SpringExtension.class)
 @AutoConfigureMockMvc
@@ -122,7 +103,7 @@ class StudileihApplicationTests {
 				"testString",
 				null,
 				0L,
-				"2598342143",
+				"2598342143.66",
 				"2598342144",
 				"12:15",
 				"17:30",
@@ -328,7 +309,7 @@ class StudileihApplicationTests {
 				"testString",
 				null,
 				0L,
-				"2598342143",
+				"2598342143.66",
 				"2598342142",
 				"12:15",
 				"17:30",
@@ -364,7 +345,7 @@ class StudileihApplicationTests {
 				"testString",
 				null,
 				0L,
-				"2598342142",
+				"2598342142.00",
 				"2598342142",
 				"12:15",
 				"12:14",

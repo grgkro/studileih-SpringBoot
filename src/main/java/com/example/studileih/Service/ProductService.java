@@ -231,7 +231,9 @@ public class ProductService {
                                         MultipartFile[] imageFiles) {
 
         String allowedRegex = "[a-zA-Z0-9.,_äöüÄÖÜß \\-+]*";
-        startDate = startDate.substring(0, startDate.indexOf("."));    //the date comes from the FE in format: "1598439940.666" or "1598439940.66", so we have to remove the "." and everything after.
+        if (startDate != null) {
+            startDate = startDate.substring(0, startDate.indexOf("."));    //the date comes from the FE in format: "1598439940.666" or "1598439940.66", so we have to remove the "." and everything after.
+        }
 
         if (productId != null) {
             if (!productRepository.existsById(productId)) {
